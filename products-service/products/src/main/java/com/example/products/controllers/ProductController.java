@@ -113,18 +113,6 @@ public class ProductController {
 
         String userId = extractUserId(authentication);
 
-    private String extractUserId(Authentication authentication) {
-        if (authentication == null) {
-            authentication = SecurityContextHolder.getContext().getAuthentication();
-        }
-        Object principal = authentication.getPrincipal();
-        if (principal == null) return authentication.getName();
-        if (principal instanceof String) return (String) principal;
-        if (principal instanceof UserDetails) return ((UserDetails) principal).getUsername();
-        if (principal instanceof Principal) return ((Principal) principal).getName();
-        return authentication.getName();
-    }
-
         if (!product.getUserId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("You are not the owner of this product",
@@ -134,5 +122,21 @@ public class ProductController {
         Product updateProduct = this.productService.updateProduct(product, productDto);
 
         return ResponseEntity.ok(ApiResponse.success(updateProduct));
+    }
+
+    private String extractUserId(Authentication authentication) {
+        if (authentication == null) {
+            authentication = SecurityContextHolder.getContext().getAuthentication();
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal == null)
+            return authentication.getName();
+        if (principal instanceof String)
+            return (String) principal;
+        if (principal instanceof UserDetails)
+            return ((UserDetails) principal).getUsername();
+        if (principal instanceof Principal)
+            return ((Principal) principal).getName();
+        return authentication.getName();
     }
 }
