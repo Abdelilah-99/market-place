@@ -3,6 +3,8 @@ package com.buy01.users.Service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -28,13 +30,15 @@ import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
 import com.buy01.users.Utils.JwtUtils;
+import com.example.shared.common.kafka.dtos.media.KafkaConfirmAvatarEvent;
+import com.example.shared.common.kafka.dtos.products.KafkaProductRemovedEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserCreatedEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserUpdatedEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserRemovedEvent;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-        "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
+        "spring.kafka.bootstrap-servers=localhost:9092",
         "logging.level.org.apache.kafka=WARN"
 })
 @SuppressWarnings("null")
@@ -69,7 +73,7 @@ class UsersServiceKafkaEventTest {
         userName = "Test User";
         userPassword = "password123";
         SecurityContextHolder.getContext().setAuthentication(
-            new UsernamePasswordAuthenticationToken(userId, null));
+                new UsernamePasswordAuthenticationToken(userId, null));
     }
 
     @Test
@@ -134,10 +138,15 @@ class UsersServiceKafkaEventTest {
         when(userRepository.existsByEmail(userEmail)).thenReturn(false);
         when(passwordEncoder.encode(userPassword)).thenReturn("hashed-password");
         when(userRepository.save(any(User.class))).thenReturn(newUser);
-
         authService.register(registerDto);
+        // KafkaConfirmAvatarEvent event = new KafkaConfirmAvatarEvent(avatarId);
+        System.out.println("Avatar: " + avatarId.toString() + " ====================================================");
+        // kafkaTemplate.send("confirm-avatar-events", null, event);
+        verify(kafkaTemplate, times(1)).send(
+                eq("confirm-avatar-events"),
+                any(),
+                argThat(event -> event instanceof KafkaConfirmAvatarEvent));
 
-        // Verify registration was successful
         verify(userRepository).save(any(User.class));
     }
 }

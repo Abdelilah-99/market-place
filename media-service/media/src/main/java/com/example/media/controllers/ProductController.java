@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import java.security.Principal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,7 +55,7 @@ public class ProductController {
                     .body("File must be an image");
         }
 
-        String userId = (String) authentication.getPrincipal();
+        String userId = extractUserId(authentication);
 
         ProductImage avatar = productImageService.uploadAvatar(
                 new ByteArrayInputStream(fileBytes),
@@ -60,12 +63,12 @@ public class ProductController {
 
         System.out.println("Image uploaded =====> " + avatar.getId());
 
-        return ResponseEntity.ok(avatar.getId());
+        return ResponseEntity.ok(avatar.getId().toString());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteImage(@PathVariable UUID id, Authentication authentication) throws Exception {
-        String userId = (String) authentication.getPrincipal();
+        String userId = extractUserId(authentication);
 
         ProductImage image = this.productImageService.getAvatarbyId(id);
         if (image == null) {
@@ -81,6 +84,18 @@ public class ProductController {
         this.productImageService.deleteImage(image);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private String extractUserId(Authentication authentication) {
+        if (authentication == null) {
+            authentication = SecurityContextHolder.getContext().getAuthentication();
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal == null) return authentication.getName();
+        if (principal instanceof String) return (String) principal;
+        if (principal instanceof UserDetails) return ((UserDetails) principal).getUsername();
+        if (principal instanceof Principal) return ((Principal) principal).getName();
+        return authentication.getName();
     }
 
     @GetMapping("/{id}")

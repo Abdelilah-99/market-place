@@ -34,12 +34,18 @@ import com.example.media.services.ProductImageService;
 import com.example.media.services.AvatarService;
 import com.example.media.stores.ProductimageContentStore;
 import com.example.media.stores.UserAvatarContentStore;
-
+import com.example.media.repositories.UserRepository;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+// import com.example.media.stores;
 @WebMvcTest({ ProductController.class, UserController.class })
+@AutoConfigureMockMvc(addFilters = false)
 @SuppressWarnings("null")
 class MediaControllersTest {
         @Autowired
         private MockMvc mockMvc;
+
+        @MockitoBean
+        private UserRepository userRepository;
 
         @MockitoBean
         private ProductImageService productImageService;
@@ -50,10 +56,10 @@ class MediaControllersTest {
         @MockitoBean
         private ProductImageRepository productImageRepository;
 
-        @MockitoBean
+        @MockitoBean(name = "productimageContentStore")
         private ProductimageContentStore productContentStore;
 
-        @MockitoBean
+        @MockitoBean(name = "userAvatarContentStore")
         private UserAvatarContentStore userContentStore;
 
         private UUID imageId;
