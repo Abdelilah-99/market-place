@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
@@ -46,7 +48,7 @@ class UsersServiceKafkaEventTest {
     @MockitoBean
     private JwtUtils jwtUtils;
 
-    @Autowired
+    @MockitoBean
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
@@ -55,17 +57,19 @@ class UsersServiceKafkaEventTest {
     @Autowired
     private ProfileService profileService;
 
-    private UUID userId;
+    private String userId;
     private String userEmail;
     private String userName;
     private String userPassword;
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID();
+        userId = UUID.randomUUID().toString();
         userEmail = "test@example.com";
         userName = "Test User";
         userPassword = "password123";
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(userId, null));
     }
 
     @Test
@@ -95,7 +99,7 @@ class UsersServiceKafkaEventTest {
     @Test
     void testUserUpdatedEventEmittedOnProfileUpdate() {
         User user = new User(userId, "Old Name", userEmail, "hashed-password", "BUYER", null);
-        ProfileUpdateReqDTOs updateDto = new ProfileUpdateReqDTOs("New Name", null);
+        ProfileUpdateReqDTOs updateDto = new ProfileUpdateReqDTOs("New Name", null, UUID.randomUUID());
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class)))
@@ -108,13 +112,11 @@ class UsersServiceKafkaEventTest {
 
     @Test
     void testUserRemovedEventEmittedOnDelete() {
-        User user = new User(userId, userName, userEmail, "hashed-password", "BUYER", null);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.existsById(userId)).thenReturn(true);
 
         profileService.deleteCurrentUser();
 
-        verify(userRepository).delete(any(User.class));
+        verify(userRepository).deleteById(userId);
     }
 
     @Test

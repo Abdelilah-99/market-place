@@ -10,22 +10,22 @@ import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    @Value("${MONGODB_USERNAME}")
+    @Value("${MONGODB_USERNAME:admin}")
     private String username;
 
-    @Value("${MONGODB_PWD}")
+    @Value("${MONGODB_PWD:123123}")
     private String password;
 
-    @Value("${MONGODB_HOST}")
+    @Value("${MONGODB_HOST:localhost}")
     private String host;
 
-    @Value("${MONGODB_PORT}")
+    @Value("${MONGODB_PORT:27017}")
     private int port;
 
-    @Value("${MONGO_DB}")
+    @Value("${MONGO_DB:users_db}")
     private String database;
 
-    @Value("${MONGODB_AUTH}")
+    @Value("${MONGODB_AUTH:admin}")
     private String authenticationDatabase;
 
     @Override
