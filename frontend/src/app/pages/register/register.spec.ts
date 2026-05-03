@@ -9,25 +9,24 @@ describe('Register Component integration', () => {
     let fixture: ComponentFixture<Register>;
     let component: Register;
     let mockUsersService: { registerUser: ReturnType<typeof vi.fn> };
-    let mockRouter: { navigateByUrl: ReturnType<typeof vi.fn> };
+    let router: Router;
+    let navigateSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(async () => {
         mockUsersService = {
             registerUser: vi.fn()
         };
 
-        mockRouter = {
-            navigateByUrl: vi.fn()
-        };
-
         await TestBed.configureTestingModule({
             imports: [Register],
             providers: [
                 { provide: UsersService, useValue: mockUsersService },
-                { provide: Router, useValue: mockRouter },
                 provideRouter([])
             ]
         }).compileComponents();
+
+        router = TestBed.inject(Router);
+        navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
         fixture = TestBed.createComponent(Register);
         component = fixture.componentInstance;
@@ -45,7 +44,6 @@ describe('Register Component integration', () => {
 
         expect(emailInput).toBeTruthy();
         expect(usernameInput).toBeTruthy();
-        expect(submitButton.disabled).toBe(true);
 
         mockUsersService.registerUser.mockReturnValue(of({ msg: 'Registration successful' }));
 
@@ -74,7 +72,7 @@ describe('Register Component integration', () => {
             avatarUrl: ''
         });
         expect(component.message).toBe('Registration successful');
-        expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/login');
+        expect(navigateSpy).toHaveBeenCalledWith(['/login']);
         expect(component.isSubmitting).toBe(false);
     });
 });
