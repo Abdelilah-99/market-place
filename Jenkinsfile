@@ -65,54 +65,63 @@ pipeline {
     success {
       sh 'git rev-parse HEAD > "${LAST_SUCCESSFUL_COMMIT_FILE}"'
       sh 'bash scripts/ci/notify.sh success'
-      mail to: "${NOTIFICATION_EMAILS}",
-            subject: "✅ Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: """
-            Build Status: SUCCESS
+      emailext(
+        to: "${NOTIFICATION_EMAILS}",
+        subject: "✅ Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: """
+        Build Status: SUCCESS
 
-            Job: ${env.JOB_NAME}
-            Build Number: ${env.BUILD_NUMBER}
-            Build URL: ${env.BUILD_URL}
-            Commit: ${env.GIT_COMMIT}
-            Branch: ${env.GIT_BRANCH}
+        Job: ${env.JOB_NAME}
+        Build Number: ${env.BUILD_NUMBER}
+        Build URL: ${env.BUILD_URL}
+        Commit: ${env.GIT_COMMIT}
+        Branch: ${env.GIT_BRANCH}
 
-            All tests passed successfully!
-            """
+        All tests passed successfully!
+        """,
+        mimeType: 'text/plain'
+      )
     }
     unstable {
       sh 'bash scripts/ci/notify.sh unstable'
-      mail to: "${NOTIFICATION_EMAILS}",
-            subject: "⚠️ Build Unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: """
-            Build Status: UNSTABLE
+      emailext(
+        to: "${NOTIFICATION_EMAILS}",
+        subject: "⚠️ Build Unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: """
+        Build Status: UNSTABLE
 
-            Job: ${env.JOB_NAME}
-            Build Number: ${env.BUILD_NUMBER}
-            Build URL: ${env.BUILD_URL}
-            Commit: ${env.GIT_COMMIT}
-            Branch: ${env.GIT_BRANCH}
+        Job: ${env.JOB_NAME}
+        Build Number: ${env.BUILD_NUMBER}
+        Build URL: ${env.BUILD_URL}
+        Commit: ${env.GIT_COMMIT}
+        Branch: ${env.GIT_BRANCH}
 
-            Some tests failed or warnings were detected.
-            Please review the build logs for details.
-            """
+        Some tests failed or warnings were detected.
+        Please review the build logs for details.
+        """,
+        mimeType: 'text/plain'
+      )
     }
     failure {
       sh 'bash scripts/ci/notify.sh failure'
-      mail to: "${NOTIFICATION_EMAILS}",
-            subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: """
-            Build Status: FAILED
+      emailext(
+        to: "${NOTIFICATION_EMAILS}",
+        subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: """
+        Build Status: FAILED
 
-            Job: ${env.JOB_NAME}
-            Build Number: ${env.BUILD_NUMBER}
-            Build URL: ${env.BUILD_URL}
-            Commit: ${env.GIT_COMMIT}
-            Branch: ${env.GIT_BRANCH}
+        Job: ${env.JOB_NAME}
+        Build Number: ${env.BUILD_NUMBER}
+        Build URL: ${env.BUILD_URL}
+        Commit: ${env.GIT_COMMIT}
+        Branch: ${env.GIT_BRANCH}
 
-            The build has failed. Please check the logs immediately.
+        The build has failed. Please check the logs immediately.
 
-            Review the full details at: ${env.BUILD_URL}console
-            """
+        Review the full details at: ${env.BUILD_URL}console
+        """,
+        mimeType: 'text/plain'
+      )
     }
     always {
       archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
