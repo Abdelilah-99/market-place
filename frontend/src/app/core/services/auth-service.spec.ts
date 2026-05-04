@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from './auth-service';
 import { ApiResponse } from '../models/ApiResponse';
@@ -12,8 +13,11 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [AuthService]
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        AuthService
+      ]
     });
 
     service = TestBed.inject(AuthService);
