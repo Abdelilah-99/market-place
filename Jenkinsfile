@@ -1,25 +1,3 @@
-// Jenkins CI/CD Pipeline with Email Notifications
-// 
-// SMTP Configuration Required (in Jenkins):
-// 1. Go to Manage Jenkins > Configure System
-// 2. Find "Extended E-mail Notification" section
-// 3. Set SMTP server: smtp.gmail.com
-// 4. Set SMTP port: 587
-// 5. Use TLS: Enable
-// 6. Click "Advanced" and set:
-//    - SMTP username: your-email@gmail.com
-//    - SMTP password: (use Gmail App Password for 2FA accounts)
-//    - Default user email suffix: @gmail.com
-// 7. Create Jenkins credentials:
-//    - ID: gmail-smtp-username
-//    - ID: gmail-smtp-password
-//
-// For Gmail App Password:
-// - Enable 2-Factor Authentication on Google Account
-// - Go to https://myaccount.google.com/apppasswords vbej szgv fyom tkkn 
-// - Create app password for Jenkins
-// - Use that password instead of your Gmail password
-
 pipeline {
   agent any
 
