@@ -67,6 +67,9 @@ pipeline {
     }
     failure {
       sh 'bash scripts/ci/notify.sh failure'
+        mail to: 'bouchikhiabdelilah0@gmail.com',
+          subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+          body: "Something went wrong. Check it here: ${env.BUILD_URL}"
     }
     always {
       archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
