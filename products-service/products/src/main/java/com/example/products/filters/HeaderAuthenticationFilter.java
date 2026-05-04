@@ -18,7 +18,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Order(1)
+@Order(1) 
 @Component
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
