@@ -92,17 +92,168 @@ run_frontend_tests() {
   )
 }
 
-ensure_java_21
+detect_base_commit() {
+  local base_commit=""
 
-# Install shared library first because multiple services depend on it.
-run_maven_module "shared" "install"
+  if [[ -n "${CI_STATE_DIR:-}" && -f "${CI_STATE_DIR}/last_successful_commit" ]]; then
+    base_commit="$(tr -d '[:space:]' < "${CI_STATE_DIR}/last_successful_commit")"
+  fi
 
-run_maven_module "eureka-server/eureka"
-run_maven_module "gateway/gateway"
-run_maven_module "products-service/products"
-run_maven_module "media-service/media"
+  if [[ -z "${base_commit}" ]]; then
+    if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+      base_commit="$(git rev-parse HEAD^)"
+    fi
+  fi
 
-run_gradle_module "users-service/service"
-run_frontend_tests
+  printf '%s' "${base_commit}"
+}
+
+changed_files_since() {
+  local base_commit="$1"
+
+  if [[ -z "${base_commit}" ]]; then
+    git ls-files
+    return
+  fi
+
+  git diff --name-only --diff-filter=ACMRT "${base_commit}"...HEAD
+}
+
+path_matches_any() {
+  local path="$1"
+  shift
+
+  local pattern
+  for pattern in "$@"; do
+    case "${path}" in
+      ${pattern})
+        return 0
+        ;;
+    esac
+  done
+
+  return 1
+}
+
+should_run_changes() {
+  local pattern="$1"
+  local changed_file
+
+  for changed_file in "${changed_files[@]}"; do
+    [[ -z "${changed_file}" ]] && continue
+    if path_matches_any "${changed_file}" "${pattern}"; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+base_commit="$(detect_base_commit)"
+if [[ -n "${base_commit}" ]]; then
+  echo "[CI] Diff base commit: ${base_commit}"
+else
+  echo "[CI] No diff base commit available; running full build."
+fi
+
+mapfile -t changed_files < <(changed_files_since "${base_commit}")
+
+run_shared=false
+run_eureka=false
+run_gateway=false
+run_products=false
+run_media=false
+run_users=false
+run_frontend=false
+
+if [[ ${#changed_files[@]} -eq 0 ]]; then
+  run_shared=true
+  run_eureka=true
+  run_gateway=true
+  run_products=true
+  run_media=true
+  run_users=true
+  run_frontend=true
+else
+  if should_run_changes "shared/*"; then
+    run_shared=true
+    run_eureka=true
+    run_gateway=true
+    run_products=true
+    run_media=true
+    run_users=true
+  fi
+
+  if should_run_changes "eureka-server/*"; then
+    run_eureka=true
+  fi
+
+  if should_run_changes "gateway/*"; then
+    run_gateway=true
+  fi
+
+  if should_run_changes "products-service/*"; then
+    run_products=true
+  fi
+
+  if should_run_changes "media-service/*"; then
+    run_media=true
+  fi
+
+  if should_run_changes "users-service/*"; then
+    run_users=true
+  fi
+
+  if should_run_changes "frontend/*"; then
+    run_frontend=true
+  fi
+fi
+
+if [[ "${run_shared}" == true || "${run_eureka}" == true || "${run_gateway}" == true || "${run_products}" == true || "${run_media}" == true || "${run_users}" == true ]]; then
+  ensure_java_21
+fi
+
+if [[ "${run_shared}" == true ]]; then
+  echo "[CI] Building shared library"
+  run_maven_module "shared" "install"
+else
+  echo "[CI] Skipping shared library build"
+fi
+
+if [[ "${run_eureka}" == true ]]; then
+  run_maven_module "eureka-server/eureka"
+else
+  echo "[CI] Skipping eureka-server build"
+fi
+
+if [[ "${run_gateway}" == true ]]; then
+  run_maven_module "gateway/gateway"
+else
+  echo "[CI] Skipping gateway build"
+fi
+
+if [[ "${run_products}" == true ]]; then
+  run_maven_module "products-service/products"
+else
+  echo "[CI] Skipping products-service build"
+fi
+
+if [[ "${run_media}" == true ]]; then
+  run_maven_module "media-service/media"
+else
+  echo "[CI] Skipping media-service build"
+fi
+
+if [[ "${run_users}" == true ]]; then
+  run_gradle_module "users-service/service"
+else
+  echo "[CI] Skipping users-service build"
+fi
+
+if [[ "${run_frontend}" == true ]]; then
+  run_frontend_tests
+else
+  echo "[CI] Skipping frontend build and tests"
+fi
 
 echo "[CI] Build and test completed successfully."
