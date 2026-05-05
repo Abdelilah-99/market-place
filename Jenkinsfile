@@ -17,8 +17,6 @@ pipeline {
     NOTIFICATION_EMAILS = 'bouchikhiabdelilah0@gmail.com'
     SMTP_SERVER = 'smtp.gmail.com'
     SMTP_PORT = '587'
-    SMTP_USERNAME = credentials('gmail-smtp-username-v2')
-    SMTP_PASSWORD = credentials('gmail-smtp-username-v2')
   }
 
   stages {
@@ -64,8 +62,14 @@ pipeline {
 
   post {
     success {
-      sh 'git rev-parse HEAD > "${LAST_SUCCESSFUL_COMMIT_FILE}"'
-      sh 'bash scripts/ci/notify.sh success'
+      script {
+        try {
+          sh 'git rev-parse HEAD > "${LAST_SUCCESSFUL_COMMIT_FILE}"'
+          sh 'bash scripts/ci/notify.sh success'
+        } catch (err) {
+          echo "Skipping workspace-dependent success steps: ${err.getMessage()}"
+        }
+      }
       emailext(
           to: "${NOTIFICATION_EMAILS}",
           subject: "✅ Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
@@ -84,7 +88,13 @@ pipeline {
         )
     }
     unstable {
-        sh 'bash scripts/ci/notify.sh unstable'
+      script {
+        try {
+          sh 'bash scripts/ci/notify.sh unstable'
+        } catch (err) {
+          echo "Skipping workspace-dependent unstable steps: ${err.getMessage()}"
+        }
+      }
       emailext(
           to: "${NOTIFICATION_EMAILS}",
           subject: "⚠️ Build Unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
@@ -104,7 +114,13 @@ pipeline {
         )
     }
     failure {
-        sh 'bash scripts/ci/notify.sh failure'
+      script {
+        try {
+          sh 'bash scripts/ci/notify.sh failure'
+        } catch (err) {
+          echo "Skipping workspace-dependent failure steps: ${err.getMessage()}"
+        }
+      }
       emailext(
           to: "${NOTIFICATION_EMAILS}",
           subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
@@ -125,8 +141,14 @@ pipeline {
         )
     }
     always {
-      archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
-      junit testResults: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml', allowEmptyResults: true
+      script {
+        try {
+          archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
+          junit testResults: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml', allowEmptyResults: true
+        } catch (err) {
+          echo "Skipping workspace-dependent archive/junit steps: ${err.getMessage()}"
+        }
+      }
     }
   }
 }
