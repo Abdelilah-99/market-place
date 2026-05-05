@@ -26,6 +26,7 @@ pipeline {
       steps {
         checkout scm
         sh 'mkdir -p "${CI_STATE_DIR}"'
+        sh 'echo "=== Verifying Git Repository ===" && pwd && ls -la && git remote -v && git log --oneline -1 && git status'
       }
     }
 
