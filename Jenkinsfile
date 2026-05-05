@@ -64,7 +64,7 @@ pipeline {
 
   post {
     success {
-      node('any') {
+      node {
         sh 'git rev-parse HEAD > "${LAST_SUCCESSFUL_COMMIT_FILE}"'
         sh 'bash scripts/ci/notify.sh success'
         emailext(
@@ -86,7 +86,7 @@ pipeline {
       }
     }
     unstable {
-      node('any') {
+      node {
         sh 'bash scripts/ci/notify.sh unstable'
         emailext(
           to: "${NOTIFICATION_EMAILS}",
@@ -108,7 +108,7 @@ pipeline {
       }
     }
     failure {
-      node('any') {
+      node {
         sh 'bash scripts/ci/notify.sh failure'
         emailext(
           to: "${NOTIFICATION_EMAILS}",
@@ -131,7 +131,7 @@ pipeline {
       }
     }
     always {
-      node('any') {
+      node {
         archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
         junit testResults: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml', allowEmptyResults: true
       }
