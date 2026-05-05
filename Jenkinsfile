@@ -18,7 +18,7 @@ pipeline {
     SMTP_SERVER = 'smtp.gmail.com'
     SMTP_PORT = '587'
     SMTP_USERNAME = credentials('gmail-smtp-username-v2')
-    SMTP_PASSWORD = credentials('gmail-smtp-password')
+    SMTP_PASSWORD = credentials('gmail-smtp-username-v2')
   }
 
   stages {
