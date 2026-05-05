@@ -27,7 +27,7 @@ describe('MediaService', () => {
   });
 
   // ============================================
-  // SERVICE CREATION
+  // SERVICE CREATION                            
   // ============================================
 
   it('should create the media service', () => {
