@@ -64,10 +64,9 @@ pipeline {
 
   post {
     success {
-      node('master') {
-        sh 'git rev-parse HEAD > "${LAST_SUCCESSFUL_COMMIT_FILE}"'
-        sh 'bash scripts/ci/notify.sh success'
-        emailext(
+      sh 'git rev-parse HEAD > "${LAST_SUCCESSFUL_COMMIT_FILE}"'
+      sh 'bash scripts/ci/notify.sh success'
+      emailext(
           to: "${NOTIFICATION_EMAILS}",
           subject: "✅ Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
           body: """
@@ -83,12 +82,10 @@ pipeline {
           """,
           mimeType: 'text/plain'
         )
-      }
     }
     unstable {
-      node('master') {
         sh 'bash scripts/ci/notify.sh unstable'
-        emailext(
+      emailext(
           to: "${NOTIFICATION_EMAILS}",
           subject: "⚠️ Build Unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
           body: """
@@ -105,12 +102,10 @@ pipeline {
           """,
           mimeType: 'text/plain'
         )
-      }
     }
     failure {
-      node('master') {
         sh 'bash scripts/ci/notify.sh failure'
-        emailext(
+      emailext(
           to: "${NOTIFICATION_EMAILS}",
           subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
           body: """
@@ -131,10 +126,8 @@ pipeline {
       }
     }
     always {
-      node('master') {
-        archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
-        junit testResults: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml', allowEmptyResults: true
-      }
+      archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
+      junit testResults: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml', allowEmptyResults: true
     }
   }
 }
