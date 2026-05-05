@@ -123,7 +123,6 @@ pipeline {
           """,
           mimeType: 'text/plain'
         )
-      }
     }
     always {
       archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
