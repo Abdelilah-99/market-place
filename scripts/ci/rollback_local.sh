@@ -26,7 +26,22 @@ fi
 
 compose_up() {
   local compose_file="$1"
-  docker compose -f "${TEMP_DIR}/${compose_file}" up -d --build
+  local full_path="${TEMP_DIR}/${compose_file}"
+  
+  if [[ ! -f "${full_path}" ]]; then
+    echo "[ERROR] Compose file not found: ${full_path}"
+    return 1
+  fi
+  
+  # Try docker compose (v2) first, fall back to docker-compose (v1)
+  if command -v docker &> /dev/null && docker compose --version &>/dev/null 2>&1; then
+    docker compose -f "${full_path}" up -d --build
+  elif command -v docker-compose &> /dev/null; then
+    docker-compose -f "${full_path}" up -d --build
+  else
+    echo "[ERROR] Neither 'docker compose' nor 'docker-compose' found"
+    return 1
+  fi
 }
 
 compose_up "eureka-server/docker-compose.yaml"

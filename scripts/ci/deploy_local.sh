@@ -11,8 +11,23 @@ mkdir -p "${STATE_DIR}"
 
 compose_up() {
   local compose_file="$1"
+  
+  if [[ ! -f "${compose_file}" ]]; then
+    echo "[ERROR] Compose file not found: ${compose_file}"
+    return 1
+  fi
+  
   echo "[CD] Applying ${compose_file}"
-  docker-compose -f "${compose_file}" up -d --build
+  
+  # Try docker compose (v2) first, fall back to docker-compose (v1)
+  if command -v docker &> /dev/null && docker compose --version &>/dev/null 2>&1; then
+    docker compose -f "${compose_file}" up -d --build
+  elif command -v docker-compose &> /dev/null; then
+    docker-compose -f "${compose_file}" up -d --build
+  else
+    echo "[ERROR] Neither 'docker compose' nor 'docker-compose' found"
+    return 1
+  fi
 }
 
 if ! docker network inspect shared-net >/dev/null 2>&1; then
