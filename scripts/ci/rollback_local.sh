@@ -20,6 +20,20 @@ echo "[CD] Rolling back deployment to commit ${TARGET_COMMIT}"
 
 git archive "${TARGET_COMMIT}" | tar -x -C "${TEMP_DIR}"
 
+compose_runner() {
+  if command -v docker-compose >/dev/null 2>&1 && docker-compose version >/dev/null 2>&1; then
+    echo "docker-compose"
+    return 0
+  fi
+
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    echo "docker compose"
+    return 0
+  fi
+
+  return 1
+}
+
 if ! docker network inspect shared-net >/dev/null 2>&1; then
   docker network create shared-net
 fi
@@ -33,14 +47,16 @@ compose_up() {
     return 1
   fi
   
-  # Try docker compose (v2) first, fall back to docker-compose (v1)
-  if command -v docker &> /dev/null && docker compose --version &>/dev/null 2>&1; then
-    docker compose -f "${full_path}" up -d --build
-  elif command -v docker-compose &> /dev/null; then
+  local compose_tool
+  if ! compose_tool="$(compose_runner)"; then
+    echo "[ERROR] Neither a working 'docker-compose' nor 'docker compose' was found"
+    return 1
+  fi
+
+  if [[ "${compose_tool}" == "docker-compose" ]]; then
     docker-compose -f "${full_path}" up -d --build
   else
-    echo "[ERROR] Neither 'docker compose' nor 'docker-compose' found"
-    return 1
+    docker compose -f "${full_path}" up -d --build
   fi
 }
 

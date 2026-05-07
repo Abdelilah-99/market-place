@@ -9,10 +9,36 @@ FRONTEND_LOG_FILE="${STATE_DIR}/frontend.log"
 
 mkdir -p "${STATE_DIR}"
 
+compose_runner() {
+  if command -v docker-compose >/dev/null 2>&1 && docker-compose version >/dev/null 2>&1; then
+    echo "docker-compose"
+    return 0
+  fi
+
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    echo "docker compose"
+    return 0
+  fi
+
+  return 1
+}
+
 compose_up() {
   local compose_file="$1"
   echo "[CD] Applying ${compose_file}"
-  docker compose "${compose_file}" up -d --build
+
+  local compose_tool
+  if ! compose_tool="$(compose_runner)"; then
+    echo "[ERROR] Neither a working 'docker-compose' nor 'docker compose' was found"
+    return 1
+  fi
+
+  echo "[CD] Using ${compose_tool}"
+  if [[ "${compose_tool}" == "docker-compose" ]]; then
+    docker-compose -f "${compose_file}" up -d --build
+  else
+    docker compose -f "${compose_file}" up -d --build
+  fi
 }
 
 if ! docker network inspect shared-net >/dev/null 2>&1; then
