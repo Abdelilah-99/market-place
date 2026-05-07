@@ -9,7 +9,7 @@ services:
     ports:
       - "8089:8080"
       - "50000:50000"
-      - "4200:4200"
+      - "5006:4200"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
