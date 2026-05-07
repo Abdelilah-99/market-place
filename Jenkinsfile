@@ -69,23 +69,31 @@ pipeline {
         } catch (err) {
           echo "Skipping workspace-dependent success steps: ${err.getMessage()}"
         }
+
+        try {
+          emailext(
+            to: "${NOTIFICATION_EMAILS}",
+            subject: "Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: """
+            Build Status: SUCCESS
+
+            Job: ${env.JOB_NAME}
+            Build Number: ${env.BUILD_NUMBER}
+            Build URL: ${env.BUILD_URL}
+            Commit: ${env.GIT_COMMIT}
+            Branch: ${env.GIT_BRANCH}
+
+            All tests passed successfully!
+            """,
+            mimeType: 'text/plain'
+          )
+        } catch (mailErr) {
+          echo "emailext failed in success block: ${mailErr.getMessage()}"
+          mail to: "${NOTIFICATION_EMAILS}",
+               subject: "Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+               body: "Build Status: SUCCESS\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"
+        }
       }
-      emailext(
-          to: "${NOTIFICATION_EMAILS}",
-          subject: "✅ Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-          body: """
-          Build Status: SUCCESS
-
-          Job: ${env.JOB_NAME}
-          Build Number: ${env.BUILD_NUMBER}
-          Build URL: ${env.BUILD_URL}
-          Commit: ${env.GIT_COMMIT}
-          Branch: ${env.GIT_BRANCH}
-
-          All tests passed successfully!
-          """,
-          mimeType: 'text/plain'
-        )
     }
     unstable {
       script {
@@ -94,24 +102,32 @@ pipeline {
         } catch (err) {
           echo "Skipping workspace-dependent unstable steps: ${err.getMessage()}"
         }
+
+        try {
+          emailext(
+            to: "${NOTIFICATION_EMAILS}",
+            subject: "Build Unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: """
+            Build Status: UNSTABLE
+
+            Job: ${env.JOB_NAME}
+            Build Number: ${env.BUILD_NUMBER}
+            Build URL: ${env.BUILD_URL}
+            Commit: ${env.GIT_COMMIT}
+            Branch: ${env.GIT_BRANCH}
+
+            Some tests failed or warnings were detected.
+            Please review the build logs for details.
+            """,
+            mimeType: 'text/plain'
+          )
+        } catch (mailErr) {
+          echo "emailext failed in unstable block: ${mailErr.getMessage()}"
+          mail to: "${NOTIFICATION_EMAILS}",
+               subject: "Build Unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+               body: "Build Status: UNSTABLE\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"
+        }
       }
-      emailext(
-          to: "${NOTIFICATION_EMAILS}",
-          subject: "⚠️ Build Unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-          body: """
-          Build Status: UNSTABLE
-
-          Job: ${env.JOB_NAME}
-          Build Number: ${env.BUILD_NUMBER}
-          Build URL: ${env.BUILD_URL}
-          Commit: ${env.GIT_COMMIT}
-          Branch: ${env.GIT_BRANCH}
-
-          Some tests failed or warnings were detected.
-          Please review the build logs for details.
-          """,
-          mimeType: 'text/plain'
-        )
     }
     failure {
       script {
@@ -120,25 +136,33 @@ pipeline {
         } catch (err) {
           echo "Skipping workspace-dependent failure steps: ${err.getMessage()}"
         }
+
+        try {
+          emailext(
+            to: "${NOTIFICATION_EMAILS}",
+            subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: """
+            Build Status: FAILED
+
+            Job: ${env.JOB_NAME}
+            Build Number: ${env.BUILD_NUMBER}
+            Build URL: ${env.BUILD_URL}
+            Commit: ${env.GIT_COMMIT}
+            Branch: ${env.GIT_BRANCH}
+
+            The build has failed. Please check the logs immediately.
+
+            Review the full details at: ${env.BUILD_URL}console
+            """,
+            mimeType: 'text/plain'
+          )
+        } catch (mailErr) {
+          echo "emailext failed in failure block: ${mailErr.getMessage()}"
+          mail to: "${NOTIFICATION_EMAILS}",
+               subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+               body: "Build Status: FAILED\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}\nSee: ${env.BUILD_URL}console"
+        }
       }
-      emailext(
-          to: "${NOTIFICATION_EMAILS}",
-          subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-          body: """
-          Build Status: FAILED
-
-          Job: ${env.JOB_NAME}
-          Build Number: ${env.BUILD_NUMBER}
-          Build URL: ${env.BUILD_URL}
-          Commit: ${env.GIT_COMMIT}
-          Branch: ${env.GIT_BRANCH}
-
-          The build has failed. Please check the logs immediately.
-
-          Review the full details at: ${env.BUILD_URL}console
-          """,
-          mimeType: 'text/plain'
-        )
     }
     always {
       script {
