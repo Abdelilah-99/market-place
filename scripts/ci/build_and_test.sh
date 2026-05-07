@@ -252,22 +252,27 @@ else
 
   if should_run_changes "eureka-server/*"; then
     run_eureka=true
+    run_shared=true  # Ensure shared is built if eureka depends on it
   fi
 
   if should_run_changes "gateway/*"; then
     run_gateway=true
+    run_shared=true  # Ensure shared is built if gateway depends on it
   fi
 
   if should_run_changes "products-service/*"; then
     run_products=true
+    run_shared=true  # Ensure shared is built if products depends on it
   fi
 
   if should_run_changes "media-service/*"; then
     run_media=true
+    run_shared=true  # Ensure shared is built if media depends on it
   fi
 
   if should_run_changes "users-service/*"; then
     run_users=true
+    run_shared=true  # Ensure shared is built if users depends on it
   fi
 
   if should_run_changes "frontend/*"; then
@@ -277,6 +282,10 @@ fi
 
 if [[ "${run_shared}" == true || "${run_eureka}" == true || "${run_gateway}" == true || "${run_products}" == true || "${run_media}" == true || "${run_users}" == true ]]; then
   ensure_java_21
+  
+  # Clear stale Maven negative cache for shared module to avoid resolution issues
+  echo "[CI] Clearing stale Maven cache for com.example:shared"
+  rm -rf ~/.m2/repository/com/example/shared 2>/dev/null || true
 fi
 
 if [[ "${run_shared}" == true ]]; then
