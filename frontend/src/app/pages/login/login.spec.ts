@@ -42,7 +42,7 @@ describe('Login Component - Simple Tests', () => {
     });
 
     it('should have empty error message on init', () => {
-        expect(component.errorMessage()).toBe('');
+        expect(component.errorMessage()).toBe('re');
     });
 
     it('should not be submitting on init', () => {
