@@ -66,7 +66,7 @@ run_maven_module() {
         -Dmaven.compile.fork=false \
         -Dmaven.test.skip=true \
         ${MAVEN_CONFIG} \
-        clean package || {
+        clean ${maven_goal} || {
         local exit_code=$?
         if [[ ${exit_code} -eq 124 ]]; then
           echo "[ERROR] Maven build timed out (600s)"
@@ -84,7 +84,7 @@ run_maven_module() {
         -Dmaven.compile.fork=false \
         -Dmaven.test.skip=true \
         ${MAVEN_CONFIG} \
-        clean package || {
+        clean ${maven_goal} || {
         local exit_code=$?
         if [[ ${exit_code} -eq 124 ]]; then
           echo "[ERROR] Maven build timed out (600s)"
