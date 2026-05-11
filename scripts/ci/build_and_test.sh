@@ -61,8 +61,6 @@ run_maven_module() {
       # Skip tests during build to reduce CPU load
       # Tests should be run in a separate step if needed
       timeout 600 ./mvnw -B \
-        -DskipTests \
-        -DskipITs \
         -Dmaven.compile.fork=false \
         -Dmaven.test.skip=true \
         ${MAVEN_CONFIG} \
@@ -79,8 +77,6 @@ run_maven_module() {
     (
       cd "${module_dir}"
       timeout 600 mvn -B \
-        -DskipTests \
-        -DskipITs \
         -Dmaven.compile.fork=false \
         -Dmaven.test.skip=true \
         ${MAVEN_CONFIG} \
@@ -117,8 +113,6 @@ run_gradle_module() {
     
     # Skip tests during build to reduce CPU load
     timeout 600 ./gradlew clean build \
-      -x test \
-      --no-daemon \
       -Dorg.gradle.workers.max=1 || {
       local exit_code=$?
       if [[ ${exit_code} -eq 124 ]]; then
