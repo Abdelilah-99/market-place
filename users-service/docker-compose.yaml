@@ -3,8 +3,8 @@ services:
     image: mongo:latest
     container_name: user-mongodb
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=123123
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - mongo_data:/data/db
     networks:
@@ -19,16 +19,16 @@ services:
     # ports:
       # - "8080:8080"
     environment:
-      - JWT_SECRET=4cfeee175e498e32039c7e804957663cb8e09b58a0902bf56222acab991cb4bd955bdf3c25942131e432c59be57d411c31f25c6432bd18fd8f006b8913636da2
-      - JWT_EXP=3600000
-      - MONGODB_USERNAME=admin
-      - MONGODB_PWD=123123
-      - MONGODB_HOST=user-mongodb
-      - MONGODB_PORT=27017
-      - MONGO_DB=users_db
-      - MONGODB_AUTH=admin
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - DISCOVERY=http://eureka-server:8761/eureka
+      - JWT_SECRET=${SECURITY_JWT_SECRET_KEY}
+      - JWT_EXP=${JWT_EXP}
+      - MONGODB_USERNAME=${MONGODB_USERNAME}
+      - MONGODB_PWD=${MONGODB_PWD}
+      - MONGODB_HOST=${MONGODB_HOST}
+      - MONGODB_PORT=${MONGODB_PORT}
+      - MONGO_DB=${MONGO_DB}
+      - MONGODB_AUTH=${MONGODB_AUTH}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      - DISCOVERY=${DISCOVERY}
 
     networks:
       - shared-net
