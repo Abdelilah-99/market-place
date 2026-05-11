@@ -18,6 +18,8 @@ services:
     container_name: users-service
     # ports:
       # - "8080:8080"
+    env_file:
+      - .env
     environment:
       - JWT_SECRET=${SECURITY_JWT_SECRET_KEY}
       - JWT_EXP=${JWT_EXP}

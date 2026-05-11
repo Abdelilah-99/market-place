@@ -6,6 +6,8 @@ services:
     container_name: gateway
     ports:
       - "10000:10000"
+    env_file:
+      - .env
     environment:
       DISCOVERY : http://eureka-server:8761/eureka
       REDIS-HOST : redis

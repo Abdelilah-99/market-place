@@ -4,6 +4,8 @@ services:
       context: ./database
       dockerfile: dockerfile
     container_name: media-service-mongodb
+    env_file:
+      - .env
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
@@ -20,13 +22,14 @@ services:
     container_name: media-service
     ports:
       - "8888:8888"
+    env_file:
+      - .env
     environment:
       SPRING_APPLICATION_NAME: media
       SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       DISCOVERY : http://eureka-server:8761/eureka
       JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/app/resources/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=${TRUST_STORE_PWD} -Djavax.net.ssl.trustStoreType=${KEY_STORE_TYPE:PKCS12} -Djavax.net.ssl.keyStore=/app/resources/certs/users-service.p12 -Djavax.net.ssl.keyStorePassword=${KEY_STORE_PWD} -Djavax.net.ssl.keyStoreType=${KEY_STORE_TYPE:PKCS12}
-
     depends_on:
       - media-service-mongodb
     volumes:
