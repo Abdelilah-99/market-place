@@ -119,7 +119,6 @@ run_gradle_module() {
     timeout 600 ./gradlew clean build \
       -x test \
       --no-daemon \
-      --parallel=false \
       -Dorg.gradle.workers.max=1 || {
       local exit_code=$?
       if [[ ${exit_code} -eq 124 ]]; then
