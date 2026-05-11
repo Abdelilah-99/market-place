@@ -34,11 +34,17 @@ compose_up() {
   fi
 
   echo "[CD] Using ${compose_tool}"
-  if [[ "${compose_tool}" == "docker-compose" ]]; then
-    docker-compose -f "${compose_file}" up -d --build
-  else
-    docker compose -f "${compose_file}" up -d --build
-  fi
+  local compose_dir
+  compose_dir="$(dirname "${compose_file}")"
+
+  (
+    cd "${compose_dir}"
+    if [[ "${compose_tool}" == "docker-compose" ]]; then
+      docker-compose -f "$(basename "${compose_file}")" up -d --build
+    else
+      docker compose -f "$(basename "${compose_file}")" up -d --build
+    fi
+  )
 }
 
 if ! docker network inspect shared-net >/dev/null 2>&1; then
