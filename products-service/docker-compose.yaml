@@ -21,7 +21,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - .env.products
     environment:
       SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
