@@ -23,7 +23,7 @@ services:
     ports:
       - "8888:8888"
     env_file:
-      - .env
+      - .env.media
     environment:
       SPRING_APPLICATION_NAME: media
       SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}

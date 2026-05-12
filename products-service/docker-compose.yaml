@@ -3,7 +3,7 @@ services:
     build: ./database
     container_name: products-service-mongodb
     env_file:
-      - .env
+      - .env.products
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}

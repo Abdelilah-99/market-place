@@ -2,6 +2,8 @@ services:
   user-mongodb:
     image: mongo:latest
     container_name: user-mongodb
+    env_file:
+      - .env.users
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
