@@ -28,6 +28,28 @@ pipeline {
       }
     }
 
+    stage('Setup Env Files') {
+      steps {
+        withCredentials([
+            file(credentialsId: 'env-users',         variable: 'USR_ENV'),
+            file(credentialsId: 'env-products',       variable: 'PRDCT_ENV'),
+            file(credentialsId: 'env-media',  variable: 'MDA_ENV')
+        ]) {
+        sh '''
+            mkdir -p ./usr-service ./prdct-service ./mdia-service
+
+            cp $USR_ENV    ./usr-service/.env
+            cp $PRDCT_ENV  ./prdct-service/.env
+            cp $MDA_ENV    ./mdia-service/.env
+
+            chmod 600 ./usr-service/.env
+            chmod 600 ./prdct-service/.env
+            chmod 600 ./mdia-service/.env
+          '''
+        }
+      }
+    }
+
     stage('Build and Test') {
       steps {
         sh 'bash scripts/ci/build_and_test.sh'
@@ -173,6 +195,12 @@ pipeline {
           echo "Skipping workspace-dependent archive/junit steps: ${err.getMessage()}"
         }
       }
+
+        sh '''
+          rm -f ./usr-service/.env
+          rm -f ./prdct-service/.env
+          rm -f ./mdia-service/.env
+        '''
     }
   }
 }
