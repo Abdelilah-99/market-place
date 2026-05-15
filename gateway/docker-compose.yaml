@@ -4,6 +4,8 @@ services:
       context: ./gateway
       dockerfile: Dockerfile
     container_name: gateway
+    env_file:
+      - .env.gateway
     ports:
       - "10000:10000"
     environment:
