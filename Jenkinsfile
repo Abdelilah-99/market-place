@@ -39,7 +39,7 @@ pipeline {
             mkdir -p ./users-service ./products-service ./media-service
 
             cp "$USR_ENV"    ./users-service/.env.users
-            cp "$PRDCT_ENV"  ./products-service/.env.products
+            cp "$PRDCT_ENV"  ./products-service/.env.product
             cp "$MDA_ENV"    ./media-service/.env.media
 
             chmod 600 ./users-service/.env.users
