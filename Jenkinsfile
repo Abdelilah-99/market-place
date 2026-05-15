@@ -32,7 +32,7 @@ pipeline {
       steps {
         withCredentials([
             file(credentialsId: 'env-users', variable: 'USR_ENV'),
-            file(credentialsId: 'env-products', variable: 'PRDCT_ENV'),
+            file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
             file(credentialsId: 'env-media', variable: 'MDA_ENV')
         ]) {
         sh '''
