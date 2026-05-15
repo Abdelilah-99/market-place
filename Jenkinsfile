@@ -36,10 +36,17 @@ pipeline {
             file(credentialsId: 'env-media', variable: 'MDA_ENV')
         ]) {
         sh '''
+          set -euo pipefail
+
             mkdir -p ./users-service ./products-service ./media-service
 
+          rm -f ./users-service/.env.users
             cp "$USR_ENV"    ./users-service/.env.users
+
+          rm -f ./products-service/.env.product
             cp "$PRDCT_ENV"  ./products-service/.env.product
+
+          rm -f ./media-service/.env.media
             cp "$MDA_ENV"    ./media-service/.env.media
 
             chmod 600 ./users-service/.env.users
