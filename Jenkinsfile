@@ -45,12 +45,15 @@ pipeline {
 
           rm -f ./products-service/.env.product
             cp "$PRDCT_ENV"  ./products-service/.env.product
+          rm -f ./products-service/.env.products
+            cp "$PRDCT_ENV"  ./products-service/.env.products
 
           rm -f ./media-service/.env.media
             cp "$MDA_ENV"    ./media-service/.env.media
 
             chmod 600 ./users-service/.env.users
             chmod 600 ./products-service/.env.product
+            chmod 600 ./products-service/.env.products
             chmod 600 ./media-service/.env.media
           '''
         }
@@ -206,6 +209,7 @@ pipeline {
         sh '''
           rm -f ./users-service/.env.users
           rm -f ./products-service/.env.product
+          rm -f ./products-service/.env.products
           rm -f ./media-service/.env.media
         '''
     }
