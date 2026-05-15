@@ -3,11 +3,7 @@ services:
     build: ./database
     container_name: products-service-mongodb
     env_file:
-      - .env.products
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-DB}
+      - .env.product
     volumes:
       - mongo_data:/data/db
     networks:
@@ -21,12 +17,11 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env.products
+      - .env.product
     environment:
-      SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      DISCOVERY : http://eureka-server:8761/eureka
-      JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/app/resources/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=${TRUST_STORE_PWD} -Djavax.net.ssl.trustStoreType=${KEY_STORE_TYPE:-PKCS12} -Djavax.net.ssl.keyStore=/app/resources/certs/users-service.p12 -Djavax.net.ssl.keyStorePassword=${KEY_STORE_PWD} -Djavax.net.ssl.keyStoreType=${KEY_STORE_TYPE:-PKCS12}
+      DISCOVERY: http://eureka-server:8761/eureka
+      JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/app/resources/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=123456_certTest -Djavax.net.ssl.trustStoreType=PKCS12 -Djavax.net.ssl.keyStore=/app/resources/certs/users-service.p12 -Djavax.net.ssl.keyStorePassword=123123 -Djavax.net.ssl.keyStoreType=PKCS12
 
     depends_on:
       - products-service-mongodb
