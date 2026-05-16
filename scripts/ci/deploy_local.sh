@@ -75,6 +75,10 @@ start_frontend() {
   echo "[CD] Starting frontend on port 4200"
   (
     cd "${frontend_dir}"
+    if [[ ! -x "node_modules/.bin/ng" ]]; then
+      echo "[CD] Installing frontend dependencies"
+      npm ci
+    fi
     nohup npm run start -- --host 0.0.0.0 --port 4200 > "${FRONTEND_LOG_FILE}" 2>&1 &
     echo $! > "${FRONTEND_PID_FILE}"
   )
