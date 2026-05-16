@@ -33,15 +33,19 @@ pipeline {
         withCredentials([
             file(credentialsId: 'env-users', variable: 'USR_ENV'),
             file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
+            file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
             file(credentialsId: 'env-media', variable: 'MDA_ENV')
         ]) {
         sh '''
           set -euo pipefail
 
-            mkdir -p ./users-service ./products-service ./media-service
+            mkdir -p ./users-service ./products-service ./media-service ./gateway-service
 
           rm -f ./users-service/.env.users
             cp "$USR_ENV"    ./users-service/.env.users
+
+          rm -f ./gateway-service/.env.gateway
+            cp "$GATEWAY_ENV"    ./gateway-service/.env.gateway
 
           rm -f ./products-service/.env.product
             cp "$PRDCT_ENV"  ./products-service/.env.product
@@ -52,6 +56,7 @@ pipeline {
             cp "$MDA_ENV"    ./media-service/.env.media
 
             chmod 600 ./users-service/.env.users
+            chmod 600 ./gateway-service/.env.gateway
             chmod 600 ./products-service/.env.product
             chmod 600 ./products-service/.env.products
             chmod 600 ./media-service/.env.media
@@ -208,6 +213,7 @@ pipeline {
 
         sh '''
           rm -f ./users-service/.env.users
+          rm -f ./gateway-service/.env.gateway
           rm -f ./products-service/.env.product
           rm -f ./products-service/.env.products
           rm -f ./media-service/.env.media
