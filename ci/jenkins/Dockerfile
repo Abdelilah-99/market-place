@@ -12,7 +12,7 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && groupadd -f docker \
-  && (groupmod -g 981 docker || true) \
+  && (groupmod -g 1001 docker || true) \
   && usermod -aG docker jenkins
 
 USER jenkins
