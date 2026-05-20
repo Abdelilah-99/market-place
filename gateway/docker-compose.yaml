@@ -3,6 +3,8 @@ services:
     build:
       context: ./gateway
       dockerfile: Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
     container_name: gateway
     env_file:
       - .env.gateway

@@ -6,7 +6,7 @@
 
   <groupId>com.example</groupId>
   <artifactId>shared</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -14,11 +14,20 @@
       <spring.boot.version>3.3.0</spring.boot.version>
   </properties>
 
+  <distributionManagement>
+  <repository>
+    <id>github</id>
+    <name>GitHub Packages</name>
+    <url>https://maven.pkg.github.com/Abdelilah-99/market-place</url>
+  </repository>
+</distributionManagement>
+
   <dependencies>
       <!-- Spring Web for HttpStatus -->
       <dependency>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-starter-web</artifactId>
+          <optional>true</optional>
           <version>${spring.boot.version}</version>
       </dependency>
 

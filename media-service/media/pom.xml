@@ -26,6 +26,13 @@
         <spring-framework.version>6.2.5</spring-framework.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/Abdelilah-99/market-place</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

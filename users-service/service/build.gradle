@@ -15,7 +15,13 @@ java {
 }
 
 repositories {
-    mavenLocal()
+    maven {
+        url "https://maven.pkg.github.com/Abdelilah-99/market-place"
+        credentials {
+            username = System.getenv("GITHUB_USERNAME")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
     mavenCentral()
 }
 
@@ -30,7 +36,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'        
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.kafka:spring-kafka'
-    implementation 'com.example:shared:1.0.0'
+    implementation 'com.example:shared:1.0.1'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
