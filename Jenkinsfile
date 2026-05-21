@@ -26,22 +26,54 @@ pipeline {
       }
     }
 
+    /* withCredentials([file(credentialsId:'truststore-file', variable:'TFILE')]) {
+sh 'mkdir -p build/certs && cp "$TFILE" build/certs/truststore.p12'
+sh 'docker build -t repo/app:${TAG} -f Dockerfile build'
+sh 'rm -f build/certs/truststore.p12'
+}
+ */
+
     stage('Setup Env Files') {
       steps {
         withCredentials([
           file(credentialsId: 'env-users',   variable: 'USR_ENV'),
           file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
           file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
-          file(credentialsId: 'env-media',   variable: 'MDA_ENV')
+          file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
+          file(credentialsId: 'truststore', variable: 'TRUSTSTORE'),
+          file(credentialsId: 'gate-cert', variable: 'GATE_CERT'),
+          file(credentialsId: 'prod-cert', variable: 'PROD_CERT'),
+          file(credentialsId: 'media-cert', variable: 'MEDIA_CERT'),
+          file(credentialsId: 'usr-cert', variable: 'USR_CERT')
         ]) {
           sh '''
             set -euo pipefail
-            mkdir -p ./users-service ./products-service ./media-service ./gateway
+            mkdir -p certs gateway/certs products-service/certs media-service/certs users-service/certs
 
             cp "$USR_ENV"     ./users-service/.env.users
             cp "$GATEWAY_ENV" ./gateway/.env.gateway
             cp "$PRDCT_ENV"   ./products-service/.env.product
             cp "$MDA_ENV"     ./media-service/.env.media
+            
+            declare -A files=(
+              ["TRUSTSTORE"]="certs/truststore.p12"
+              ["GATE_CERT"]="gateway/certs/gateway.p12"
+              ["PROD_CERT"]="products-service/certs/products-service.p12"
+              ["MEDIA_CERT"]="media-service/certs/media-service.p12"
+              ["USR_CERT"]="users-service/certs/users-service.p12"
+            )
+
+            for key in "${!files[@]}"; do
+              src=${!key}            # indirect expansion: variable named by $key (e.g. $TRUSTSTORE)
+              dest=${files[$key]}
+              if [ -n "$src" ] && [ -f "$src" ]; then
+                mkdir -p "$(dirname "$dest")"
+                cp "$src" "$dest"
+                chmod 600 "$dest"
+              else
+                echo "Warning: credential $key not provided or file missing: $src"
+              fi
+            done
 
             chmod 600 \
               ./users-service/.env.users \
@@ -103,11 +135,16 @@ pipeline {
         }
       }
       sh '''
-        rm -f \
+        rm -rf \
           ./users-service/.env.users \
           ./gateway/.env.gateway \
           ./products-service/.env.product \
-          ./media-service/.env.media
+          ./media-service/.env.media \
+          ./certs \
+          ./gateway/certs \
+          ./products-service/certs \
+          ./media-service/certs \
+          ./users-service/certs
       '''
     }
   }

@@ -18,10 +18,10 @@ services:
       - "8000:8000"
     env_file:
       - .env.product
-    environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      DISCOVERY: http://eureka-server:8761/eureka
-      JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/app/resources/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=123456_certTest -Djavax.net.ssl.trustStoreType=PKCS12 -Djavax.net.ssl.keyStore=/app/resources/certs/users-service.p12 -Djavax.net.ssl.keyStorePassword=123123 -Djavax.net.ssl.keyStoreType=PKCS12
+    # environment:
+    #   SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    #   DISCOVERY: http://eureka-server:8761/eureka
+    #   JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/app/resources/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=123456_certTest -Djavax.net.ssl.trustStoreType=PKCS12 -Djavax.net.ssl.keyStore=/app/resources/certs/users-service.p12 -Djavax.net.ssl.keyStorePassword=123123 -Djavax.net.ssl.keyStoreType=PKCS12
 
     depends_on:
       - products-service-mongodb
