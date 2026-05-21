@@ -1,2 +1,18 @@
-# Certificate artifacts
-# **/certs/
+# Certificate artifacts (all keystores, truststores, and CSR/keys except in scripts)
+gateway/certs/
+gateway/gateway/src/main/resources/certs/
+products-service/certs/
+products-service/products/src/main/resources/certs/
+media-service/certs/
+media-service/media/src/main/resources/certs/
+users-service/certs/
+users-service/service/src/main/resources/certs/
+eureka-server/certs/
+eureka-server/eureka/src/main/resources/certs/
+
+# Environment files
+.env
+.env.users
+.env.product
+.env.gateway
+.env.media
