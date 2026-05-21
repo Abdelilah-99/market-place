@@ -26,13 +26,6 @@ pipeline {
       }
     }
 
-    /* withCredentials([file(credentialsId:'truststore-file', variable:'TFILE')]) {
-sh 'mkdir -p build/certs && cp "$TFILE" build/certs/truststore.p12'
-sh 'docker build -t repo/app:${TAG} -f Dockerfile build'
-sh 'rm -f build/certs/truststore.p12'
-}
- */
-
     stage('Setup Env Files') {
       steps {
         withCredentials([
@@ -74,6 +67,34 @@ sh 'rm -f build/certs/truststore.p12'
                 echo "Warning: credential $key not provided or file missing: $src"
               fi
             done
+
+            # Verify that the credential temp file and the workspace copy match
+            if [ -z "${PROD_CERT:-}" ]; then
+              echo "ERROR: PROD_CERT variable is not set" >&2
+              exit 1
+            fi
+
+            if [ ! -f "$PROD_CERT" ]; then
+              echo "ERROR: credential temp file not found: $PROD_CERT" >&2
+              exit 1
+            fi
+
+            if [ ! -f products-service/certs/products-service.p12 ]; then
+              echo "ERROR: workspace copy not found: products-service/certs/products-service.p12" >&2
+              exit 1
+            fi
+
+            prod_sum=$(sha256sum "$PROD_CERT" | awk '{print $1}')
+            copy_sum=$(sha256sum products-service/certs/products-service.p12 | awk '{print $1}')
+
+            echo "PROD_CERT temp: $PROD_CERT"
+            echo "prod_sum=${prod_sum}"
+            echo "copy_sum=${copy_sum}"
+
+            if [ "$prod_sum" != "$copy_sum" ]; then
+              echo "ERROR: prod-cert mismatch between Jenkins credential and workspace copy" >&2
+              exit 1
+            fi
 
             chmod 600 \
               ./users-service/.env.users \
