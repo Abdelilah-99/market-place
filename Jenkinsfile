@@ -103,6 +103,31 @@ pipeline {
               ./media-service/.env.media
           '''
         }
+
+        // Also compute the stored credential checksum from the controller credential store
+        script {
+          // This runs on the controller and inspects the FileCredentialsImpl with id 'prod-cert'
+          try {
+            def id = 'prod-cert'
+            def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+              com.cloudbees.plugins.credentials.impl.FileCredentialsImpl.class,
+              jenkins.model.Jenkins.instance,
+              null,
+              null
+            )
+            def c = creds.find { it.id == id }
+            if (c == null) {
+              echo "Jenkins credential not found: ${id}"
+            } else {
+              def data = c.file.bytes
+              def md = java.security.MessageDigest.getInstance('SHA-256').digest(data)
+              def hex = md.collect { String.format('%02x', it) }.join()
+              echo "jenkins_store_prod_sum=${hex}"
+            }
+          } catch (err) {
+            echo "Could not compute stored credential checksum: ${err.getMessage()}"
+          }
+        }
       }
     }
 
