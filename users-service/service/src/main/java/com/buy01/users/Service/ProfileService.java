@@ -45,16 +45,19 @@ public class ProfileService {
                 : null;
 
         System.err.println("===//§§>>  " + req.uuid());
+        String AvatarUrlSTr = null;
         if (req.uuid() != null) {
             updatedAvatarUrl = req.uuid();
+            AvatarUrlSTr = updatedAvatarUrl.toString();
         }
+
         User updated = new User(
                 user.id(),
                 updatedName,
                 updatedEmail,
                 user.password(),
                 user.role(),
-                updatedAvatarUrl.toString());
+                AvatarUrlSTr);
 
         System.out.println("avatar ==================== " + req.uuid());
         User newUser = userRepository.save(updated);

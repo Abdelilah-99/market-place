@@ -15,13 +15,7 @@ java {
 }
 
 repositories {
-    maven {
-        url "https://maven.pkg.github.com/Abdelilah-99/market-place"
-        credentials {
-            username = System.getenv("GITHUB_USERNAME")
-            password = System.getenv("GITHUB_TOKEN")
-        }
-    }
+    mavenLocal()
     mavenCentral()
 }
 
