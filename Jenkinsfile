@@ -46,7 +46,7 @@ sh 'rm -f build/certs/truststore.p12'
           file(credentialsId: 'media-cert', variable: 'MEDIA_CERT'),
           file(credentialsId: 'usr-cert', variable: 'USR_CERT')
         ]) {
-          sh '''
+          bash '''
             set -euo pipefail
             mkdir -p certs gateway/certs products-service/certs media-service/certs users-service/certs
 
