@@ -101,32 +101,17 @@ pipeline {
               ./gateway/.env.gateway \
               ./products-service/.env.product \
               ./media-service/.env.media
-          '''
-        }
 
-        // Also compute the stored credential checksum from the controller credential store
-        script {
-          // This runs on the controller and inspects the FileCredentialsImpl with id 'prod-cert'
-          try {
-            def id = 'prod-cert'
-            def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
-              com.cloudbees.plugins.credentials.impl.FileCredentialsImpl.class,
-              jenkins.model.Jenkins.instance,
-              null,
-              null
-            )
-            def c = creds.find { it.id == id }
-            if (c == null) {
-              echo "Jenkins credential not found: ${id}"
-            } else {
-              def data = c.file.bytes
-              def md = java.security.MessageDigest.getInstance('SHA-256').digest(data)
-              def hex = md.collect { String.format('%02x', it) }.join()
-              echo "jenkins_store_prod_sum=${hex}"
+            # Validate Java keystore compatibility using keytool
+            echo "Validating prod-cert keystore with keytool..."
+            keytool -list -storetype PKCS12 \
+              -keystore products-service/certs/products-service.p12 \
+              -storepass 123456_certTest >/dev/null 2>&1 || {
+              echo "ERROR: prod-cert failed keytool validation" >&2
+              exit 1
             }
-          } catch (err) {
-            echo "Could not compute stored credential checksum: ${err.getMessage()}"
-          }
+            echo "prod-cert keystore validated successfully"
+          '''
         }
       }
     }
@@ -146,6 +131,26 @@ pipeline {
 
           try {
             sh 'bash scripts/ci/deploy_local.sh'
+            
+            // Post-deploy: verify cert was mounted correctly in products-service container
+            sh '''#!/usr/bin/env bash
+              set +e  # Don't exit on errors; allow us to continue even if container checks fail
+              echo "Verifying products-service cert mount..."
+              PROD_CONTAINER=$(docker ps --filter "name=products-service" --filter "status=running" -q --no-trunc | head -1)
+              if [ -z "$PROD_CONTAINER" ]; then
+                echo "Warning: products-service container not running or not found"
+              else
+                echo "Container ID: $PROD_CONTAINER"
+                MOUNTED_SUM=$(docker exec "$PROD_CONTAINER" sha256sum /app/resources/certs/products-service.p12 2>/dev/null | awk '{print $1}')
+                echo "Mounted cert checksum: ${MOUNTED_SUM:-NOT_FOUND}"
+                if [ -f products-service/certs/products-service.p12 ]; then
+                  WORKSPACE_SUM=$(sha256sum products-service/certs/products-service.p12 | awk '{print $1}')
+                  echo "Workspace cert checksum: ${WORKSPACE_SUM}"
+                  [ "$MOUNTED_SUM" = "$WORKSPACE_SUM" ] && echo "✓ Checksums match" || echo "✗ Checksums differ"
+                fi
+              fi
+              set -e
+            '''
           } catch (err) {
             if (previousCommit) {
               echo "Deployment failed — rolling back to ${previousCommit}"
