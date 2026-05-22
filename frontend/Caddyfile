@@ -1,0 +1,17 @@
+localhost {
+  root * /usr/share/caddy
+  encode gzip zstd
+
+  handle /api/* {
+    reverse_proxy https://gateway:10000 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+
+  handle {
+    try_files {path} /index.html
+    file_server
+  }
+}

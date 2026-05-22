@@ -12,9 +12,9 @@ pipeline {
   }
 
   environment {
-    CI_STATE_DIR               = "${WORKSPACE}/.jenkins-state"
+    CI_STATE_DIR                = "${WORKSPACE}/.jenkins-state"
     LAST_SUCCESSFUL_COMMIT_FILE = "${WORKSPACE}/.jenkins-state/last_successful_commit"
-    NOTIFICATION_EMAIL         = 'bouchikhiabdelilah0@gmail.com'
+    NOTIFICATION_EMAIL          = 'bouchikhiabdelilah0@gmail.com'
   }
 
   stages {
@@ -33,11 +33,11 @@ pipeline {
           file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
           file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
           file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
-          file(credentialsId: 'truststore', variable: 'TRUSTSTORE'),
-          file(credentialsId: 'gate-cert', variable: 'GATE_CERT'),
-          file(credentialsId: 'prod-cert', variable: 'PROD_CERT'),
-          file(credentialsId: 'media-cert', variable: 'MEDIA_CERT'),
-          file(credentialsId: 'usr-cert', variable: 'USR_CERT')
+          file(credentialsId: 'truststore',  variable: 'TRUSTSTORE'),
+          file(credentialsId: 'gate-cert',   variable: 'GATE_CERT'),
+          file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),
+          file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
+          file(credentialsId: 'usr-cert',    variable: 'USR_CERT')
         ]) {
           sh '''#!/usr/bin/env bash
             set -euo pipefail
@@ -47,54 +47,6 @@ pipeline {
             cp "$GATEWAY_ENV" ./gateway/.env.gateway
             cp "$PRDCT_ENV"   ./products-service/.env.product
             cp "$MDA_ENV"     ./media-service/.env.media
-            
-            declare -A files=(
-              ["TRUSTSTORE"]="certs/truststore.p12"
-              ["GATE_CERT"]="gateway/certs/gateway.p12"
-              ["PROD_CERT"]="products-service/certs/products-service.p12"
-              ["MEDIA_CERT"]="media-service/certs/media-service.p12"
-              ["USR_CERT"]="users-service/certs/users-service.p12"
-            )
-
-            for key in "${!files[@]}"; do
-              src=${!key}            # indirect expansion: variable named by $key (e.g. $TRUSTSTORE)
-              dest=${files[$key]}
-              if [ -n "$src" ] && [ -f "$src" ]; then
-                mkdir -p "$(dirname "$dest")"
-                cp "$src" "$dest"
-                chmod 600 "$dest"
-              else
-                echo "Warning: credential $key not provided or file missing: $src"
-              fi
-            done
-
-            # Verify that the credential temp file and the workspace copy match
-            if [ -z "${PROD_CERT:-}" ]; then
-              echo "ERROR: PROD_CERT variable is not set" >&2
-              exit 1
-            fi
-
-            if [ ! -f "$PROD_CERT" ]; then
-              echo "ERROR: credential temp file not found: $PROD_CERT" >&2
-              exit 1
-            fi
-
-            if [ ! -f products-service/certs/products-service.p12 ]; then
-              echo "ERROR: workspace copy not found: products-service/certs/products-service.p12" >&2
-              exit 1
-            fi
-
-            prod_sum=$(sha256sum "$PROD_CERT" | awk '{print $1}')
-            copy_sum=$(sha256sum products-service/certs/products-service.p12 | awk '{print $1}')
-
-            echo "PROD_CERT temp: $PROD_CERT"
-            echo "prod_sum=${prod_sum}"
-            echo "copy_sum=${copy_sum}"
-
-            if [ "$prod_sum" != "$copy_sum" ]; then
-              echo "ERROR: prod-cert mismatch between Jenkins credential and workspace copy" >&2
-              exit 1
-            fi
 
             chmod 600 \
               ./users-service/.env.users \
@@ -102,15 +54,19 @@ pipeline {
               ./products-service/.env.product \
               ./media-service/.env.media
 
-            # Validate Java keystore compatibility using keytool
-            echo "Validating prod-cert keystore with keytool..."
-            keytool -list -storetype PKCS12 \
-              -keystore products-service/certs/products-service.p12 \
-              -storepass 123456_certTest >/dev/null 2>&1 || {
-              echo "ERROR: prod-cert failed keytool validation" >&2
-              exit 1
-            }
-            echo "prod-cert keystore validated successfully"
+            declare -A certs=(
+              ["$TRUSTSTORE"]="certs/truststore.p12"
+              ["$GATE_CERT"]="gateway/certs/gateway.p12"
+              ["$PROD_CERT"]="products-service/certs/products-service.p12"
+              ["$MEDIA_CERT"]="media-service/certs/media-service.p12"
+              ["$USR_CERT"]="users-service/certs/users-service.p12"
+            )
+
+            for src in "${!certs[@]}"; do
+              dest="${certs[$src]}"
+              cp "$src" "$dest"
+              chmod 600 "$dest"
+            done
           '''
         }
       }
@@ -131,26 +87,6 @@ pipeline {
 
           try {
             sh 'bash scripts/ci/deploy_local.sh'
-            
-            // Post-deploy: verify cert was mounted correctly in products-service container
-            sh '''#!/usr/bin/env bash
-              set +e  # Don't exit on errors; allow us to continue even if container checks fail
-              echo "Verifying products-service cert mount..."
-              PROD_CONTAINER=$(docker ps --filter "name=products-service" --filter "status=running" -q --no-trunc | head -1)
-              if [ -z "$PROD_CONTAINER" ]; then
-                echo "Warning: products-service container not running or not found"
-              else
-                echo "Container ID: $PROD_CONTAINER"
-                MOUNTED_SUM=$(docker exec "$PROD_CONTAINER" sha256sum /app/resources/certs/products-service.p12 2>/dev/null | awk '{print $1}')
-                echo "Mounted cert checksum: ${MOUNTED_SUM:-NOT_FOUND}"
-                if [ -f products-service/certs/products-service.p12 ]; then
-                  WORKSPACE_SUM=$(sha256sum products-service/certs/products-service.p12 | awk '{print $1}')
-                  echo "Workspace cert checksum: ${WORKSPACE_SUM}"
-                  [ "$MOUNTED_SUM" = "$WORKSPACE_SUM" ] && echo "✓ Checksums match" || echo "✗ Checksums differ"
-                fi
-              fi
-              set -e
-            '''
           } catch (err) {
             if (previousCommit) {
               echo "Deployment failed — rolling back to ${previousCommit}"

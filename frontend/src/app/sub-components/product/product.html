@@ -1,7 +1,7 @@
 <div class="max-w-sm flex flex-col rounded-xl overflow-hidden shadow-lg bg-white border border-gray-100 h-full">
   <div class="relative h-48 w-full bg-gray-100 flex-shrink-0">
     <img class="w-full h-full object-cover"
-      [src]="imagePreview() || (product.image ? 'https://localhost:10000/api/media/products/' + product.image : '')" [alt]="product.name" />
+      [src]="imagePreview() || (product.image ? '/api/media/products/' + product.image : '')" [alt]="product.name" />
     @if (isEditing) {
     <button
       class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md hover:bg-white transition-all"

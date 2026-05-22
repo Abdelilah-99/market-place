@@ -1,0 +1,21 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: buy01-frontend
+    networks:
+      - shared-net
+    ports:
+      - 4200:443
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--no-check-certificate", "--tries=1", "--spider", "https://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+networks:
+  shared-net:
+    external: true
+  
