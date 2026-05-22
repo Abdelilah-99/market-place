@@ -27,14 +27,17 @@ services:
       - products-service-mongodb
     volumes:
       - backend_m2:/root/.m2
-      - ./certs/products-service.p12:/app/resources/certs/products-service.p12:ro
-      - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
+      - products-certs:/app/resources/certs:ro
+      # - ./certs/products-service.p12:/app/resources/certs/products-service.p12:ro
+      # - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
     networks:
       - shared-net
 
 volumes:
   mongo_data:
   backend_m2:
+  products-certs:
+    external: true
 
 networks:
   shared-net:
