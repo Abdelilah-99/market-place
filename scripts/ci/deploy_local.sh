@@ -40,9 +40,9 @@ compose_up() {
   (
     cd "${compose_dir}"
     if [[ "${compose_tool}" == "docker-compose" ]]; then
-      docker-compose -f "$(basename "${compose_file}")" up -d --build
+      docker-compose -f "$(basename "${compose_file}")" up -d --build --force-recreate
     else
-      docker compose -f "$(basename "${compose_file}")" up -d --build
+      docker compose -f "$(basename "${compose_file}")" up -d --build --force-recreate
     fi
   )
 }
