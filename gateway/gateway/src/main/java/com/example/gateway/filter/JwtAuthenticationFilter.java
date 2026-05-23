@@ -79,7 +79,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         System.out.println("public path ------------------------- " + path);
         List<String> publicPaths = List.of(
                 "/api/users/login",
-                "/api/products",
+                // "/api/products",
                 "/api/users/register");
         return publicPaths.stream().anyMatch(path::startsWith);
     }
