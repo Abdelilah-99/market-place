@@ -18,17 +18,12 @@ services:
       - "8000:8000"
     env_file:
       - .env.product
-    environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      DISCOVERY: http://eureka-server:8761/eureka
 
     depends_on:
       - products-service-mongodb
     volumes:
       - backend_m2:/root/.m2
       - products-certs:/app/resources/certs:ro
-      # - ./certs/products-service.p12:/app/resources/certs/products-service.p12:ro
-      # - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
     networks:
       - shared-net
 
