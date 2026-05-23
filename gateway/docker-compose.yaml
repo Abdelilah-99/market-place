@@ -8,18 +8,10 @@ services:
       - .env.gateway
     ports:
       - "10000:10000"
-    # environment:
-    #   DISCOVERY : http://eureka-server:8761/eureka
-    #   REDIS-HOST : redis
-    #   REDIS-PORT : 6379
-    #   JAVA_TOOL_OPTIONS : -Djavax.net.ssl.trustStore=/app/resources/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=${TRUST_STORE_PWD} -Djavax.net.ssl.keyStore=/app/resources/certs/gateway.p12 -Djavax.net.ssl.keyStorePassword=${KEY_STORE_PWD}
     volumes:
       - backend_m2:/root/.m2
       - ~/.m2:/root/.m2
       - gateway:/app/resources/certs:ro
-
-      # - ./certs/gateway.p12:/app/resources/certs/gateway.p12:ro
-      # - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
     networks:
       - shared-net
 
