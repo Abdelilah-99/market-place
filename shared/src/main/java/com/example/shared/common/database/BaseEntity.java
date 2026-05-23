@@ -22,4 +22,12 @@ public abstract class BaseEntity {
     @LastModifiedDate
     @Field("updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
 }

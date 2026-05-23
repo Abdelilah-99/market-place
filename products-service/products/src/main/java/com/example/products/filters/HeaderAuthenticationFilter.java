@@ -36,7 +36,8 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String userId = request.getHeader("X-User-Id");
-        String roleHeader = "ROLE_" + request.getHeader("X-User-Role");
+        String roleValue = request.getHeader("X-User-Role");
+        String roleHeader = roleValue == null || roleValue.isBlank() ? null : "ROLE_" + roleValue;
 
         System.out.println("===> " + userId);
         System.out.println("===> " + roleHeader);
@@ -48,16 +49,9 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
         Role role = Role.fromString(roleHeader);
         System.out.println("====> " + role);
-        if (!role.isGuest()) {
-            if (userId == null || userId.isBlank() || !userRepository.existsById(userId)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
-            if (!isUserExist(userId)) {
-                System.out.println("=============>  User Not Exist");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
+        if (!role.isGuest() && (userId == null || userId.isBlank())) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -73,12 +67,5 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isUserExist(String userId) {
-        if (userId == null || userId.isEmpty() || userId.isBlank()) {
-            return false;
-        }
-        return this.userRepository.existsById(userId);
     }
 }
