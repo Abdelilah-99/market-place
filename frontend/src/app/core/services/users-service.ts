@@ -106,12 +106,15 @@ export class UsersService {
     }
 
     return from(avatar.arrayBuffer()).pipe(
-      switchMap((bytes) => {
+      switchMap((bytes: ArrayBuffer) => {
         const headers = new HttpHeaders({
           'Content-Type': avatar.type || 'application/octet-stream',
         });
 
-        return this.http.post<string>(`${this.mediaPath}/`, bytes, { headers });
+        return this.http.post(`${this.mediaPath}/`, bytes, {
+          headers,
+          responseType: 'text' as const,
+        });
       })
     );
   }
