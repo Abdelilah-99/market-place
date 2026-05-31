@@ -6,8 +6,13 @@ cd "${ROOT_DIR}"
 
 compose_up() {
   local dir="$1"
-  echo "[CD] Deploying ${dir}"
-  (cd "${dir}" && docker compose up -d --build --force-recreate)
+  if [[ "$dir" == "kafka" ]]; then
+    echo "[CD] Deploying ${dir}"
+    (cd "${dir}" && docker compose down && docker compose up -d --build --force-recreate)
+  else
+    echo "[CD] Deploying ${dir}"
+    (cd "${dir}" && docker compose up -d --build --force-recreate)
+  fi
 }
 
 if ! docker network inspect shared-net >/dev/null 2>&1; then
