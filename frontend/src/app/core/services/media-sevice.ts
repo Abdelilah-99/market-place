@@ -14,7 +14,8 @@ export class MediaSevice {
     return this.http.post(this.apiUrl + '/products/', file, {
       headers: {
         'Content-Type': file.type 
-      }
+      },
+      responseType: 'text' as const
     });
   }
 
