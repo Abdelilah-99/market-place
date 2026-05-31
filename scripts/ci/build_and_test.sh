@@ -42,7 +42,7 @@ run_maven() {
   log "Maven ${goal}: ${dir}"
   (
     cd "${dir}"
-    timeout 600 ${mvn_cmd} -B -Dmaven.compile.fork=false -Dmaven.test.skip=true clean "${goal}" || {
+    timeout 600 ${mvn_cmd} -B -Dmaven.compile.fork=false clean "${goal}" || {
       [[ $? -eq 124 ]] && { log "ERROR: Maven timed out"; exit 1; }
       exit $?
     }
@@ -69,6 +69,7 @@ run_frontend() {
     if [[ ! -f "node_modules/lightningcss-linux-x64-gnu/lightningcss.linux-x64-gnu.node" ]]; then
       npm install --no-save --include=optional lightningcss-linux-x64-gnu@1.30.2
     fi
+    npm run test -- --watch=false --browsers=ChromeHeadless
     npm run build -- --optimization --aot --stats-json
   )
 }
