@@ -20,6 +20,7 @@ import com.example.shared.common.kafka.dtos.products.KafkaProductRemovedEvent;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("null")
@@ -51,61 +52,53 @@ class ProductsServiceKafkaProducerTest {
     @Test
     void sendProductCreatedEventPublishesCorrectTopicAndPayload() {
         productEvents.sendCreateEvent(testProduct);
-        // FakeKafkaTemplate fake = (FakeKafkaTemplate) kafkaTemplate;
-        // assertEquals("create-product-events", fake.lastTopic);
-        // assertTrue(fake.lastData instanceof KafkaProductCreatedEvent);
         verify(kafkaTemplate, times(1)).send(
                 eq("create-product-events"),
-                any(),
-                argThat(event -> event instanceof KafkaProductCreatedEvent));
+            isNull(),
+            argThat(event -> event instanceof KafkaProductCreatedEvent created
+                && testProduct.getId().equals(created.id())
+                && testProduct.getUserId().equals(created.userId())));
     }
 
     @Test
     void sendProductRemovedEventPublishesCorrectTopicAndPayload() {
         productEvents.sendRemoveEvent(testProduct);
-        // FakeKafkaTemplate fake = (FakeKafkaTemplate) kafkaTemplate;
-        // assertEquals("remove-product-events", fake.lastTopic);
         verify(kafkaTemplate, times(1)).send(
                 eq("remove-product-events"),
-                any(),
-                argThat(event -> event instanceof KafkaProductRemovedEvent));
-        // assertTrue(fake.lastData instanceof KafkaProductRemovedEvent);
+            isNull(),
+            argThat(event -> event instanceof KafkaProductRemovedEvent removed
+                && testProduct.getId().equals(removed.id())));
     }
 
     @Test
     void confirmImageEventPublishesCorrectTopicAndPayload() {
         mediaEvents.confimImageEvent(imageId);
-        // FakeKafkaTemplate fake = (FakeKafkaTemplate) kafkaTemplate;
-        // assertEquals("confirm-image-events", fake.lastTopic);
         verify(kafkaTemplate, times(1)).send(
                 eq("confirm-image-events"),
-                any(),
-                argThat(event -> event instanceof KafkaConfirmImageEvent));
-
-        // assertTrue(fake.lastData instanceof KafkaConfirmImageEvent);
+            isNull(),
+            argThat(event -> event instanceof KafkaConfirmImageEvent confirm
+                && imageId.equals(confirm.id())));
     }
 
     @Test
     void deleteImageEventPublishesCorrectTopicAndPayload() {
         mediaEvents.deleteImageEvent(imageId);
-        // FakeKafkaTemplate fake = (FakeKafkaTemplate) kafkaTemplate;
-        // assertEquals("delete-image-events", fake.lastTopic);
-        // assertTrue(fake.lastData instanceof KafkaConfirmImageEvent);
         verify(kafkaTemplate, times(1)).send(
                 eq("delete-image-events"),
-                any(),
-                argThat(event -> event instanceof KafkaConfirmImageEvent));
+            isNull(),
+            argThat(event -> event instanceof KafkaConfirmImageEvent confirm
+                && imageId.equals(confirm.id())));
     }
 
     @Test
     void productCreatedEventContainsCorrectData() {
         productEvents.sendCreateEvent(testProduct);
-        // FakeKafkaTemplate fake = (FakeKafkaTemplate) kafkaTemplate;
-        // assertTrue(fake.lastData instanceof KafkaProductCreatedEvent);
         verify(kafkaTemplate, times(1)).send(
                 eq("create-product-events"),
-                any(),
-                argThat(event -> event instanceof KafkaProductCreatedEvent));
+            isNull(),
+            argThat(event -> event instanceof KafkaProductCreatedEvent created
+                && testProduct.getId().equals(created.id())
+                && testProduct.getUserId().equals(created.userId())));
     }
 
     // private String eqTopic(String topic) {
