@@ -88,12 +88,7 @@ pipeline {
           try {
             sh 'bash scripts/ci/deploy_local.sh'
           } catch (err) {
-            if (previousCommit) {
-              echo "Deployment failed — rolling back to ${previousCommit}"
-              sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
-            } else {
-              echo 'Deployment failed — no previous commit available for rollback.'
-            }
+            attemptRollback('Deployment failed')
             throw err
           }
         }
@@ -110,7 +105,10 @@ pipeline {
       script { sendEmail('UNSTABLE', 'Some tests failed or warnings were detected.') }
     }
     failure {
-      script { sendEmail('FAILED', "The build failed. Check the logs: ${env.BUILD_URL}console") }
+      script {
+        attemptRollback('Build failed')
+        sendEmail('FAILED', "The build failed. Check the logs: ${env.BUILD_URL}console")
+      }
     }
     always {
       script {
@@ -163,5 +161,23 @@ ${message}""",
       subject: "Build ${status}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
       body: "Build Status: ${status}\nJob: ${env.JOB_NAME}\nBuild URL: ${env.BUILD_URL}"
     )
+  }
+}
+
+// Shared helper to attempt a rollback based on the last successful commit file.
+def attemptRollback(String prefix) {
+  try {
+    def previousCommit = fileExists(env.LAST_SUCCESSFUL_COMMIT_FILE)
+      ? readFile(env.LAST_SUCCESSFUL_COMMIT_FILE).trim()
+      : ''
+
+    if (previousCommit) {
+      echo "${prefix} — rolling back to ${previousCommit}"
+      sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
+    } else {
+      echo "${prefix} — no previous commit available for rollback."
+    }
+  } catch (err) {
+    echo "Rollback attempt failed: ${err.getMessage()}"
   }
 }
