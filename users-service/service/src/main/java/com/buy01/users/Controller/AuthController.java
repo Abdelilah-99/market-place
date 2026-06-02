@@ -32,6 +32,7 @@ public class AuthController {
         // } else if (avatar != null && !avatar.getContentType().equals("image/png")) {
         // return ResponseEntity.badRequest().body("type must be image");
         // }
+        System.out.println("test if the testing checl for changes");
         return ResponseEntity.ok(authService.register(req));
     }
 

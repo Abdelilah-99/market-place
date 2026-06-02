@@ -99,25 +99,23 @@ fi
 
 run_shared=false run_eureka=false run_gateway=false
 run_products=false run_media=false run_users=false run_frontend=false
+mapfile -t changed_files < <(
+  git diff --name-only --diff-filter=ACMRT "${base_commit}"...HEAD
+  git diff --name-only --diff-filter=ACMRT HEAD
+)
 
-if [[ -z "${base_commit}" ]]; then
-  log "No base commit — running full build."
+if [[ ${#changed_files[@]} -eq 0 ]]; then
+  log "No changes detected — running full build."
   run_shared=true run_eureka=true run_gateway=true
   run_products=true run_media=true run_users=true run_frontend=true
 else
-  mapfile -t changed_files < <(git diff --name-only --diff-filter=ACMRT "${base_commit}"...HEAD)
-
-  if [[ ${#changed_files[@]} -eq 0 ]]; then
-    log "No changes detected — skipping all builds."
-  else
-    any_changed "shared/*"           && run_shared=true run_eureka=true run_gateway=true run_products=true run_media=true run_users=true
-    any_changed "eureka-server/*"    && run_eureka=true   run_shared=true
-    any_changed "gateway/*"          && run_gateway=true  run_shared=true
-    any_changed "products-service/*" && run_products=true run_shared=true
-    any_changed "media-service/*"    && run_media=true    run_shared=true
-    any_changed "users-service/*"    && run_users=true    run_shared=true
-    any_changed "frontend/*"         && run_frontend=true
-  fi
+  any_changed "shared/*"           && run_shared=true run_eureka=true run_gateway=true run_products=true run_media=true run_users=true
+  any_changed "eureka-server/*"    && run_eureka=true  run_shared=true
+  any_changed "gateway/*"          && run_gateway=true run_shared=true
+  any_changed "products-service/*" && run_products=true run_shared=true
+  any_changed "media-service/*"    && run_media=true   run_shared=true
+  any_changed "users-service/*"    && run_users=true   run_shared=true
+  any_changed "frontend/*"         && run_frontend=true
 fi
 
 # ---------------------------------------------------------------------------
