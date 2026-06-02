@@ -1,64 +1,55 @@
 package com.buy01.users.Service;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertySource;
 
-import com.buy01.users.DTOs.RegisterReqDTOs;
-import com.buy01.users.DTOs.LoginReqDTOs;
 import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
+import com.buy01.users.DTOs.RegisterReqDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
 import com.buy01.users.Utils.JwtUtils;
 import com.example.shared.common.kafka.dtos.media.KafkaConfirmAvatarEvent;
-import com.example.shared.common.kafka.dtos.products.KafkaProductRemovedEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserCreatedEvent;
-import com.example.shared.common.kafka.dtos.users.KafkaUserUpdatedEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserRemovedEvent;
+import com.example.shared.common.kafka.dtos.users.KafkaUserUpdatedEvent;
 
-@SpringBootTest
-@TestPropertySource(properties = {
-        "spring.kafka.bootstrap-servers=localhost:9092",
-        "logging.level.org.apache.kafka=WARN"
-})
-@SuppressWarnings("null")
+@ExtendWith(MockitoExtension.class)
 class UsersServiceKafkaEventTest {
-    @MockitoBean
+    @Mock
     private UserRepository userRepository;
 
-    @MockitoBean
+    @Mock
     private PasswordEncoder passwordEncoder;
 
-    @MockitoBean
+    @Mock
     private JwtUtils jwtUtils;
 
-    @MockitoBean
+    @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Autowired
+    @InjectMocks
     private AuthService authService;
 
-    @Autowired
+    @InjectMocks
     private ProfileService profileService;
 
     private String userId;
@@ -68,85 +59,114 @@ class UsersServiceKafkaEventTest {
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID().toString();
-        userEmail = "test@example.com";
-        userName = "Test User";
-        userPassword = "password123";
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(userId, null));
+    userId = UUID.randomUUID().toString();
+    userEmail = "test@example.com";
+    userName = "Test User";
+    userPassword = "password123";
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken(userId, null));
     }
 
     @Test
     void testUserCreatedEventEmittedOnRegistration() {
-        RegisterReqDTOs registerDto = new RegisterReqDTOs(
-                userEmail,
-                userName,
-                userPassword,
-                "BUYER",
-                null);
+    RegisterReqDTOs registerDto = new RegisterReqDTOs(
+        userEmail,
+        userName,
+        userPassword,
+        "BUYER",
+        null);
 
-        User newUser = new User(userId, userName, userEmail, "hashed-password", "BUYER", null);
+    User newUser = new User(userId, userName, userEmail, "hashed-password", "BUYER", null);
 
-        when(userRepository.existsByEmail(userEmail)).thenReturn(false);
-        when(passwordEncoder.encode(userPassword)).thenReturn("hashed-password");
-        when(userRepository.save(any(User.class))).thenReturn(newUser);
+    when(userRepository.existsByEmail(userEmail)).thenReturn(false);
+    when(passwordEncoder.encode(userPassword)).thenReturn("hashed-password");
+    when(userRepository.save(any(User.class))).thenReturn(newUser);
 
-        // This should emit Kafka events
-        authService.register(registerDto);
+    authService.register(registerDto);
 
-        // Verify that events were sent to Kafka
-        // We can't directly verify Kafka sends without embedded Kafka, but we verify
-        // the service was called
-        verify(userRepository).save(any(User.class));
+    verify(userRepository).save(any(User.class));
+    verify(kafkaTemplate).send(
+        eq("create-user-events"),
+        isNull(),
+        argThat(event -> event instanceof KafkaUserCreatedEvent created
+            && userId.equals(created.userId())
+            && userName.equals(created.username())
+            && created.avatar() == null));
     }
 
     @Test
     void testUserUpdatedEventEmittedOnProfileUpdate() {
-        User user = new User(userId, "Old Name", userEmail, "hashed-password", "BUYER", null);
-        ProfileUpdateReqDTOs updateDto = new ProfileUpdateReqDTOs("New Name", null, UUID.randomUUID());
+    UUID newAvatarId = UUID.randomUUID();
+    User user = new User(userId, "Old Name", userEmail, "hashed-password", "BUYER", null);
+    ProfileUpdateReqDTOs updateDto = new ProfileUpdateReqDTOs("New Name", null, newAvatarId);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class)))
-                .thenReturn(new User(userId, "New Name", userEmail, "hashed-password", "BUYER", null));
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userRepository.save(any(User.class)))
+        .thenReturn(new User(userId, "New Name", userEmail, "hashed-password", "BUYER", newAvatarId.toString()));
 
-        profileService.updateCurrentProfile(updateDto);
+    profileService.updateCurrentProfile(updateDto);
 
-        verify(userRepository).save(any(User.class));
+    verify(userRepository).save(any(User.class));
+    verify(kafkaTemplate).send(
+        eq("confirm-avatar-events"),
+        isNull(),
+        argThat(event -> event instanceof KafkaConfirmAvatarEvent confirm
+            && newAvatarId.equals(confirm.id())));
+    verify(kafkaTemplate).send(
+        eq("update-user-events"),
+        isNull(),
+        argThat(event -> event instanceof KafkaUserUpdatedEvent updated
+            && userId.equals(updated.userId())
+            && "New Name".equals(updated.username())
+            && updated.oldAvatar() == null
+            && newAvatarId.equals(updated.newAvatar())));
     }
 
     @Test
     void testUserRemovedEventEmittedOnDelete() {
-        when(userRepository.existsById(userId)).thenReturn(true);
+    when(userRepository.existsById(userId)).thenReturn(true);
 
-        profileService.deleteCurrentUser();
+    profileService.deleteCurrentUser();
 
-        verify(userRepository).deleteById(userId);
+    verify(userRepository).deleteById(userId);
+    verify(kafkaTemplate).send(
+        eq("remove-user-events"),
+        isNull(),
+        argThat(event -> event instanceof KafkaUserRemovedEvent removed
+            && userId.equals(removed.userId())));
     }
 
     @Test
     void testRegistrationWithAvatarEmitsConfirmAvatarEvent() {
-        UUID avatarId = UUID.randomUUID();
-        RegisterReqDTOs registerDto = new RegisterReqDTOs(
-                userEmail,
-                userName,
-                userPassword,
-                "SELLER",
-                avatarId);
+    UUID avatarId = UUID.randomUUID();
+    RegisterReqDTOs registerDto = new RegisterReqDTOs(
+        userEmail,
+        userName,
+        userPassword,
+        "SELLER",
+        avatarId);
 
-        User newUser = new User(userId, userName, userEmail, "hashed-password", "SELLER", avatarId.toString());
+    User newUser = new User(userId, userName, userEmail, "hashed-password", "SELLER", avatarId.toString());
 
-        when(userRepository.existsByEmail(userEmail)).thenReturn(false);
-        when(passwordEncoder.encode(userPassword)).thenReturn("hashed-password");
-        when(userRepository.save(any(User.class))).thenReturn(newUser);
-        authService.register(registerDto);
-        // KafkaConfirmAvatarEvent event = new KafkaConfirmAvatarEvent(avatarId);
-        System.out.println("Avatar: " + avatarId.toString() + " ====================================================");
-        // kafkaTemplate.send("confirm-avatar-events", null, event);
-        verify(kafkaTemplate, times(1)).send(
-                eq("confirm-avatar-events"),
-                any(),
-                argThat(event -> event instanceof KafkaConfirmAvatarEvent));
+    when(userRepository.existsByEmail(userEmail)).thenReturn(false);
+    when(passwordEncoder.encode(userPassword)).thenReturn("hashed-password");
+    when(userRepository.save(any(User.class))).thenReturn(newUser);
 
-        verify(userRepository).save(any(User.class));
+    authService.register(registerDto);
+
+    verify(kafkaTemplate, times(1)).send(
+        eq("confirm-avatar-events"),
+        isNull(),
+        argThat(event -> event instanceof KafkaConfirmAvatarEvent confirm
+            && avatarId.equals(confirm.id())));
+    verify(kafkaTemplate).send(
+        eq("create-user-events"),
+        isNull(),
+        argThat(event -> event instanceof KafkaUserCreatedEvent created
+            && userId.equals(created.userId())
+            && userName.equals(created.username())
+            && avatarId.equals(created.avatar())));
+
+    verify(userRepository).save(any(User.class));
     }
 }

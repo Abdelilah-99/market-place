@@ -1,76 +1,54 @@
 package com.example.media.kafka;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.TestPropertySource;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.example.media.models.UserAvatar;
 import com.example.media.models.ProductImage;
+import com.example.media.models.UserAvatar;
 import com.example.media.services.AvatarService;
-import com.example.media.services.UserService;
-import com.example.media.services.ProductService;
 import com.example.media.services.ProductImageService;
-import com.example.shared.common.kafka.dtos.users.KafkaUserCreatedEvent;
-import com.example.shared.common.kafka.dtos.users.KafkaUserRemovedEvent;
-import com.example.shared.common.kafka.dtos.products.KafkaProductCreatedEvent;
-import com.example.shared.common.kafka.dtos.products.KafkaProductRemovedEvent;
+import com.example.media.services.ProductService;
+import com.example.media.services.UserService;
 import com.example.shared.common.kafka.dtos.media.KafkaConfirmAvatarEvent;
 import com.example.shared.common.kafka.dtos.media.KafkaConfirmImageEvent;
+import com.example.shared.common.kafka.dtos.products.KafkaProductCreatedEvent;
+import com.example.shared.common.kafka.dtos.products.KafkaProductRemovedEvent;
+import com.example.shared.common.kafka.dtos.users.KafkaUserCreatedEvent;
+import com.example.shared.common.kafka.dtos.users.KafkaUserRemovedEvent;
 
-@SpringBootTest
-@EmbeddedKafka(partitions = 1, topics = {
-    "create-user-events",
-    "remove-user-events",
-    "create-product-events",
-    "remove-product-events",
-    "confirm-avatar-events",
-    "delete-avatar-events",
-    "confirm-image-events",
-    "delete-image-events"
-})
-@TestPropertySource(properties = {
-    "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
-    "logging.level.org.apache.kafka=WARN"
-})
-@SuppressWarnings("null")
+@ExtendWith(MockitoExtension.class)
 class MediaServiceKafkaEventHandlerTest {
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
-
-    @MockitoBean
+    @Mock
     private UserService userService;
 
-    @MockitoBean
+    @Mock
     private AvatarService avatarService;
 
-    @MockitoBean
+    @Mock
     private ProductService productService;
 
-    @MockitoBean
+    @Mock
     private ProductImageService productImageService;
 
+    @InjectMocks
     private UserEvents userEvents;
 
-    private ProductEvents productEvents;
-
+    @InjectMocks
     private AvatarEvents avatarEvents;
 
+    @InjectMocks
+    private ProductEvents productEvents;
+
+    @InjectMocks
     private ProductImagesEvents productImagesEvents;
 
     private String userId;
@@ -84,161 +62,106 @@ class MediaServiceKafkaEventHandlerTest {
         productId = UUID.randomUUID();
         imageId = UUID.randomUUID();
         avatarId = UUID.randomUUID();
-
-        doNothing().when(userService).createUser(any(KafkaUserCreatedEvent.class));
-        doNothing().when(userService).deleteUser(any(KafkaUserRemovedEvent.class));
-        doNothing().when(avatarService).deleteAvatarByUserId(UUID.class.toString());
-        doNothing().when(productService).createProduct(any(KafkaProductCreatedEvent.class));
-        doNothing().when(productService).deleteProduct(any(KafkaProductRemovedEvent.class));
-        doNothing().when(productImageService).deleteProductImageByProductId(any(UUID.class));
-        doNothing().when(avatarService).confirmAvatar(any(UUID.class));
-        doNothing().when(productImageService).confirmImage(any(UUID.class));
     }
 
-    // ===== UserEvents Tests =====
-
     @Test
-    void testUserCreatedEventListening() throws InterruptedException {
+    void testUserCreatedEventListening() {
         KafkaUserCreatedEvent event = new KafkaUserCreatedEvent(userId, "Test User", null);
 
-        kafkaTemplate.send("create-user-events", event);
-        Thread.sleep(2000);
+        userEvents.listenCreateUser(event);
 
-        ArgumentCaptor<KafkaUserCreatedEvent> captor = ArgumentCaptor.forClass(KafkaUserCreatedEvent.class);
-        verify(userService).createUser(captor.capture());
-
-        KafkaUserCreatedEvent capturedEvent = captor.getValue();
-        assert capturedEvent.userId().equals(userId);
-        assert "Test User".equals(capturedEvent.username());
+        verify(userService).createUser(event);
     }
 
     @Test
-    void testUserRemovedEventListening() throws InterruptedException {
+    void testUserRemovedEventListening() {
         KafkaUserRemovedEvent event = new KafkaUserRemovedEvent(userId);
 
-        kafkaTemplate.send("remove-user-events", event);
-        Thread.sleep(2000);
+        userEvents.listenRemoveUser(event);
 
         verify(avatarService).deleteAvatarByUserId(userId);
-        ArgumentCaptor<KafkaUserRemovedEvent> captor = ArgumentCaptor.forClass(KafkaUserRemovedEvent.class);
-        verify(userService).deleteUser(captor.capture());
-
-        KafkaUserRemovedEvent capturedEvent = captor.getValue();
-        assert capturedEvent.userId().equals(userId);
-    }
-
-    // ===== ProductEvents Tests =====
-
-    @Test
-    void testProductCreatedEventListening() throws InterruptedException {
-        KafkaProductCreatedEvent event = new KafkaProductCreatedEvent(productId, userId.toString());
-
-        kafkaTemplate.send("create-product-events", event);
-        Thread.sleep(2000);
-
-        ArgumentCaptor<KafkaProductCreatedEvent> captor = ArgumentCaptor.forClass(KafkaProductCreatedEvent.class);
-        verify(productService).createProduct(captor.capture());
-
-        KafkaProductCreatedEvent capturedEvent = captor.getValue();
-        assert capturedEvent.id().equals(productId);
+        verify(userService).deleteUser(event);
     }
 
     @Test
-    void testProductRemovedEventListening() throws InterruptedException {
+    void testProductCreatedEventListening() {
+        KafkaProductCreatedEvent event = new KafkaProductCreatedEvent(productId, userId);
+
+        productEvents.listenCreateproduct(event);
+
+        verify(productService).createProduct(event);
+    }
+
+    @Test
+    void testProductRemovedEventListening() {
         KafkaProductRemovedEvent event = new KafkaProductRemovedEvent(productId);
 
-        kafkaTemplate.send("remove-product-events", event);
-        Thread.sleep(2000);
+        productEvents.listenRemoveproduct(event);
 
         verify(productImageService).deleteProductImageByProductId(productId);
-        ArgumentCaptor<KafkaProductRemovedEvent> captor = ArgumentCaptor.forClass(KafkaProductRemovedEvent.class);
-        verify(productService).deleteProduct(captor.capture());
-
-        KafkaProductRemovedEvent capturedEvent = captor.getValue();
-        assert capturedEvent.id().equals(productId);
+        verify(productService).deleteProduct(event);
     }
 
-    // ===== AvatarEvents Tests =====
-
     @Test
-    void testAvatarConfirmEventListening() throws InterruptedException {
+    void testAvatarConfirmEventListening() {
         KafkaConfirmAvatarEvent event = new KafkaConfirmAvatarEvent(avatarId);
 
-        kafkaTemplate.send("confirm-avatar-events", event);
-        Thread.sleep(2000);
+        avatarEvents.listenConfirmAvatar(event);
 
-        ArgumentCaptor<UUID> captor = ArgumentCaptor.forClass(UUID.class);
-        verify(avatarService).confirmAvatar(captor.capture());
-
-        UUID capturedId = captor.getValue();
-        assert capturedId.equals(avatarId);
+        verify(avatarService).confirmAvatar(avatarId);
     }
 
     @Test
-    void testAvatarDeleteEventListening() throws InterruptedException {
+    void testAvatarDeleteEventListening() {
         UserAvatar avatar = new UserAvatar();
         avatar.setId(avatarId);
 
         when(avatarService.getAvatarbyId(avatarId)).thenReturn(avatar);
-        doNothing().when(avatarService).deleteAvatar(avatar);
 
         KafkaConfirmAvatarEvent event = new KafkaConfirmAvatarEvent(avatarId);
 
-        kafkaTemplate.send("delete-avatar-events", event);
-        Thread.sleep(2000);
+        avatarEvents.listenDeleteAvatar(event);
 
         verify(avatarService).getAvatarbyId(avatarId);
         verify(avatarService).deleteAvatar(avatar);
     }
 
-    // ===== ProductImagesEvents Tests =====
-
     @Test
-    void testProductImageConfirmEventListening() throws InterruptedException {
+    void testProductImageConfirmEventListening() {
         KafkaConfirmImageEvent event = new KafkaConfirmImageEvent(imageId);
 
-        kafkaTemplate.send("confirm-image-events", event);
-        Thread.sleep(2000);
+        productImagesEvents.listenConfirmAvatar(event);
 
-        ArgumentCaptor<UUID> captor = ArgumentCaptor.forClass(UUID.class);
-        verify(productImageService).confirmImage(captor.capture());
-
-        UUID capturedId = captor.getValue();
-        assert capturedId.equals(imageId);
+        verify(productImageService).confirmImage(imageId);
     }
 
     @Test
-    void testProductImageDeleteEventListening() throws InterruptedException {
+    void testProductImageDeleteEventListening() {
         ProductImage image = new ProductImage();
         image.setId(imageId);
 
         when(productImageService.getAvatarbyId(imageId)).thenReturn(image);
-        doNothing().when(productImageService).deleteImage(image);
 
         KafkaConfirmImageEvent event = new KafkaConfirmImageEvent(imageId);
 
-        kafkaTemplate.send("delete-image-events", event);
-        Thread.sleep(2000);
+        productImagesEvents.listenDeleteAvatar(event);
 
         verify(productImageService).getAvatarbyId(imageId);
         verify(productImageService).deleteImage(image);
     }
 
     @Test
-    void testMultipleEventProcessing() throws InterruptedException {
+    void testMultipleEventProcessing() {
         KafkaUserCreatedEvent userEvent = new KafkaUserCreatedEvent(userId, "User", null);
-        KafkaProductCreatedEvent productEvent = new KafkaProductCreatedEvent(productId, userId.toString());
+        KafkaProductCreatedEvent productEvent = new KafkaProductCreatedEvent(productId, userId);
         KafkaConfirmAvatarEvent avatarEvent = new KafkaConfirmAvatarEvent(avatarId);
 
-        kafkaTemplate.send("create-user-events", userEvent);
-        Thread.sleep(1000);
-        kafkaTemplate.send("create-product-events", productEvent);
-        Thread.sleep(1000);
-        kafkaTemplate.send("confirm-avatar-events", avatarEvent);
-        Thread.sleep(2000);
+        userEvents.listenCreateUser(userEvent);
+        productEvents.listenCreateproduct(productEvent);
+        avatarEvents.listenConfirmAvatar(avatarEvent);
 
-        verify(userService, times(1)).createUser(any(KafkaUserCreatedEvent.class));
-        verify(productService, times(1)).createProduct(any(KafkaProductCreatedEvent.class));
-        verify(avatarService, times(1)).confirmAvatar(any(UUID.class));
+        verify(userService).createUser(userEvent);
+        verify(productService).createProduct(productEvent);
+        verify(avatarService).confirmAvatar(avatarId);
     }
 }
