@@ -10,12 +10,13 @@ services:
       - "10000:10000"
     volumes:
       - backend_m2:/root/.m2
-      - ~/.m2:/root/.m2
+      - maven_cash:/root/.m2
       - gateway-certs:/app/resources/certs:ro
     networks:
       - shared-net
 
 volumes:
+  maven_cash:
   mongo_data:
   backend_m2:
   gateway-certs:
