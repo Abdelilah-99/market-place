@@ -11,14 +11,14 @@ services:
     volumes:
       - backend_m2:/root/.m2
       - ~/.m2:/root/.m2
-      - gateway:/app/resources/certs:ro
+      - gateway-certs:/app/resources/certs:ro
     networks:
       - shared-net
 
 volumes:
   mongo_data:
   backend_m2:
-  gateway:
+  gateway-certs:
     external: true
 
 networks:

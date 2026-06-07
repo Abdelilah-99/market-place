@@ -20,16 +20,11 @@ services:
       - "8888:8888"
     env_file:
       - .env.media
-    environment:
-      SPRING_APPLICATION_NAME: media
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      DISCOVERY: http://eureka-server:8761/eureka
-      JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/app/resources/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=123456_certTest -Djavax.net.ssl.trustStoreType=PKCS12 -Djavax.net.ssl.keyStore=/app/resources/certs/media-service.p12 -Djavax.net.ssl.keyStorePassword=123456_certTest -Djavax.net.ssl.keyStoreType=PKCS12
     depends_on:
       - media-service-mongodb
     volumes:
       - media_m2:/root/.m2
-      - media-certs:/app/resources/certs:ro
+      - media-service-certs:/app/resources/certs:ro
       # - ./certs/media-service.p12:/app/resources/certs/media-service.p12:ro
       # - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
     networks:
@@ -38,7 +33,7 @@ services:
 volumes:
   mongo_data:
   media_m2:
-  media-certs:
+  media-service-certs:
     external: true
 
 networks:

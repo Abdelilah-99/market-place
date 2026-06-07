@@ -23,14 +23,14 @@ services:
       - products-service-mongodb
     volumes:
       - backend_m2:/root/.m2
-      - products-certs:/app/resources/certs:ro
+      - products-service-certs:/app/resources/certs:ro
     networks:
       - shared-net
 
 volumes:
   mongo_data:
   backend_m2:
-  products-certs:
+  products-service-certs:
     external: true
 
 networks:

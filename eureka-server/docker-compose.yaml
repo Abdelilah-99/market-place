@@ -9,12 +9,12 @@ services:
     networks:
       - shared-net
     volumes:
-      - eureka-certs:/app/resources/certs:ro
+      - eureka-server-certs:/app/resources/certs:ro
 
 networks:
   shared-net:
     external: true
 
 volumes:
-  eureka-certs:
+  eureka-server-certs:
     external: true
