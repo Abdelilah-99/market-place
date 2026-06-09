@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     ports:
       - "9090:9090"
+    networks:
+      - shared-net
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -13,7 +15,9 @@ services:
     container_name: grafana
     restart: unless-stopped
     ports:
-      - "4002-4002"
+      - "4002:3000"
+    networks:
+      - shared-net
     volumes:
       - grafana_data:/var/lib/grafana
   node-exporter:
@@ -21,18 +25,36 @@ services:
     container_name: node-exporter
     restart: unless-stopped
     ports:
-      - "4003:4003"
+      - "4003:9100"
+    networks:
+      - shared-net
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     restart: unless-stopped
     ports:
-      - "4004:4004"
+      - "4004:8080"
+    networks:
+      - shared-net
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
+    kafka-exporter:
+      image: danielqsj/kafka-exporter
+      container_name: kafka-exporter
+      command:
+        - "--kafka.server=kafka:29092"
+      ports:
+        - "9308:9308"
+      networks:
+        - shared-net
+
 volumes:
   prometheus_data:
   grafana_data:
+
+networks:
+  shared-net:
+    external: true
