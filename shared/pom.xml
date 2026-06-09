@@ -15,17 +15,7 @@
   </properties>
 
   <dependencies>
-		    <!-- Spring Boot Actuator -->
-    	<dependency>
-    	    <groupId>org.springframework.boot</groupId>
-    	    <artifactId>spring-boot-starter-actuator</artifactId>
-    	</dependency>
-	
-    	<!-- Prometheus / Micrometer -->
-    	<dependency>
-    	    <groupId>io.micrometer</groupId>
-    	    <artifactId>micrometer-registry-prometheus</artifactId>
-    	</dependency>
+
       <!-- Spring Web for HttpStatus -->
       <dependency>
           <groupId>org.springframework.boot</groupId>

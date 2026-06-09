@@ -41,15 +41,15 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
-    kafka-exporter:
-      image: danielqsj/kafka-exporter
-      container_name: kafka-exporter
-      command:
-        - "--kafka.server=kafka:29092"
-      ports:
-        - "9308:9308"
-      networks:
-        - shared-net
+  kafka-exporter:
+    image: danielqsj/kafka-exporter
+    container_name: kafka-exporter
+    command:
+      - "--kafka.server=kafka:29092"
+    ports:
+      - "9308:9308"
+    networks:
+      - shared-net
 
 volumes:
   prometheus_data:
