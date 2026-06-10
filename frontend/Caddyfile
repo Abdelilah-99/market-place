@@ -1,4 +1,4 @@
-localhost {
+marketplace.bouchikhi.com {
   root * /usr/share/caddy
   encode gzip zstd
 
@@ -14,4 +14,16 @@ localhost {
     try_files {path} /index.html
     file_server
   }
+}
+
+jenkins.bouchikhi.com {
+   reverse_proxy buy01-jenkins:8080
+}
+
+prometheus.bouchikhi.com {
+  reverse_proxy prometheus:9090
+}
+
+grafana.bouchikhi.com {
+  reverse_proxy grafana:3000
 }
