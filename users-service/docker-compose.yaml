@@ -1,6 +1,6 @@
 services:
   user-mongodb:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: user-mongodb
     env_file:
       - .env.users
