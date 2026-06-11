@@ -26,7 +26,7 @@ services:
         - user-mongodb
     volumes:
       - gradle-cache:/root/.gradle
-      - backend_m2:/root/.m2
+      - /home/ubuntu/.m2:/root/.m2
       - users-service-certs:/app/resources/certs:ro
     working_dir: /app
 volumes:
