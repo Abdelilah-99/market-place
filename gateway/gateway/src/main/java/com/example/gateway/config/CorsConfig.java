@@ -14,7 +14,7 @@ public class CorsConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:4200","https://localhost:4200")); // Angular origin
+        config.setAllowedOrigins(Arrays.asList("http://localhost:4200","https://localhost:4200", "https://marketplace.bouchikhi.com")); // Angular origin
         config.setMaxAge(8000L);
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("*"));
