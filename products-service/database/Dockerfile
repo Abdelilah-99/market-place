@@ -1,4 +1,4 @@
-FROM mongo:8.2
+FROM mongo:4.4
 
 # Root user
 ENV MONGO_INITDB_ROOT_USERNAME=amine
