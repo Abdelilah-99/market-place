@@ -18,7 +18,6 @@ pipeline {
   }
 
   stages {
-
     stage('Checkout') {
       steps {
         checkout scm
@@ -39,40 +38,8 @@ pipeline {
           file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
           file(credentialsId: 'usr-cert',    variable: 'USR_CERT')
         ]) {
-          sh '''#!/usr/bin/env bash
-            set -euo pipefail
-            mkdir -p certs gateway/certs products-service/certs media-service/certs users-service/certs
-
-            cp "$USR_ENV"     ./users-service/.env.users
-            cp "$GATEWAY_ENV" ./gateway/.env.gateway
-            cp "$PRDCT_ENV"   ./products-service/.env.product
-            cp "$MDA_ENV"     ./media-service/.env.media
-
-            chmod 600 \
-              ./users-service/.env.users \
-              ./gateway/.env.gateway \
-              ./products-service/.env.product \
-              ./media-service/.env.media
-
-            declare -A certs=(
-              ["$TRUSTSTORE"]="certs/truststore.p12"
-              ["$GATE_CERT"]="gateway/certs/gateway.p12"
-              ["$PROD_CERT"]="products-service/certs/products-service.p12"
-              ["$MEDIA_CERT"]="media-service/certs/media-service.p12"
-              ["$USR_CERT"]="users-service/certs/users-service.p12"
-            )
-
-            for src in "${!certs[@]}"; do
-              dest="${certs[$src]}"
-              cp "$src" "$dest"
-              chmod 600 "$dest"
-            done
-          '''
+          sh 'bash scripts/ci/setup_env.sh'
         }
-        sh '''
-          echo "After Setup Env Files:"
-          ls -la products-service/.env.product
-        '''
       }
     }
 
@@ -171,15 +138,19 @@ ${message}""",
 // Shared helper to attempt a rollback based on the last successful commit file.
 def attemptRollback(String prefix) {
   try {
-    def previousCommit = fileExists(env.LAST_SUCCESSFUL_COMMIT_FILE)
-      ? readFile(env.LAST_SUCCESSFUL_COMMIT_FILE).trim()
-      : ''
-
-    if (previousCommit) {
-      echo "${prefix} — rolling back to ${previousCommit}"
+    withCredentials([
+      file(credentialsId: 'env-users',   variable: 'USR_ENV'),
+      file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
+      file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
+      file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
+      file(credentialsId: 'truststore',  variable: 'TRUSTSTORE'),
+      file(credentialsId: 'gate-cert',   variable: 'GATE_CERT'),
+      file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),
+      file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
+      file(credentialsId: 'usr-cert',    variable: 'USR_CERT')
+    ]) {
+      sh 'bash scripts/ci/setup_env.sh'
       sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
-    } else {
-      echo "${prefix} — no previous commit available for rollback."
     }
   } catch (err) {
     echo "Rollback attempt failed: ${err.getMessage()}"
