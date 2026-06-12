@@ -23,8 +23,9 @@ services:
     depends_on:
       - media-service-mongodb
     volumes:
-      - media_m2:/root/.m2
+      # - media_m2:/root/.m2
       - media-service-certs:/app/resources/certs:ro
+      - /home/ubuntu/.m2:/root/.m2
       # - ./certs/media-service.p12:/app/resources/certs/media-service.p12:ro
       # - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
     networks:
