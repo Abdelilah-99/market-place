@@ -69,6 +69,10 @@ pipeline {
             done
           '''
         }
+        sh '''
+          echo "After Setup Env Files:"
+          ls -la products-service/.env.product
+        '''
       }
     }
 
