@@ -50,10 +50,12 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
         if (!role.isGuest()) {
             if (userId == null || userId.isBlank() || !userRepository.existsById(userId)) {
+                System.out.println("user is null or blanck or not exist on db: " + userId.toString());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
             if (!isUserExist(userId)) {
+                System.out.println("user not exist on db: " + userId.toString());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
