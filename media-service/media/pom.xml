@@ -32,28 +32,31 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>com.github.paulcwarren</groupId>
-                <artifactId>spring-content-bom</artifactId>
-                <version>${spring-content.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
-		    <!-- Spring Boot Actuator -->
-    	<dependency>
-    	    <groupId>org.springframework.boot</groupId>
-    	    <artifactId>spring-boot-starter-actuator</artifactId>
-    	</dependency>
-	
-    	<!-- Prometheus / Micrometer -->
-    	<dependency>
-    	    <groupId>io.micrometer</groupId>
-    	    <artifactId>micrometer-registry-prometheus</artifactId>
-    	</dependency>
+        <dependency>
+            <groupId>com.github.paulcwarren</groupId>
+            <artifactId>spring-content-fs</artifactId>
+            <version>${spring-content.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.paulcwarren</groupId>
+            <artifactId>spring-content-mongo</artifactId>
+            <version>${spring-content.version}</version>
+        </dependency>
+        <!-- Spring Boot Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Prometheus / Micrometer -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -71,14 +74,7 @@
             <version>1.0.0</version>
         </dependency>
         <!-- Spring Content: version managed by BOM below -->
-        <dependency>
-            <groupId>com.github.paulcwarren</groupId>
-            <artifactId>spring-content-fs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.paulcwarren</groupId>
-            <artifactId>spring-content-mongo</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
@@ -115,7 +111,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
 
     <build>
