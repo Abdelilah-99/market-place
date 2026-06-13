@@ -25,27 +25,13 @@ pipeline {
       }
     }
 
-    stage('Setup Env Files') {
-      steps {
-        withCredentials([
-          file(credentialsId: 'env-users',   variable: 'USR_ENV'),
-          file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
-          file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
-          file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
-          file(credentialsId: 'truststore',  variable: 'TRUSTSTORE'),
-          file(credentialsId: 'gate-cert',   variable: 'GATE_CERT'),
-          file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),
-          file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
-          file(credentialsId: 'usr-cert',    variable: 'USR_CERT')
-        ]) {
-          sh 'bash scripts/ci/setup_env.sh'
-        }
-      }
-    }
-
     stage('Build and Test') {
       steps {
-        sh 'bash scripts/ci/build_and_test.sh'
+        // Wrap blocks to prevent plain-text files on disk
+        withCredentials(getCredentialsList()) {
+          sh 'bash scripts/ci/setup_env.sh'
+          sh 'bash scripts/ci/build_and_test.sh'
+        }
       }
     }
 
@@ -57,9 +43,12 @@ pipeline {
             : ''
 
           try {
-            sh 'bash scripts/ci/deploy_local.sh'
+            withCredentials(getCredentialsList()) {
+              sh 'bash scripts/ci/setup_env.sh'
+              sh 'bash scripts/ci/deploy_local.sh'
+            }
           } catch (err) {
-            attemptRollback('Deployment failed')
+            attemptRollback('Deployment failed', previousCommit)
             throw err
           }
         }
@@ -73,12 +62,13 @@ pipeline {
       script { sendEmail('SUCCESS', 'All tests passed successfully.') }
     }
     unstable {
-      script { sendEmail('UNSTABLE', 'Some tests failed or warnings were detected.') }
+      script { sendEmail('UNSTABLE', 'Some tests failed.') }
     }
     failure {
       script {
-        attemptRollback('Build failed')
-        sendEmail('FAILED', "The build failed. Check the logs: ${env.BUILD_URL}console")
+        def previousCommit = fileExists(env.LAST_SUCCESSFUL_COMMIT_FILE) ? readFile(env.LAST_SUCCESSFUL_COMMIT_FILE).trim() : ''
+        attemptRollback('Build failed', previousCommit)
+        sendEmail('FAILED', "Build failed. Logs: ${env.BUILD_URL}console")
       }
     }
     always {
@@ -87,20 +77,11 @@ pipeline {
           archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
           junit testResults: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml', allowEmptyResults: true
         } catch (err) {
-          echo "Archive/junit skipped: ${err.getMessage()}"
+          echo "Archive skipped: ${err.getMessage()}"
         }
       }
       sh '''
-        rm -rf \
-          ./users-service/.env.users \
-          ./gateway/.env.gateway \
-          ./products-service/.env.product \
-          ./media-service/.env.media \
-          ./certs \
-          ./gateway/certs \
-          ./products-service/certs \
-          ./media-service/certs \
-          ./users-service/certs
+        rm -rf ./users-service/.env.users ./gateway/.env.gateway ./products-service/.env.product ./media-service/.env.media ./certs **/certs
       '''
     }
   }
@@ -110,52 +91,40 @@ pipeline {
 // Helpers
 // ---------------------------------------------------------------------------
 
+def getCredentialsList() {
+  return [
+    file(credentialsId: 'env-users',   variable: 'USR_ENV'),
+    file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
+    file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
+    file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
+    file(credentialsId: 'truststore',  variable: 'TRUSTSTORE'),
+    file(credentialsId: 'gate-cert',   variable: 'GATE_CERT'),
+    file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),
+    file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
+    file(credentialsId: 'usr-cert',    variable: 'USR_CERT')
+  ]
+}
+
 def sendEmail(String status, String message) {
   try {
     emailext(
       to: env.NOTIFICATION_EMAIL,
       subject: "Build ${status}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-      body: """Build Status:  ${status}
-Job:           ${env.JOB_NAME}
-Build Number:  ${env.BUILD_NUMBER}
-Build URL:     ${env.BUILD_URL}
-Commit:        ${env.GIT_COMMIT}
-Branch:        ${env.GIT_BRANCH}
-
-${message}""",
+      body: "Status: ${status}\nURL: ${env.BUILD_URL}\n\n${message}",
       mimeType: 'text/plain'
     )
   } catch (err) {
-    echo "emailext failed (${status}): ${err.getMessage()}"
-    mail(
-      to: env.NOTIFICATION_EMAIL,
-      subject: "Build ${status}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-      body: "Build Status: ${status}\nJob: ${env.JOB_NAME}\nBuild URL: ${env.BUILD_URL}"
-    )
+    mail(to: env.NOTIFICATION_EMAIL, subject: "Build ${status}", body: message)
   }
 }
 
-// Shared helper to attempt a rollback based on the last successful commit file.
-def attemptRollback(String prefix) {
-  def previousCommit = fileExists(env.LAST_SUCCESSFUL_COMMIT_FILE)
-  ? readFile(env.LAST_SUCCESSFUL_COMMIT_FILE).trim()
-  : ''
+def attemptRollback(String prefix, String previousCommit) {
   try {
-    withCredentials([
-      file(credentialsId: 'env-users',   variable: 'USR_ENV'),
-      file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
-      file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
-      file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
-      file(credentialsId: 'truststore',  variable: 'TRUSTSTORE'),
-      file(credentialsId: 'gate-cert',   variable: 'GATE_CERT'),
-      file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),
-      file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
-      file(credentialsId: 'usr-cert',    variable: 'USR_CERT')
-    ]) {
+    withCredentials(getCredentialsList()) {
       sh 'bash scripts/ci/setup_env.sh'
       sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
     }
   } catch (err) {
-    echo "Rollback attempt failed: ${err.getMessage()}"
+    echo "Rollback failed: ${err.getMessage()}"
   }
 }
