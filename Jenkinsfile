@@ -137,6 +137,9 @@ ${message}""",
 
 // Shared helper to attempt a rollback based on the last successful commit file.
 def attemptRollback(String prefix) {
+  def previousCommit = fileExists(env.LAST_SUCCESSFUL_COMMIT_FILE)
+  ? readFile(env.LAST_SUCCESSFUL_COMMIT_FILE).trim()
+  : ''
   try {
     withCredentials([
       file(credentialsId: 'env-users',   variable: 'USR_ENV'),
