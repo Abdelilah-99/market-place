@@ -1,0 +1,126 @@
+<app-section background="sand" padding="md">
+  <div *ngIf="product; else notFound" class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+    
+    <!-- Image Gallery -->
+    <div class="space-y-4">
+      <div class="aspect-square rounded-2xl overflow-hidden bg-white shadow-elevation-premium border border-primary/10 group">
+        <img [src]="product.image" [alt]="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+      </div>
+      <div class="grid grid-cols-4 gap-4">
+        <div *ngFor="let i of [1,2,3,4]" class="aspect-square rounded-lg overflow-hidden bg-white border border-primary/5 cursor-pointer hover:border-primary/40 transition-colors">
+          <img [src]="product.image" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity">
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="flex flex-col">
+      <div class="mb-6">
+        <app-badge variant="secondary" class="mb-4 inline-block">{{ product.category }}</app-badge>
+        <app-typography variant="h1" [serif]="true" customClass="mb-2">{{ product.name }}</app-typography>
+        
+        <div class="flex items-center gap-4 mb-6">
+          <app-price-tag [amount]="product.price" size="lg"></app-price-tag>
+          <div class="h-6 w-px bg-accent/10"></div>
+          <app-typography variant="caption" customClass="flex items-center gap-1">
+            <span class="text-primary">★★★★★</span>
+            <span class="font-bold text-accent">4.9</span>
+            <span class="text-accent/40">(24 reviews)</span>
+          </app-typography>
+        </div>
+
+        <app-typography variant="body" customClass="text-accent/80 mb-8 leading-relaxed">
+          {{ product.description }}
+        </app-typography>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-4 mb-10">
+          <app-button variant="primary" size="lg" (onClick)="addToCart()" class="flex-1">Add to Cart</app-button>
+          <app-button variant="outline" size="lg" (onClick)="addToWishlist()" class="flex-1">
+            <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            Wishlist
+          </app-button>
+        </div>
+      </div>
+
+      <!-- Artisan Profile Snippet -->
+      <div class="p-6 rounded-xl bg-white border border-primary/10 shadow-sm mb-10">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-16 h-16 rounded-full overflow-hidden bg-accent/5">
+            <img src="assets/avatar.jpeg" alt="Artisan" class="w-full h-full object-cover">
+          </div>
+          <div>
+            <app-typography variant="h6" [serif]="true">{{ product.artisan }}</app-typography>
+            <app-typography variant="caption" customClass="text-primary font-bold">Master Artisan • {{ product.region }}</app-typography>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <app-badge variant="neutral" class="!lowercase !capitalize font-normal text-[9px]">Verified Artisan</app-badge>
+          <app-badge variant="neutral" class="!lowercase !capitalize font-normal text-[9px]">Handmade</app-badge>
+          <app-badge variant="neutral" class="!lowercase !capitalize font-normal text-[9px]">Eco-Friendly</app-badge>
+        </div>
+      </div>
+
+      <!-- Cultural Specs -->
+      <div class="grid grid-cols-2 gap-6 border-t border-primary/10 pt-8">
+        <div>
+          <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary mb-1">Materials</app-typography>
+          <app-typography variant="body" customClass="text-accent/70">Organic Wool, Natural Dyes</app-typography>
+        </div>
+        <div>
+          <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary mb-1">Technique</app-typography>
+          <app-typography variant="body" customClass="text-accent/70">Hand-knotted (100k knots/sqm)</app-typography>
+        </div>
+        <div>
+          <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary mb-1">History</app-typography>
+          <app-typography variant="body" customClass="text-accent/70">12th Century Berber Tradition</app-typography>
+        </div>
+        <div>
+          <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary mb-1">Shipping</app-typography>
+          <app-typography variant="body" customClass="text-accent/70">Worldwide in 7-14 days</app-typography>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Craft Origin Section -->
+  <div *ngIf="product" class="mt-24 p-12 rounded-3xl bg-accent text-white relative overflow-hidden">
+    <div class="relative z-10 max-w-2xl">
+      <app-typography variant="h2" [serif]="true" customClass="mb-6">The Spirit of {{ product.region }}</app-typography>
+      <app-typography variant="body" customClass="text-white/80 mb-6 text-lg leading-relaxed">
+        Nestled in the heart of Morocco, the {{ product.region }} region has been a sanctuary for master craftsmen for centuries. 
+        Every piece created here carries the soul of the Atlas mountains and the vibrant colors of the Moroccan sun.
+      </app-typography>
+      <app-typography variant="body" customClass="text-white/80 text-lg leading-relaxed">
+        The techniques used to create this {{ product.name }} have been passed down through generations, 
+        ensuring that each knot, brushstroke, or carve preserves a piece of our living heritage.
+      </app-typography>
+    </div>
+    <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-zellige-pattern opacity-10 hidden lg:block"></div>
+  </div>
+
+  <!-- Related Products -->
+  <div *ngIf="product && relatedProducts.length > 0" class="mt-24">
+    <app-typography variant="h3" [serif]="true" customClass="mb-8">Related Treasures</app-typography>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <app-product-card *ngFor="let p of relatedProducts" [product]="p"></app-product-card>
+    </div>
+  </div>
+
+  <!-- Recently Viewed -->
+  <div *ngIf="recentlyViewed().length > 1" class="mt-24 pt-16 border-t border-primary/10">
+    <app-typography variant="h4" [serif]="true" customClass="mb-8 opacity-60 italic">Recently Viewed</app-typography>
+    <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+      <div *ngFor="let p of recentlyViewed()" class="min-w-[200px] w-[250px]">
+        <app-product-card [product]="p"></app-product-card>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #notFound>
+    <div class="text-center py-20">
+      <app-typography variant="h2" [serif]="true">Product Not Found</app-typography>
+      <app-button variant="primary" class="mt-4" [routerLink]="['/shop']">Back to Shop</app-button>
+    </div>
+  </ng-template>
+</app-section>

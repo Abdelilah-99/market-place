@@ -5,110 +5,89 @@ export interface Product {
   description: string;
   price: number;
   userId: string;     
+  category?: string;
+  artisan?: string;
+  region?: string;
   createdAt?: string; 
   updatedAt?: string; 
 }
 
-
-
 export const products: Product[] = [
   {
     id: '1',
-    name: 'Laptop',
-    description: 'High performance laptop',
-    price: 1200,
+    name: 'Hand-Woven Beni Ourain Carpet',
+    description: 'Traditional Berber wool carpet from the Middle Atlas mountains, featuring authentic geometric patterns.',
+    price: 4500,
     userId: 'user1',
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=500&q=60',
+    category: 'Textiles',
+    artisan: 'Fatima Zohra',
+    region: 'Middle Atlas',
+    image: 'https://images.unsplash.com/photo-1576016773942-31757724f791?auto=format&fit=crop&w=800&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   {
     id: '2',
-    name: 'Smartphone',
-    description: 'Latest smartphone with OLED screen',
-    price: 900,
+    name: 'Fez Blue Ceramic Vase',
+    description: 'Exquisite hand-painted ceramic vase using traditional Fez blue cobalt glaze and intricate patterns.',
+    price: 850,
     userId: 'user2',
-    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=60',
+    category: 'Ceramics',
+    artisan: 'Ahmed El Fassi',
+    region: 'Fez',
+    image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   {
     id: '3',
-    name: 'Headphones',
-    description: 'Noise-cancelling headphones',
-    price: 250,
+    name: 'Pure Culinary Argan Oil',
+    description: 'Organic, cold-pressed culinary argan oil from the Essaouira region. Rich in antioxidants and nutty flavor.',
+    price: 320,
     userId: 'user3',
-    image: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=500&q=60',
+    category: 'Food',
+    artisan: 'Cooperative Amal',
+    region: 'Essaouira',
+    image: 'https://images.unsplash.com/photo-1608500218890-c4f923e38707?auto=format&fit=crop&w=800&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   {
     id: '4',
-    name: 'Keyboard',
-    description: 'Mechanical keyboard with RGB lights',
-    price: 120,
+    name: 'Embroidered Silk Kaftan',
+    description: 'Luxurious handmade silk kaftan with traditional "Randa" embroidery and gold thread details.',
+    price: 2800,
     userId: 'user4',
-    image: 'https://images.unsplash.com/photo-1585079549942-bff0e4c7f61d?auto=format&fit=crop&w=500&q=60',
+    category: 'Clothing',
+    artisan: 'Lalla Salma',
+    region: 'Marrakech',
+    image: 'https://images.unsplash.com/photo-1605342082260-26466f272a27?auto=format&fit=crop&w=800&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   {
     id: '5',
-    name: 'Mouse',
-    description: 'Wireless gaming mouse',
-    price: 80,
+    name: 'Hand-Carved Cedar Wood Box',
+    description: 'Fragrant cedar wood box from the Atlas mountains, hand-carved with traditional geometric motifs.',
+    price: 450,
     userId: 'user5',
-    image: 'https://images.unsplash.com/photo-1580927752452-3f0e81c62406?auto=format&fit=crop&w=500&q=60',
+    category: 'Woodwork',
+    artisan: 'Youssef Alami',
+    region: 'Ifrane',
+    image: 'https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&w=800&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   {
     id: '6',
-    name: 'Monitor',
-    description: '27-inch 4K monitor',
-    price: 400,
+    name: 'Taza Leather Satchel',
+    description: 'Supple, naturally tanned leather satchel made by traditional techniques in the Taza region.',
+    price: 1200,
     userId: 'user6',
-    image: 'https://images.unsplash.com/photo-1553531384-6b5a7f85072b?auto=format&fit=crop&w=500&q=60',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '7',
-    name: 'Tablet',
-    description: '10-inch tablet with stylus support',
-    price: 600,
-    userId: 'user7',
-    image: 'https://images.unsplash.com/photo-1580910051071-4502e13b85b8?auto=format&fit=crop&w=500&q=60',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '8',
-    name: 'Smartwatch',
-    description: 'Fitness smartwatch with heart rate monitor',
-    price: 200,
-    userId: 'user8',
-    image: 'https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?auto=format&fit=crop&w=500&q=60',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '9',
-    name: 'Camera',
-    description: 'DSLR camera for photography',
-    price: 1500,
-    userId: 'user9',
-    image: 'https://images.unsplash.com/photo-1508898578281-774ac4893a2f?auto=format&fit=crop&w=500&q=60',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '10',
-    name: 'Speaker',
-    description: 'Bluetooth portable speaker',
-    price: 100,
-    userId: 'user10',
-    image: 'https://images.unsplash.com/photo-1610246908866-2d6b9dcfb1de?auto=format&fit=crop&w=500&q=60',
+    category: 'Leather',
+    artisan: 'Mohammed Tazi',
+    region: 'Taza',
+    image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }

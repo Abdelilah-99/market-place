@@ -1,8 +1,88 @@
-<div class="container mx-auto p-4">
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    <app-product 
+<!-- Hero Section -->
+<section class="relative h-[85vh] flex items-center overflow-hidden bg-accent">
+  <!-- Hero Background with Lantern Lighting Effect -->
+  <div class="absolute inset-0 z-0">
+    <img src="https://images.unsplash.com/photo-1539667468225-eebb663053e6?auto=format&fit=crop&w=1920&q=80" alt="Moroccan Souk" class="w-full h-full object-cover opacity-60">
+    <div class="absolute inset-0 bg-gradient-to-r from-accent via-accent/40 to-transparent"></div>
+    <!-- Lantern Glow Effect -->
+    <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-[120px] animate-pulse"></div>
+  </div>
+
+  <app-section background="none" [fullWidth]="false" class="relative z-10">
+    <div class="max-w-2xl">
+      <app-typography variant="h1" [serif]="true" customClass="text-white mb-6 leading-tight">
+        Discover the <span class="text-secondary">Soul</span> of Moroccan Craftsmanship
+      </app-typography>
+      <app-typography variant="body" customClass="text-white/80 text-lg mb-10 max-w-lg">
+        From the blue streets of Chefchaouen to the vibrant souks of Marrakech, bring authentic artisan treasures into your home.
+      </app-typography>
+      <div class="flex gap-4">
+        <app-button variant="primary" size="lg">Explore Collection</app-button>
+        <app-button variant="outline" size="lg" customClass="text-white border-white hover:bg-white/10">Our Story</app-button>
+      </div>
+    </div>
+  </app-section>
+</section>
+
+<!-- Shop by Category -->
+<app-section background="sand" padding="lg">
+  <div class="text-center mb-16">
+    <app-badge variant="primary" class="mb-4">Heritage Categories</app-badge>
+    <app-typography variant="h2" [serif]="true" customClass="text-accent">Timeless Collections</app-typography>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+    <div *ngFor="let cat of categories" class="group cursor-pointer">
+      <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 shadow-elevation-1 group-hover:shadow-elevation-premium transition-all">
+        <img [src]="cat.image" [alt]="cat.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+        <div class="absolute inset-0 bg-gradient-to-t from-accent/80 via-transparent to-transparent opacity-60"></div>
+        <div class="absolute bottom-6 left-6">
+          <span class="text-4xl mb-2 block">{{ cat.icon }}</span>
+          <app-typography variant="h4" [serif]="true" customClass="text-white">{{ cat.name }}</app-typography>
+          <app-typography variant="caption" customClass="text-white/70">{{ cat.count }} items</app-typography>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-section>
+
+<!-- Featured Products -->
+<app-section background="default" padding="lg">
+  <div class="flex justify-between items-end mb-16">
+    <div>
+      <app-badge variant="secondary" class="mb-4">Curated for you</app-badge>
+      <app-typography variant="h2" [serif]="true" customClass="text-accent">New Arrivals</app-typography>
+    </div>
+    <app-button variant="ghost">View All</app-button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div *ngFor="let i of [1,2,3,4,5,6]" class="space-y-4">
+      <app-skeleton height="300px" rounded="lg"></app-skeleton>
+      <app-skeleton width="60%" height="24px"></app-skeleton>
+      <app-skeleton width="40%" height="16px"></app-skeleton>
+    </div>
+  </div>
+
+  <!-- Product Grid -->
+  <div *ngIf="!isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <app-product-card 
       *ngFor="let product of products()"
       [product]="product">
-    </app-product>
+    </app-product-card>
   </div>
-</div>
+</app-section>
+
+<!-- Shop by Region (Teaser) -->
+<app-section background="zellige" padding="xl" class="text-center">
+  <div class="max-w-3xl mx-auto">
+    <app-typography variant="h2" [serif]="true" customClass="text-accent mb-6">Explore Morocco by Region</app-typography>
+    <app-typography variant="body" customClass="text-accent/70 mb-10">
+      Each city has its own secret. From the blue ceramics of Fez to the cedar wood of the Atlas, discover the unique identity of each Moroccan region.
+    </app-typography>
+    <div class="flex flex-wrap justify-center gap-4">
+      <app-badge *ngFor="let region of ['Fez', 'Marrakech', 'Essaouira', 'Chefchaouen', 'Taza']" variant="accent" class="px-6 py-2 cursor-pointer hover:bg-primary transition-colors">{{ region }}</app-badge>
+    </div>
+  </div>
+</app-section>
