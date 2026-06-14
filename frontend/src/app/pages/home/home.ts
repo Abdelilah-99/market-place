@@ -8,6 +8,7 @@ import { TypographyComponent } from '../../shared/components/typography/typograp
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-home',
@@ -19,7 +20,8 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
     TypographyComponent, 
     ButtonComponent, 
     ProductCardComponent, 
-    SkeletonComponent
+    SkeletonComponent,
+    BadgeComponent
   ],
   templateUrl: './home.html',
   styleUrls: ['./home.css'],

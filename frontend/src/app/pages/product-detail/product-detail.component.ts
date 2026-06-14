@@ -28,11 +28,10 @@ import { RecentlyViewedService } from '../../core/services/recently-viewed.servi
 export class ProductDetailComponent implements OnInit {
   product?: Product;
   relatedProducts: Product[] = [];
-  recentlyViewed = this.recentlyViewedService.recentlyViewed;
 
   constructor(
     private route: ActivatedRoute,
-    private recentlyViewedService: RecentlyViewedService
+    public recentlyViewedService: RecentlyViewedService
   ) {}
 
   ngOnInit(): void {

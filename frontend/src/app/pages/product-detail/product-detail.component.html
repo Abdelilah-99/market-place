@@ -108,10 +108,10 @@
   </div>
 
   <!-- Recently Viewed -->
-  <div *ngIf="recentlyViewed().length > 1" class="mt-24 pt-16 border-t border-primary/10">
+  <div *ngIf="recentlyViewedService.recentlyViewed().length > 1" class="mt-24 pt-16 border-t border-primary/10">
     <app-typography variant="h4" [serif]="true" customClass="mb-8 opacity-60 italic">Recently Viewed</app-typography>
     <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-      <div *ngFor="let p of recentlyViewed()" class="min-w-[200px] w-[250px]">
+      <div *ngFor="let p of recentlyViewedService.recentlyViewed()" class="min-w-[200px] w-[250px]">
         <app-product-card [product]="p"></app-product-card>
       </div>
     </div>

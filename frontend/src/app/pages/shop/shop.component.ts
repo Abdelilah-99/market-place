@@ -5,7 +5,6 @@ import { SectionComponent } from '../../shared/components/section/section.compon
 import { TypographyComponent } from '../../shared/components/typography/typography.component';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
-import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { Product, products } from '../../core/models/Product';
 
 @Component({
@@ -17,8 +16,7 @@ import { Product, products } from '../../core/models/Product';
     SectionComponent,
     TypographyComponent,
     ProductCardComponent,
-    SkeletonComponent,
-    BadgeComponent
+    SkeletonComponent
   ],
   templateUrl: './shop.component.html'
 })

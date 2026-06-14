@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, signal, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Navbar } from './sub-components/navbar/navbar';
 import { FooterComponent } from './shared/components/footer/footer.component';
@@ -13,8 +13,7 @@ import { isPlatformBrowser } from '@angular/common';
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
-...
-
+export class App implements OnInit {
   protected readonly title = signal('frontend');
 
   constructor(
