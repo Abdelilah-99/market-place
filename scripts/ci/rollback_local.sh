@@ -7,6 +7,12 @@ if [[ $# -ne 1 ]]; then
 fi
 
 TARGET_COMMIT="$1"
+
+git cat-file -e "${TARGET_COMMIT}^{commit}" || {
+    echo "[ERROR] Invalid commit: ${TARGET_COMMIT}"
+    exit 1
+}
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TEMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TEMP_DIR}"' EXIT
