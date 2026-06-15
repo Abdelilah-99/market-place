@@ -5,7 +5,8 @@ import { SectionComponent } from '../../shared/components/section/section.compon
 import { TypographyComponent } from '../../shared/components/typography/typography.component';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
-import { Product, products } from '../../core/models/Product';
+import { Product } from '../../core/models/Product';
+import { ProductsService } from '../../core/services/products-service';
 
 @Component({
   selector: 'app-shop',
@@ -21,7 +22,7 @@ import { Product, products } from '../../core/models/Product';
   templateUrl: './shop.component.html'
 })
 export class ShopComponent implements OnInit {
-  allProducts: Product[] = products;
+  allProducts: Product[] = [];
   filteredProducts: Product[] = [];
   loading = true;
 
@@ -33,12 +34,20 @@ export class ShopComponent implements OnInit {
   categories = ['All', 'Textiles', 'Ceramics', 'Food', 'Clothing', 'Woodwork', 'Leather'];
   regions = ['All', 'Fez', 'Marrakech', 'Middle Atlas', 'Essaouira', 'Ifrane', 'Taza'];
 
+  constructor(private productsService: ProductsService) {}
+
   ngOnInit(): void {
-    // Simulate loading
-    setTimeout(() => {
-      this.applyFilters();
-      this.loading = false;
-    }, 1000);
+    this.productsService.getAllProducts().subscribe({
+      next: (res: any) => {
+        this.allProducts = res.data;
+        this.applyFilters();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading shop products', err);
+        this.loading = false;
+      }
+    });
   }
 
   applyFilters() {

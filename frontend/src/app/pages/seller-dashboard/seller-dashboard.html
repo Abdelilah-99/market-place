@@ -1,26 +1,30 @@
-<div class="w-full px-4 md:px-8 lg:px-12 mt-6">
-    <div class="mb-6 flex items-center justify-between p-4">
-        <!-- Product Info -->
+<app-section background="sand" padding="md">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
         <div>
-            <span class="text-gray-700 font-medium">
-                Total Products: {{ products().length }}
-            </span>
+            <app-badge variant="accent" class="mb-2">Merchant Hub</app-badge>
+            <app-typography variant="h2" [serif]="true" customClass="text-accent">Seller Dashboard</app-typography>
+            <app-typography variant="body" customClass="text-accent/60 mt-1">
+                You have <span class="font-bold text-primary">{{ products().length }}</span> active treasures in the marketplace.
+            </app-typography>
         </div>
 
-        <!-- Create Button -->
-        <button
-            class="px-5 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition cursor-pointer"
-            (click)="togglePopUp()">
-            Create </button>
+        <app-button variant="primary" (onClick)="togglePopUp()">
+            <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Create New Product
+        </app-button>
     </div>
 
-
-    <div class="container mx-auto p-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <app-product *ngFor="let product of products()" (deletedProductId)="deleteProductById($event)" [product]="product" class="block w-full"></app-product>
+    @if (products().length === 0) {
+        <div class="text-center py-24 bg-white rounded-2xl border border-dashed border-primary/20">
+            <app-typography variant="h4" [serif]="true" customClass="text-accent/40 mb-4">No products found</app-typography>
+            <app-button variant="outline" size="sm" (onClick)="togglePopUp()">Start your legacy</app-button>
         </div>
-    </div>
-</div>
+    } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <app-product-card *ngFor="let product of products()" [product]="product"></app-product-card>
+        </div>
+    }
+</app-section>
 
 <!-- Create Product Popup -->
 <app-create-product-pop-pup *ngIf="isPopPupOpen" (createdProduct)="onProductCreated($event)"

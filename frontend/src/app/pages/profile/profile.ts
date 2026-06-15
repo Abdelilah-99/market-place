@@ -6,10 +6,22 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { of, switchMap } from 'rxjs';
+import { TypographyComponent } from '../../shared/components/typography/typography.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { SectionComponent } from '../../shared/components/section/section.component';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    TypographyComponent, 
+    ButtonComponent, 
+    SectionComponent, 
+    BadgeComponent
+  ],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })

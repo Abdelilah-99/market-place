@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TypographyComponent } from '../typography/typography.component';
@@ -6,6 +6,7 @@ import { BadgeComponent } from '../badge/badge.component';
 import { PriceTagComponent } from '../price-tag/price-tag.component';
 import { ButtonComponent } from '../button/button.component';
 import { Product } from '../../../core/models/Product';
+import { UsersService } from '../../../core/services/users-service';
 
 @Component({
   selector: 'app-product-card',
@@ -15,7 +16,7 @@ import { Product } from '../../../core/models/Product';
     <div class="group relative bg-white rounded-lg overflow-hidden shadow-elevation-1 hover:shadow-elevation-premium transition-all duration-500 border border-primary/5">
       <!-- Image Container -->
       <div class="relative aspect-square overflow-hidden bg-accent/5">
-        <img [src]="product.image || 'assets/placeholder.jpg'" [alt]="product.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+        <img [src]="productImageUrl() || 'avatar.jpeg'" [alt]="product.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
 
         <!-- Overlay for Quick Add -->
         <div class="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
@@ -28,7 +29,7 @@ import { Product } from '../../../core/models/Product';
         </button>
 
         <!-- Category Badge -->
-        <div class="absolute top-4 left-4">
+        <div class="absolute top-4 left-4" *ngIf="product.category">
           <app-badge variant="primary">{{ product.category }}</app-badge>
         </div>
       </div>
@@ -41,7 +42,7 @@ import { Product } from '../../../core/models/Product';
         </div>
         <app-typography variant="caption" customClass="line-clamp-1 mb-4 flex items-center gap-1">
           <svg class="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
-          {{ product.artisan }} • {{ product.region }}
+          {{ product.region || 'Authentic Morocco' }}
         </app-typography>
 
         <a [routerLink]="['/product', product.id]" class="block text-center text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:text-primary/70 transition-colors w-fit mx-auto border-b border-primary/20 hover:border-primary">View Details</a>
@@ -49,9 +50,29 @@ import { Product } from '../../../core/models/Product';
     </div>
   `
 })
-export class ProductCardComponent {
+export class ProductCardComponent implements OnInit {
   @Input() product!: Product;
   @Output() quickAdd = new EventEmitter<Product>();
+
+  productImageUrl = signal('');
+
+  constructor(private userService: UsersService) {}
+
+  ngOnInit() {
+    if (this.product.image) {
+      this.loadProductImage(this.product.image);
+    }
+  }
+
+  loadProductImage(imageId: string) {
+    this.userService.getAvatar(imageId).subscribe({
+      next: (res) => {
+        const objectUrl = URL.createObjectURL(res);
+        this.productImageUrl.set(objectUrl);
+      },
+      error: (err) => console.error("Error loading product image", err)
+    });
+  }
 
   onQuickAdd(event: MouseEvent) {
     event.preventDefault();

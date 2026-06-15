@@ -1,17 +1,17 @@
 <!-- Hero Section -->
-<section class="relative h-[85vh] flex items-center overflow-hidden bg-accent">
-  <!-- Hero Background with Lantern Lighting Effect -->
+<section class="relative h-[85vh] flex items-center overflow-hidden bg-accent bg-zellige-pattern">
+  <!-- Hero Overlay for depth -->
   <div class="absolute inset-0 z-0">
-    <img src="https://images.unsplash.com/photo-1539667468225-eebb663053e6?auto=format&fit=crop&w=1920&q=80" alt="Moroccan Souk" class="w-full h-full object-cover opacity-60">
-    <div class="absolute inset-0 bg-gradient-to-r from-accent via-accent/40 to-transparent"></div>
-    <!-- Lantern Glow Effect -->
-    <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-[120px] animate-pulse"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-accent via-accent/60 to-accent/20"></div>
+    <!-- Subtle Golden Lantern Glow -->
+    <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[150px] animate-pulse"></div>
   </div>
 
   <app-section background="default" [fullWidth]="false" class="relative z-10">
     <div class="max-w-2xl">
+      <app-badge variant="secondary" class="mb-6">Authentic Moroccan Heritage</app-badge>
       <app-typography variant="h1" [serif]="true" customClass="text-white mb-6 leading-tight">
-        Discover the <span class="text-secondary">Soul</span> of Moroccan Craftsmanship
+        Preserving the <span class="text-secondary italic">Art</span> of Moroccan Living
       </app-typography>
       <app-typography variant="body" customClass="text-white/80 text-lg mb-10 max-w-lg">
         From the blue streets of Chefchaouen to the vibrant souks of Marrakech, bring authentic artisan treasures into your home.
@@ -33,14 +33,10 @@
 
   <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
     <div *ngFor="let cat of categories" class="group cursor-pointer">
-      <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 shadow-elevation-1 group-hover:shadow-elevation-premium transition-all">
-        <img [src]="cat.image" [alt]="cat.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-        <div class="absolute inset-0 bg-gradient-to-t from-accent/80 via-transparent to-transparent opacity-60"></div>
-        <div class="absolute bottom-6 left-6">
-          <span class="text-4xl mb-2 block">{{ cat.icon }}</span>
-          <app-typography variant="h4" [serif]="true" customClass="text-white">{{ cat.name }}</app-typography>
-          <app-typography variant="caption" customClass="text-white/70">{{ cat.count }} items</app-typography>
-        </div>
+      <div class="bg-white p-10 rounded-xl shadow-elevation-1 group-hover:shadow-elevation-premium transition-all text-center border border-primary/5">
+        <span class="text-6xl mb-6 block group-hover:scale-110 transition-transform duration-500">{{ cat.icon }}</span>
+        <app-typography variant="h4" [serif]="true" customClass="text-accent">{{ cat.name }}</app-typography>
+        <app-typography variant="caption" customClass="text-primary font-bold uppercase tracking-widest mt-2">Browse All</app-typography>
       </div>
     </div>
   </div>

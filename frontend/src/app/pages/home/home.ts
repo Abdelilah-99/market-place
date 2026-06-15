@@ -31,10 +31,10 @@ export class Home {
   public isLoading = signal(true);
 
   public categories = [
-    { name: 'Textiles', icon: '🧵', count: 120, image: 'https://images.unsplash.com/photo-1576016773942-31757724f791?auto=format&fit=crop&w=400&q=80' },
-    { name: 'Ceramics', icon: '🏺', count: 85, image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=400&q=80' },
-    { name: 'Leather', icon: '👜', count: 64, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=400&q=80' },
-    { name: 'Food', icon: '🧂', count: 42, image: 'https://images.unsplash.com/photo-1608500218890-c4f923e38707?auto=format&fit=crop&w=400&q=80' }
+    { name: 'Textiles', icon: '🧵' },
+    { name: 'Ceramics', icon: '🏺' },
+    { name: 'Leather', icon: '👜' },
+    { name: 'Food', icon: '🧂' }
   ];
 
   constructor(private productsService: ProductsService) {}

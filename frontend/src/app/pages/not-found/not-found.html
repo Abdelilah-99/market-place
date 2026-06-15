@@ -1,1 +1,11 @@
-<p>not-found works!</p>
+<app-section background="zellige" padding="xl" class="min-h-[80vh] flex items-center justify-center text-center">
+    <div class="max-w-md">
+        <app-typography variant="h1" [serif]="true" customClass="text-primary text-9xl mb-4">404</app-typography>
+        <app-typography variant="h2" [serif]="true" customClass="text-accent mb-6">Lost in the Souk</app-typography>
+        <app-typography variant="body" customClass="text-accent/60 mb-10">
+            The treasure you are looking for has vanished into the winds of the Sahara. 
+            Let us find our way back to the main collection.
+        </app-typography>
+        <app-button variant="primary" [routerLink]="['/']">Back to Marketplace</app-button>
+    </div>
+</app-section>

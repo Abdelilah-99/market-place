@@ -4,10 +4,14 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { UsersService } from '../../core/services/users-service';
 import { StateService } from '../../core/services/state-service';
+import { TypographyComponent } from '../../shared/components/typography/typography.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { SectionComponent } from '../../shared/components/section/section.component';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, CommonModule, RouterLink],
+  standalone: true,
+  imports: [FormsModule, CommonModule, RouterLink, TypographyComponent, ButtonComponent, SectionComponent],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })

@@ -4,10 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { Product } from '../../core/models/Product';
 import { MediaSevice } from '../../core/services/media-sevice';
 import { ProductsService } from '../../core/services/products-service';
+import { TypographyComponent } from '../../shared/components/typography/typography.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-create-product-pop-pup',
-  imports: [FormsModule, CommonModule],
+  standalone: true,
+  imports: [
+    FormsModule, 
+    CommonModule, 
+    TypographyComponent, 
+    ButtonComponent, 
+    BadgeComponent
+  ],
   templateUrl: './create-product-pop-pup.html',
   styleUrl: './create-product-pop-pup.css',
 })

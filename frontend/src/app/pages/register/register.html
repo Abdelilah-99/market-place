@@ -1,56 +1,99 @@
-<section class="auth-shell">
-    <div class="auth-card">
-        <div class="auth-branding">
-            <h1>Create your account</h1>
-            <p>Join E-Buy and start browsing or selling products.</p>
+<app-section background="zellige" padding="xl" class="min-h-[90vh] flex items-center">
+  <div class="max-w-2xl mx-auto w-full bg-white rounded-xl shadow-elevation-premium border border-primary/10 overflow-hidden">
+    <!-- Header Decor -->
+    <div class="h-2 bg-primary"></div>
+    
+    <div class="p-8 md:p-12">
+      <div class="text-center mb-10">
+        <app-typography variant="h2" [serif]="true" customClass="text-accent mb-2">Create Your Account</app-typography>
+        <app-typography variant="body" customClass="text-accent/60">Join our community of artisans and craft lovers.</app-typography>
+      </div>
+
+      <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)" class="grid grid-cols-1 md:grid-cols-2 gap-6" novalidate>
+        
+        <!-- Identification Info -->
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Full Name / Username</app-typography>
+            <input id="username" name="username" type="text" [(ngModel)]="user.name" required minlength="3"
+              placeholder="Enter your name" 
+              class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+          </div>
+
+          <div class="space-y-2">
+            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Email Address</app-typography>
+            <input id="email" name="email" type="email" [(ngModel)]="user.email" required email
+              placeholder="Enter your email" 
+              class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+          </div>
+
+          <div class="space-y-2">
+            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Account Type</app-typography>
+            <select id="role" name="role" [(ngModel)]="user.role" required
+              class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent appearance-none">
+              <option value="BUYER">Buyer (Craft Lover)</option>
+              <option value="SELLER">Seller (Artisan)</option>
+            </select>
+          </div>
         </div>
 
-        <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)" class="auth-form" novalidate>
-            <div class="field-group">
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" [(ngModel)]="user.email" required email
-                    placeholder="you@example.com" />
-            </div>
+        <!-- Security Info -->
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Password</app-typography>
+            <input id="password" name="password" type="password" [(ngModel)]="user.password" required minlength="6"
+              placeholder="••••••••" 
+              class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+          </div>
 
-            <div class="field-group">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" [(ngModel)]="user.name" required minlength="3"
-                    placeholder="your_username" />
-            </div>
+          <div class="space-y-2">
+            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Confirm Password</app-typography>
+            <input id="confirmPassword" name="confirmPassword" type="password" [(ngModel)]="user.confirmPassword" required minlength="6"
+              placeholder="••••••••" 
+              class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+          </div>
 
-            <div class="field-group">
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" [(ngModel)]="user.password" required minlength="6"
-                    placeholder="••••••••" />
+          <!-- Avatar Upload (Integrated into security side for layout balance) -->
+          <div class="space-y-2">
+            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Profile Image (Optional)</app-typography>
+            <div class="flex items-center gap-4">
+              <label class="cursor-pointer bg-accent/5 hover:bg-accent/10 border border-primary/10 rounded-lg px-4 py-2.5 transition-all text-sm font-semibold flex-1 text-center">
+                {{ isAvatarSelected() ? 'Image Selected' : 'Choose File' }}
+                <input type="file" (change)="onAvatarSelected($event)" class="hidden">
+              </label>
+              <div *ngIf="isAvatarSelected()" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div class="field-group">
-                <label for="confirmPassword">Confirm password</label>
-                <input id="confirmPassword" name="confirmPassword" type="password" [(ngModel)]="user.confirmPassword"
-                    required minlength="6" placeholder="••••••••" />
-            </div>
+        <!-- Submit Button -->
+        <div class="md:col-span-2 mt-4">
+          <app-button type="submit" [fullWidth]="true" [disabled]="!!isSubmitting || registerForm.invalid">
+            {{ isSubmitting ? 'Creating account...' : 'Create Account' }}
+          </app-button>
+        </div>
+      </form>
 
-            <div class="field-group">
-                <label for="role">Account type</label>
-                <select id="role" name="role" [(ngModel)]="user.role" required>
-                    <option value="BUYER" selected>Buyer</option>
-                    <option value="SELLER">Seller</option>
-                </select>
-            </div>
+      @if (message) {
+        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg md:col-span-2">
+          <app-typography variant="caption" customClass="text-green-600 font-bold text-center block">{{ message }}</app-typography>
+        </div>
+      }
 
-            <button type="submit" [disabled]="isSubmitting || registerForm.invalid">
-                {{ isSubmitting ? 'Creating account...' : 'Register' }}
-            </button>
-            @if (message) {
-            <p class="feedback success">{{ message }}</p>
-            }
-            @if (errorMessage().isthere) {
-            <p class="feedback error">{{ errorMessage().msg }}</p>
-            }
-        </form>
-        <p class="auth-footer">
-            Already have an account?
-            <a routerLink="/login">Sign in</a>
-        </p>
+      @if (errorMessage().isthere) {
+        <div class="mt-6 p-4 bg-red-50 border border-red-100 rounded-lg md:col-span-2">
+          <app-typography variant="caption" customClass="text-red-600 font-bold text-center block">{{ errorMessage().msg }}</app-typography>
+        </div>
+      }
+
+      <div class="mt-10 pt-8 border-t border-primary/5 text-center">
+        <app-typography variant="body" customClass="text-accent/60">
+          Already have an account? 
+          <a routerLink="/login" class="text-primary font-bold hover:underline">Sign In</a>
+        </app-typography>
+      </div>
     </div>
-</section>
+  </div>
+</app-section>

@@ -1,12 +1,26 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProductItem } from '../../sub-components/product/product';
 import { CreateProductPopPup } from '../../sub-components/create-product-pop-pup/create-product-pop-pup';
 import { Product } from '../../core/models/Product';
 import { ProductsService } from '../../core/services/products-service';
+import { TypographyComponent } from '../../shared/components/typography/typography.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { SectionComponent } from '../../shared/components/section/section.component';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
+import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
+
 @Component({
   selector: 'app-seller-dashboard',
-  imports: [ProductItem, CreateProductPopPup, CommonModule],
+  standalone: true,
+  imports: [
+    CreateProductPopPup, 
+    CommonModule, 
+    TypographyComponent, 
+    ButtonComponent, 
+    SectionComponent, 
+    BadgeComponent,
+    ProductCardComponent
+  ],
   templateUrl: './seller-dashboard.html',
   styleUrl: './seller-dashboard.css',
 })

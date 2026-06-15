@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 export class ButtonComponent {
   @Input() variant: 'primary' | 'secondary' | 'outline' | 'ghost' = 'primary';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
-  @Input() disabled = false;
+  @Input() disabled: boolean | null | undefined = false;
   @Input() fullWidth = false;
   @Output() onClick = new EventEmitter<MouseEvent>();
 

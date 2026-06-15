@@ -3,10 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { UsersService } from '../../core/services/users-service';
+import { TypographyComponent } from '../../shared/components/typography/typography.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { SectionComponent } from '../../shared/components/section/section.component';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterLink],
+  standalone: true,
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterLink, 
+    TypographyComponent, 
+    ButtonComponent, 
+    SectionComponent
+  ],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
