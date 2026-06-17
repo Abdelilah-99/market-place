@@ -1,84 +1,147 @@
 <!-- Hero Section -->
-<section class="relative h-[85vh] flex items-center overflow-hidden bg-accent bg-zellige-pattern">
-  <!-- Hero Overlay for depth -->
+<section class="relative bg-accent text-background overflow-hidden">
   <div class="absolute inset-0 z-0">
-    <div class="absolute inset-0 bg-gradient-to-r from-accent via-accent/60 to-accent/20"></div>
-    <!-- Subtle Golden Lantern Glow -->
-    <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[150px] animate-pulse"></div>
+    <img src="hero-craft.png" alt="Curated Moroccan artisan crafts" class="w-full h-full object-cover opacity-40">
+    <div class="absolute inset-0 bg-gradient-to-t from-accent via-accent/70 to-accent/30"></div>
   </div>
 
-  <app-section background="default" [fullWidth]="false" class="relative z-10">
+  <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 md:py-36">
     <div class="max-w-2xl">
-      <app-badge variant="secondary" class="mb-6">Authentic Moroccan Heritage</app-badge>
-      <app-typography variant="h1" [serif]="true" customClass="text-white mb-6 leading-tight">
-        Preserving the <span class="text-secondary italic">Art</span> of Moroccan Living
-      </app-typography>
-      <app-typography variant="body" customClass="text-white/80 text-lg mb-10 max-w-lg">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-10 rule-gold"></span>
+        <span class="eyebrow text-secondary">Authentic Moroccan Heritage</span>
+      </div>
+      <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.08] tracking-tight text-background mb-6 text-balance">
+        Preserving the <span class="italic text-secondary">art</span> of Moroccan living
+      </h1>
+      <p class="font-sans text-base md:text-lg leading-relaxed text-background/70 max-w-lg mb-10">
         From the blue streets of Chefchaouen to the vibrant souks of Marrakech, bring authentic artisan treasures into your home.
-      </app-typography>
-      <div class="flex gap-4">
-        <app-button variant="primary" size="lg">Explore Collection</app-button>
-        <app-button variant="outline" size="lg" customClass="text-white border-white hover:bg-white/10">Our Story</app-button>
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <app-button variant="secondary" size="lg" [routerLink]="['/shop']" customClass="!cursor-pointer">Explore Collection</app-button>
+        <app-button variant="outline" size="lg" customClass="text-background border-background/40 hover:border-background hover:bg-background/10">Our Story</app-button>
       </div>
     </div>
-  </app-section>
+  </div>
 </section>
 
+<!-- Trust strip -->
+<div class="border-b border-line bg-surface">
+  <div class="max-w-7xl mx-auto px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+    <div>
+      <p class="font-serif text-xl text-accent">Handmade</p>
+      <p class="eyebrow text-muted mt-1">By master artisans</p>
+    </div>
+    <div>
+      <p class="font-serif text-xl text-accent">Authentic</p>
+      <p class="eyebrow text-muted mt-1">Sourced in Morocco</p>
+    </div>
+    <div>
+      <p class="font-serif text-xl text-accent">Worldwide</p>
+      <p class="eyebrow text-muted mt-1">Shipping & care</p>
+    </div>
+    <div>
+      <p class="font-serif text-xl text-accent">Fair Trade</p>
+      <p class="eyebrow text-muted mt-1">Direct to makers</p>
+    </div>
+  </div>
+</div>
+
 <!-- Shop by Category -->
-<app-section background="sand" padding="lg">
-  <div class="text-center mb-16">
-    <app-badge variant="primary" class="mb-4">Heritage Categories</app-badge>
-    <app-typography variant="h2" [serif]="true" customClass="text-accent">Timeless Collections</app-typography>
+<app-section background="default" padding="lg">
+  <div class="text-center mb-14">
+    <span class="eyebrow text-primary">Heritage Categories</span>
+    <app-typography variant="h2" [serif]="true" customClass="text-accent mt-3">Timeless Collections</app-typography>
   </div>
 
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-    <div *ngFor="let cat of categories" class="group cursor-pointer">
-      <div class="bg-white p-10 rounded-xl shadow-elevation-1 group-hover:shadow-elevation-premium transition-all text-center border border-primary/5">
-        <span class="text-6xl mb-6 block group-hover:scale-110 transition-transform duration-500">{{ cat.icon }}</span>
-        <app-typography variant="h4" [serif]="true" customClass="text-accent">{{ cat.name }}</app-typography>
-        <app-typography variant="caption" customClass="text-primary font-bold uppercase tracking-widest mt-2">Browse All</app-typography>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <a routerLink="/shop" *ngFor="let cat of categories" class="group">
+      <div class="bg-surface p-8 md:p-10 rounded-sm border border-line group-hover:border-secondary/50 group-hover:shadow-elevation-premium transition-all duration-500 text-center h-full">
+        <div class="w-14 h-14 mx-auto mb-5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+          <ng-container [ngSwitch]="cat.key">
+            <svg *ngSwitchCase="'textiles'" class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h18M3 5v14M3 5l4 4m14-4v14M21 5l-4 4M3 19h18M7 9v6m5-6v6m5-6v6"/></svg>
+            <svg *ngSwitchCase="'ceramics'" class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6m-7 3h8a4 4 0 014 4 6 6 0 01-3 5.2V19a2 2 0 01-2 2h-4a2 2 0 01-2-2v-.8A6 6 0 014 10a4 4 0 014-4z"/></svg>
+            <svg *ngSwitchCase="'leather'" class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 9h14l-1 11H6L5 9zm3 0V7a4 4 0 018 0v2"/></svg>
+            <svg *ngSwitchCase="'spices'" class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-3 3-4 6-4 9a4 4 0 008 0c0-3-1-6-4-9zM6 21h12"/></svg>
+          </ng-container>
+        </div>
+        <app-typography variant="h5" [serif]="true" customClass="text-accent">{{ cat.name }}</app-typography>
+        <p class="font-sans text-sm text-muted mt-1">{{ cat.desc }}</p>
       </div>
-    </div>
+    </a>
   </div>
 </app-section>
 
 <!-- Featured Products -->
-<app-section background="default" padding="lg">
-  <div class="flex justify-between items-end mb-16">
+<app-section background="default" padding="md">
+  <div class="flex justify-between items-end mb-12 border-b border-line pb-6">
     <div>
-      <app-badge variant="secondary" class="mb-4">Curated for you</app-badge>
-      <app-typography variant="h2" [serif]="true" customClass="text-accent">New Arrivals</app-typography>
+      <span class="eyebrow text-primary">Curated for you</span>
+      <app-typography variant="h2" [serif]="true" customClass="text-accent mt-3">New Arrivals</app-typography>
     </div>
-    <app-button variant="ghost">View All</app-button>
+    <a routerLink="/shop" class="hidden sm:inline-flex items-center gap-2 eyebrow text-accent hover:text-primary transition-colors">
+      View All
+      <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+    </a>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div *ngIf="isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
     <div *ngFor="let i of [1,2,3,4,5,6]" class="space-y-4">
-      <app-skeleton height="300px" rounded="lg"></app-skeleton>
-      <app-skeleton width="60%" height="24px"></app-skeleton>
+      <app-skeleton height="320px" rounded="sm"></app-skeleton>
+      <app-skeleton width="60%" height="20px"></app-skeleton>
       <app-skeleton width="40%" height="16px"></app-skeleton>
     </div>
   </div>
 
   <!-- Product Grid -->
-  <div *ngIf="!isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-    <app-product-card 
+  <div *ngIf="!isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+    <app-product-card
       *ngFor="let product of products()"
       [product]="product">
     </app-product-card>
   </div>
+
+  <div class="mt-10 text-center sm:hidden">
+    <app-button variant="outline" [routerLink]="['/shop']">View All Crafts</app-button>
+  </div>
 </app-section>
 
-<!-- Shop by Region (Teaser) -->
-<app-section background="zellige" padding="xl" class="text-center">
-  <div class="max-w-3xl mx-auto">
-    <app-typography variant="h2" [serif]="true" customClass="text-accent mb-6">Explore Morocco by Region</app-typography>
-    <app-typography variant="body" customClass="text-accent/70 mb-10">
+<!-- Artisan Story -->
+<section class="bg-surface border-y border-line">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2">
+    <div class="relative min-h-[320px] md:min-h-[520px]">
+      <img src="artisan-story.png" alt="A Moroccan artisan at work" class="absolute inset-0 w-full h-full object-cover">
+    </div>
+    <div class="p-8 md:p-16 flex flex-col justify-center">
+      <span class="eyebrow text-primary">Our Heritage</span>
+      <app-typography variant="h2" [serif]="true" customClass="text-accent mt-3 mb-6">Made by hand, made to last</app-typography>
+      <p class="font-sans text-base leading-relaxed text-accent/70 mb-4">
+        Every piece in our collection is created by master artisans who have inherited their craft across generations. We work directly with workshops in Fez, Marrakech and the Atlas mountains.
+      </p>
+      <p class="font-sans text-base leading-relaxed text-accent/70 mb-8">
+        When you bring home a Marketo piece, you carry a story of heritage, skill and the warm soul of Morocco.
+      </p>
+      <div>
+        <app-button variant="primary">Discover the Makers</app-button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Shop by Region -->
+<app-section background="zellige" padding="lg" class="text-center">
+  <div class="max-w-3xl mx-auto text-center">
+    <span class="eyebrow text-primary">Explore by Region</span>
+    <app-typography variant="h2" [serif]="true" customClass="text-accent mt-3 mb-6">Explore Morocco by Region</app-typography>
+    <p class="font-sans text-base leading-relaxed text-accent/70 mb-10">
       Each city has its own secret. From the blue ceramics of Fez to the cedar wood of the Atlas, discover the unique identity of each Moroccan region.
-    </app-typography>
-    <div class="flex flex-wrap justify-center gap-4">
-      <app-badge *ngFor="let region of ['Fez', 'Marrakech', 'Essaouira', 'Chefchaouen', 'Taza']" variant="accent" class="px-6 py-2 cursor-pointer hover:bg-primary transition-colors">{{ region }}</app-badge>
+    </p>
+    <div class="flex flex-wrap justify-center gap-3">
+      <a routerLink="/shop" *ngFor="let region of ['Fez', 'Marrakech', 'Essaouira', 'Chefchaouen', 'Taza']"
+         class="px-6 py-2.5 rounded-sm border border-accent/20 bg-surface text-accent text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+        {{ region }}
+      </a>
     </div>
   </div>
 </app-section>

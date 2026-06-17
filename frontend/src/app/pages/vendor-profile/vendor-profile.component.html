@@ -1,61 +1,62 @@
 <div *ngIf="artisan" class="min-h-screen">
   <!-- Hero Section -->
-  <app-section background="zellige" padding="xl" [fullWidth]="true">
-    <div class="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-      <!-- Artisan Portrait -->
-      <div class="relative group">
-        <div class="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-white shadow-elevation-2 relative z-10">
-          <img [src]="artisan.image" [alt]="artisan.name" class="w-full h-full object-cover">
+  <section class="bg-accent text-background">
+    <div class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+      <div class="flex flex-col md:flex-row items-center gap-8 md:gap-16">
+        <!-- Artisan Portrait -->
+        <div class="relative group flex-shrink-0">
+          <div class="w-44 h-44 md:w-60 md:h-60 rounded-full overflow-hidden border border-secondary/50 shadow-elevation-premium relative z-10">
+            <img [src]="artisan.image" [alt]="artisan.name" class="w-full h-full object-cover">
+          </div>
+          <div class="absolute -inset-3 border border-secondary/30 rounded-full pointer-events-none"></div>
         </div>
-        <!-- Decorative element -->
-        <div class="absolute -inset-4 border-2 border-primary/20 rounded-full pointer-events-none"></div>
-      </div>
 
-      <!-- Artisan Info -->
-      <div class="text-center md:text-left flex-1">
-        <div class="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-          <app-badge *ngFor="let badge of artisan.badges" variant="accent">{{ badge }}</app-badge>
+        <!-- Artisan Info -->
+        <div class="text-center md:text-left rtl:md:text-right flex-1">
+          <div class="flex flex-wrap justify-center md:justify-start gap-2 mb-5">
+            <span *ngFor="let badge of artisan.badges" class="px-3 py-1 rounded-sm bg-secondary/15 text-secondary text-[10px] font-bold tracking-[0.18em] uppercase">{{ badge }}</span>
+          </div>
+          <app-typography variant="h1" [serif]="true" customClass="text-background mb-3">
+            {{ artisan.name }}
+          </app-typography>
+          <p class="font-sans text-secondary flex items-center justify-center md:justify-start gap-2 text-sm tracking-wide">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+            </svg>
+            {{ artisan.region }}, Morocco
+          </p>
         </div>
-        <app-typography variant="h1" [serif]="true" customClass="text-accent mb-2">
-          {{ artisan.name }}
-        </app-typography>
-        <app-typography variant="h5" customClass="text-primary flex items-center justify-center md:justify-start gap-2">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
-          </svg>
-          {{ artisan.region }}, Morocco
-        </app-typography>
       </div>
     </div>
-  </app-section>
+  </section>
 
   <!-- Bio & Location Section -->
   <app-section background="sand" padding="lg">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12">
       <!-- Biography -->
       <div class="md:col-span-2">
-        <app-typography variant="h3" [serif]="true" customClass="mb-6 border-s-4 border-primary ps-4">
+        <app-typography variant="h3" [serif]="true" customClass="text-accent mb-6 border-s-2 border-primary ps-5">
           The Heart of the Craft
         </app-typography>
-        <app-typography variant="body" customClass="text-lg text-neutral-600 leading-relaxed italic">
+        <p class="font-serif text-xl md:text-2xl text-accent/80 leading-relaxed italic">
           "{{ artisan.bio }}"
-        </app-typography>
+        </p>
       </div>
 
-      <!-- Location Indicator (Visual only) -->
-      <div class="bg-white p-6 rounded-lg shadow-elevation-1 border border-primary/10">
-        <app-typography variant="h5" [serif]="true" customClass="mb-4">Workshop Location</app-typography>
-        <div class="aspect-video bg-accent/5 rounded mb-4 relative overflow-hidden flex items-center justify-center border border-dashed border-primary/30">
+      <!-- Location Indicator -->
+      <div class="bg-surface p-6 rounded-sm shadow-elevation-1 border border-line">
+        <h5 class="font-serif text-lg text-accent mb-4">Workshop Location</h5>
+        <div class="aspect-video bg-accent/5 rounded-sm mb-4 relative overflow-hidden flex items-center justify-center border border-dashed border-line">
           <div class="text-center p-4">
-            <svg class="w-10 h-10 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <svg class="w-9 h-9 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
-            <app-typography variant="caption">{{ artisan.location.address }}</app-typography>
+            <p class="font-sans text-sm text-muted">{{ artisan.location.address }}</p>
           </div>
         </div>
-        <div class="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-tighter">
-          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+        <div class="flex items-center gap-2 text-neutral font-semibold text-[10px] uppercase tracking-widest">
+          <span class="w-2 h-2 rounded-full bg-neutral animate-pulse"></span>
           Accepting Custom Commissions
         </div>
       </div>
@@ -64,25 +65,25 @@
 
   <!-- Products Grid -->
   <app-section padding="lg">
-    <div class="flex items-end justify-between mb-12 border-b border-primary/10 pb-4">
+    <div class="flex items-end justify-between mb-12 border-b border-line pb-5">
       <div>
-        <app-badge variant="primary" class="mb-2">Collection</app-badge>
-        <app-typography variant="h2" [serif]="true">Handcrafted Creations</app-typography>
+        <span class="eyebrow text-primary">Collection</span>
+        <app-typography variant="h2" [serif]="true" customClass="text-accent mt-3">Handcrafted Creations</app-typography>
       </div>
-      <app-typography variant="caption" customClass="mb-1">
+      <span class="font-sans text-sm text-muted mb-1">
         {{ artisanProducts.length }} Unique Pieces
-      </app-typography>
+      </span>
     </div>
 
-    <div *ngIf="artisanProducts.length > 0; else noProducts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div *ngIf="artisanProducts.length > 0; else noProducts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
       <app-product-card *ngFor="let product of artisanProducts" [product]="product"></app-product-card>
     </div>
 
     <ng-template #noProducts>
       <div class="py-20 text-center">
-        <app-typography variant="body" customClass="text-neutral-500">
+        <p class="font-sans text-muted">
           More beautiful creations coming soon from {{ artisan.name }}.
-        </app-typography>
+        </p>
       </div>
     </ng-template>
   </app-section>

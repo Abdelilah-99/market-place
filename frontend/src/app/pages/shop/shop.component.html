@@ -1,87 +1,105 @@
+<!-- Page Header -->
+<section class="bg-accent text-background">
+  <div class="max-w-7xl mx-auto px-6 py-14 md:py-20">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="w-10 rule-gold"></span>
+      <span class="eyebrow text-secondary">The Collection</span>
+    </div>
+    <h1 class="font-serif text-4xl md:text-5xl font-medium tracking-tight">Shop All Crafts</h1>
+    <p class="font-sans text-background/60 mt-3 max-w-xl">Browse handmade treasures sourced directly from master artisans across Morocco.</p>
+  </div>
+</section>
+
 <app-section background="default" padding="md">
-  <div class="flex flex-col md:flex-row gap-8">
-    
+  <div class="flex flex-col md:flex-row gap-10">
+
     <!-- Sidebar Filters -->
-    <aside class="w-full md:w-64 space-y-8">
+    <aside class="w-full md:w-64 md:flex-shrink-0 space-y-8">
       <!-- Search -->
       <div>
-        <app-typography variant="h6" [serif]="true" customClass="mb-4">Search</app-typography>
+        <h6 class="eyebrow text-accent mb-4">Search</h6>
         <div class="relative">
-          <input 
-            type="text" 
-            [(ngModel)]="searchQuery" 
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
             (ngModelChange)="onSearchChange()"
-            placeholder="Search crafts..." 
-            class="w-full px-4 py-3 rounded-xl border border-primary/10 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent"
+            placeholder="Search crafts..."
+            class="w-full ps-4 pe-10 py-3 rounded-sm border border-line bg-surface focus:outline-none focus:border-primary/40 transition-all font-sans text-sm text-accent placeholder:text-muted"
           >
-          <svg class="absolute right-4 top-3.5 w-5 h-5 text-accent/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <svg class="absolute right-4 rtl:left-4 rtl:right-auto top-3.5 w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
       </div>
 
+      <div class="rule-gold opacity-40"></div>
+
       <!-- Categories -->
       <div>
-        <app-typography variant="h6" [serif]="true" customClass="mb-4">Categories</app-typography>
+        <h6 class="eyebrow text-accent mb-4">Categories</h6>
         <div class="flex flex-wrap gap-2">
-          <button 
-            *ngFor="let cat of categories" 
+          <button
+            *ngFor="let cat of categories"
             (click)="setCategory(cat)"
-            [class]="selectedCategory === cat ? 'bg-primary text-white shadow-sm' : 'bg-white text-accent/60 border border-primary/5 hover:border-primary/20'"
-            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider"
+            [class]="selectedCategory === cat ? 'bg-primary text-white border-primary' : 'bg-surface text-accent/60 border-line hover:border-primary/40 hover:text-accent'"
+            class="px-3 py-1.5 rounded-sm text-[11px] font-semibold transition-all uppercase tracking-wider border"
           >
             {{ cat }}
           </button>
         </div>
       </div>
 
+      <div class="rule-gold opacity-40"></div>
+
       <!-- Regions -->
       <div>
-        <app-typography variant="h6" [serif]="true" customClass="mb-4">Origin Region</app-typography>
-        <div class="space-y-2">
+        <h6 class="eyebrow text-accent mb-4">Origin Region</h6>
+        <div class="space-y-2.5">
           <label *ngFor="let region of regions" class="flex items-center gap-3 group cursor-pointer">
-            <input 
-              type="radio" 
-              name="region" 
-              [value]="region" 
-              [(ngModel)]="selectedRegion" 
+            <input
+              type="radio"
+              name="region"
+              [value]="region"
+              [(ngModel)]="selectedRegion"
               (change)="applyFilters()"
-              class="w-4 h-4 text-primary border-primary/10 focus:ring-primary/20"
+              class="w-4 h-4 accent-primary border-line"
             >
-            <span [class]="selectedRegion === region ? 'text-primary font-bold' : 'text-accent/60 group-hover:text-accent'" class="text-sm transition-colors">
+            <span [class]="selectedRegion === region ? 'text-primary font-semibold' : 'text-accent/60 group-hover:text-accent'" class="text-sm transition-colors">
               {{ region }}
             </span>
           </label>
         </div>
       </div>
 
+      <div class="rule-gold opacity-40"></div>
+
       <!-- Price Range -->
       <div>
-        <app-typography variant="h6" [serif]="true" customClass="mb-4">Max Price (MAD)</app-typography>
-        <input 
-          type="range" 
-          min="0" 
-          max="5000" 
-          step="100" 
-          [(ngModel)]="maxPrice" 
+        <h6 class="eyebrow text-accent mb-4">Max Price (MAD)</h6>
+        <input
+          type="range"
+          min="0"
+          max="5000"
+          step="100"
+          [(ngModel)]="maxPrice"
           (change)="applyFilters()"
-          class="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
+          class="w-full h-1.5 bg-line rounded-lg appearance-none cursor-pointer accent-primary"
         >
-        <div class="flex justify-between mt-2">
-          <app-typography variant="caption">0 MAD</app-typography>
-          <app-typography variant="caption" customClass="font-bold text-primary">{{ maxPrice }} MAD</app-typography>
+        <div class="flex justify-between mt-3">
+          <span class="font-sans text-xs text-muted">0 MAD</span>
+          <span class="font-sans text-xs font-semibold text-primary">{{ maxPrice }} MAD</span>
         </div>
       </div>
     </aside>
 
     <!-- Product Grid -->
     <main class="flex-1">
-      <div class="flex justify-between items-center mb-8">
-        <app-typography variant="h4" [serif]="true">
-          {{ loading ? 'Finding Treasures...' : (filteredProducts.length + ' Masterpieces Found') }}
+      <div class="flex justify-between items-center mb-8 pb-5 border-b border-line">
+        <app-typography variant="h5" [serif]="true" customClass="text-accent">
+          {{ loading ? 'Finding treasures…' : (filteredProducts.length + ' pieces') }}
         </app-typography>
-        
-        <div class="flex items-center gap-2 text-accent/40 text-sm">
-          <span>Sort by:</span>
-          <select class="bg-transparent font-bold text-accent focus:outline-none cursor-pointer">
+
+        <div class="flex items-center gap-2 text-muted text-sm">
+          <span class="hidden sm:inline eyebrow">Sort</span>
+          <select class="bg-transparent font-medium text-accent focus:outline-none cursor-pointer text-sm">
             <option>Newest Arrivals</option>
             <option>Price: Low to High</option>
             <option>Price: High to Low</option>
@@ -92,25 +110,25 @@
       <!-- Skeletons -->
       <div *ngIf="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div *ngFor="let i of [1,2,3,4,5,6]" class="space-y-4">
-          <app-skeleton height="300px" rounded="lg"></app-skeleton>
-          <app-skeleton height="24px" width="60%"></app-skeleton>
+          <app-skeleton height="320px" rounded="sm"></app-skeleton>
+          <app-skeleton height="20px" width="60%"></app-skeleton>
           <app-skeleton height="16px" width="40%"></app-skeleton>
         </div>
       </div>
 
       <!-- Grid -->
       <div *ngIf="!loading && filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <app-product-card 
-          *ngFor="let product of filteredProducts" 
+        <app-product-card
+          *ngFor="let product of filteredProducts"
           [product]="product"
         ></app-product-card>
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="!loading && filteredProducts.length === 0" class="text-center py-20 bg-accent/5 rounded-3xl border-2 border-dashed border-primary/10">
-        <app-typography variant="h3" [serif]="true" customClass="mb-4">No crafts found</app-typography>
-        <app-typography variant="body" customClass="text-accent/60 mb-8">Try adjusting your filters or search terms.</app-typography>
-        <button (click)="searchQuery=''; selectedCategory='All'; selectedRegion='All'; maxPrice=5000; applyFilters()" class="text-primary font-black uppercase tracking-widest text-sm border-b-2 border-primary/20 hover:border-primary transition-all">Clear All Filters</button>
+      <div *ngIf="!loading && filteredProducts.length === 0" class="text-center py-20 bg-surface rounded-sm border border-dashed border-line">
+        <app-typography variant="h4" [serif]="true" customClass="mb-3 text-accent">No crafts found</app-typography>
+        <p class="font-sans text-muted mb-8">Try adjusting your filters or search terms.</p>
+        <button (click)="searchQuery=''; selectedCategory='All'; selectedRegion='All'; maxPrice=5000; applyFilters()" class="eyebrow text-primary border-b border-primary/30 hover:border-primary pb-1 transition-all">Clear All Filters</button>
       </div>
     </main>
 

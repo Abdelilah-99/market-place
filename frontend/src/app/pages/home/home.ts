@@ -31,10 +31,10 @@ export class Home {
   public isLoading = signal(true);
 
   public categories = [
-    { name: 'Textiles', icon: '🧵' },
-    { name: 'Ceramics', icon: '🏺' },
-    { name: 'Leather', icon: '👜' },
-    { name: 'Food', icon: '🧂' }
+    { name: 'Textiles', key: 'textiles', desc: 'Handwoven rugs & throws' },
+    { name: 'Ceramics', key: 'ceramics', desc: 'Glazed pottery & tagines' },
+    { name: 'Leather', key: 'leather', desc: 'Tanned bags & poufs' },
+    { name: 'Spices', key: 'spices', desc: 'Souk-sourced flavors' }
   ];
 
   constructor(private productsService: ProductsService) {}

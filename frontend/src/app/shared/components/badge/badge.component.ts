@@ -13,14 +13,16 @@ import { CommonModule } from '@angular/common';
 })
 export class BadgeComponent {
   @Input() variant: 'primary' | 'secondary' | 'accent' | 'neutral' = 'primary';
+  @Input() customClass = '';
 
   get classes() {
     return [
-      'inline-flex items-center px-3 py-1 rounded-sm text-[10px] font-black tracking-widest uppercase',
-      this.variant === 'primary' ? 'bg-primary text-white' : '',
-      this.variant === 'secondary' ? 'bg-secondary text-accent' : '',
-      this.variant === 'accent' ? 'bg-accent text-white' : '',
-      this.variant === 'neutral' ? 'bg-neutral text-white' : '',
+      'inline-flex items-center px-3 py-1 rounded-sm text-[10px] font-bold tracking-[0.18em] uppercase',
+      this.variant === 'primary' ? 'bg-primary/10 text-primary' : '',
+      this.variant === 'secondary' ? 'bg-secondary/15 text-secondary-dark' : '',
+      this.variant === 'accent' ? 'bg-accent text-background' : '',
+      this.variant === 'neutral' ? 'bg-neutral/15 text-neutral' : '',
+      this.customClass,
     ].filter(Boolean).join(' ');
   }
 }

@@ -1,26 +1,26 @@
 <app-section background="sand" padding="md">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+    <div class="flex flex-col md:flex-row justify-between md:items-end gap-6 mb-12 pb-6 border-b border-line">
         <div>
-            <app-badge variant="accent" class="mb-2">Merchant Hub</app-badge>
-            <app-typography variant="h2" [serif]="true" customClass="text-accent">Seller Dashboard</app-typography>
-            <app-typography variant="body" customClass="text-accent/60 mt-1">
-                You have <span class="font-bold text-primary">{{ products().length }}</span> active treasures in the marketplace.
-            </app-typography>
+            <span class="eyebrow text-primary">Merchant Hub</span>
+            <app-typography variant="h2" [serif]="true" customClass="text-accent mt-3">Seller Dashboard</app-typography>
+            <p class="font-sans text-muted mt-2">
+                You have <span class="font-semibold text-primary">{{ products().length }}</span> active treasures in the marketplace.
+            </p>
         </div>
 
         <app-button variant="primary" (onClick)="togglePopUp()">
-            <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Create New Product
         </app-button>
     </div>
 
     @if (products().length === 0) {
-        <div class="text-center py-24 bg-white rounded-2xl border border-dashed border-primary/20">
-            <app-typography variant="h4" [serif]="true" customClass="text-accent/40 mb-4">No products found</app-typography>
+        <div class="text-center py-24 bg-surface rounded-sm border border-dashed border-line">
+            <app-typography variant="h4" [serif]="true" customClass="text-muted mb-4">No products found</app-typography>
             <app-button variant="outline" size="sm" (onClick)="togglePopUp()">Start your legacy</app-button>
         </div>
     } @else {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
             <app-product-card *ngFor="let product of products()" [product]="product"></app-product-card>
         </div>
     }

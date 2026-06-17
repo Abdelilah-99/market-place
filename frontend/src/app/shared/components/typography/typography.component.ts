@@ -28,14 +28,14 @@ export class TypographyComponent {
     const isSerif = this.serif || ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(this.variant);
     return [
       isSerif ? 'font-serif' : 'font-sans',
-      this.variant === 'h1' ? 'text-4xl md:text-6xl font-black leading-tight' : '',
-      this.variant === 'h2' ? 'text-3xl md:text-5xl font-bold leading-tight' : '',
-      this.variant === 'h3' ? 'text-2xl md:text-4xl font-bold' : '',
-      this.variant === 'h4' ? 'text-xl md:text-2xl font-semibold' : '',
+      this.variant === 'h1' ? 'text-4xl md:text-6xl font-medium leading-[1.08] tracking-tight' : '',
+      this.variant === 'h2' ? 'text-3xl md:text-5xl font-medium leading-[1.12] tracking-tight' : '',
+      this.variant === 'h3' ? 'text-2xl md:text-4xl font-medium leading-tight' : '',
+      this.variant === 'h4' ? 'text-xl md:text-2xl font-medium' : '',
       this.variant === 'h5' ? 'text-lg md:text-xl font-semibold' : '',
       this.variant === 'h6' ? 'text-base md:text-lg font-semibold' : '',
       this.variant === 'body' ? 'text-base leading-relaxed' : '',
-      this.variant === 'caption' ? 'text-sm opacity-75' : '',
+      this.variant === 'caption' ? 'text-sm text-muted' : '',
       this.customClass
     ].filter(Boolean).join(' ');
   }

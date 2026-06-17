@@ -4,44 +4,64 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-primary: #c25e44;
-  --color-secondary: #f4c430;
-  --color-accent: #002366;
-  --color-background: #f5e6d3;
-  --color-neutral: #556b2f;
+  /* Colors — Refined Classic Luxury (warm earth + antique gold) */
+  --color-primary: #b1593e;        /* terracotta */
+  --color-primary-dark: #8f4631;   /* deep terracotta */
+  --color-secondary: #b08d4f;      /* antique brass gold */
+  --color-secondary-dark: #927239; /* aged gold */
+  --color-accent: #2b2420;         /* warm espresso ink (text + dark surfaces) */
+  --color-background: #f6f1e7;     /* soft ivory */
+  --color-surface: #fffdf9;        /* warm white cards */
+  --color-muted: #8a8178;          /* muted taupe text */
+  --color-line: #e4dbcb;           /* hairline borders */
+  --color-neutral: #6f7553;        /* muted olive */
 
   /* Typography */
   --font-serif: "Playfair Display", serif;
   --font-sans: "Inter", sans-serif;
 
-  /* Spacing - Soft Luxury Scale */
+  /* Spacing - Classic Scale */
   --spacing-sm: 0.5rem;
   --spacing-md: 1.5rem;
   --spacing-lg: 3rem;
   --spacing-xl: 5rem;
 
-  /* Border Radius */
-  --radius-sm: 8px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  /* Border Radius - Refined / restrained */
+  --radius-sm: 3px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
 
-  /* Shadows */
-  --shadow-elevation-1: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-elevation-premium: 0 20px 40px rgba(0, 0, 0, 0.1);
+  /* Shadows - Soft and understated */
+  --shadow-elevation-1: 0 1px 2px rgba(43, 36, 32, 0.04), 0 1px 3px rgba(43, 36, 32, 0.06);
+  --shadow-elevation-premium: 0 16px 40px -12px rgba(43, 36, 32, 0.18);
 }
 
 @layer utilities {
   .bg-zellige-pattern {
     background-color: var(--color-background);
-    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c25e44' fill-opacity='0.03' fill-rule='evenodd'%3E%3Cpath d='M40 0l10 30h30L55 45l10 35L40 60 15 80l10-35L0 30h30z'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23b1593e' fill-opacity='0.04' fill-rule='evenodd'%3E%3Cpath d='M40 0l10 30h30L55 45l10 35L40 60 15 80l10-35L0 30h30z'/%3E%3C/g%3E%3C/svg%3E");
     background-repeat: repeat;
+  }
+
+  /* Letterspaced eyebrow label used across the app */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  /* Thin classic divider */
+  .rule-gold {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-secondary), transparent);
   }
 }
 
 @layer base {
   body {
-    @apply bg-background text-accent font-sans;
+    @apply bg-background text-accent font-sans antialiased;
     margin: 0;
   }
 
@@ -52,6 +72,11 @@
   /* Accessibility: Premium Focus States */
   :focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    background: var(--color-secondary);
+    color: var(--color-accent);
   }
 
   /* Accessibility: Reduced Motion */

@@ -1,45 +1,45 @@
 <app-section background="sand" padding="lg">
     <div class="max-w-4xl mx-auto">
         <div class="text-center mb-12">
-            <app-badge variant="primary" class="mb-4">Personal Sanctuary</app-badge>
-            <app-typography variant="h1" [serif]="true" customClass="text-accent">My Profile</app-typography>
-            <app-typography variant="body" customClass="text-accent/60 mt-2">Manage your artisan journey and personal details</app-typography>
+            <span class="eyebrow text-primary">Personal Sanctuary</span>
+            <app-typography variant="h1" [serif]="true" customClass="text-accent mt-3 text-4xl md:text-5xl">My Profile</app-typography>
+            <p class="font-sans text-muted mt-3">Manage your artisan journey and personal details</p>
         </div>
 
         @if (isLoading()) {
         <div class="flex flex-col items-center justify-center py-20">
-            <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
-            <app-typography variant="caption">Invoking your profile...</app-typography>
+            <div class="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+            <p class="font-sans text-sm text-muted">Loading your profile…</p>
         </div>
         }
 
         @if (!isLoading() && errorMessage() && !userProfile()) {
-        <div class="bg-red-50 border border-red-100 p-8 rounded-xl text-center">
-            <app-typography variant="body" customClass="text-red-600 mb-6">{{ errorMessage() }}</app-typography>
+        <div class="bg-primary/10 border border-primary/20 p-8 rounded-sm text-center">
+            <p class="font-sans text-primary mb-6">{{ errorMessage() }}</p>
             <app-button variant="outline" (onClick)="loadProfile()">Retry Connection</app-button>
         </div>
         }
 
         @if (!isLoading() && userProfile()) {
-        <div class="bg-white rounded-2xl shadow-elevation-premium border border-primary/10 overflow-hidden">
+        <div class="bg-surface rounded-sm shadow-elevation-premium border border-line overflow-hidden">
             <!-- Top Accent -->
             <div class="h-32 bg-accent bg-zellige-pattern relative">
                 <div class="absolute inset-0 bg-gradient-to-t from-accent/80 to-transparent"></div>
             </div>
 
-            <div class="px-8 pb-12 -mt-16 relative z-10">
+            <div class="px-6 md:px-8 pb-12 -mt-16 relative z-10">
                 <!-- Avatar Section -->
-                <div class="flex flex-col md:flex-row items-end gap-6 mb-12">
+                <div class="flex flex-col md:flex-row items-center md:items-end gap-6 mb-12 text-center md:text-left rtl:md:text-right">
                     <div class="relative group">
                         @if (profileAvatarSrc()) {
-                        <img [src]="profileAvatarSrc()" [alt]="userProfile()!.username" class="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover bg-white" />
+                        <img [src]="profileAvatarSrc()" [alt]="userProfile()!.username" class="w-32 h-32 rounded-full border-4 border-surface shadow-elevation-premium object-cover bg-surface" />
                         } @else {
-                        <div class="w-32 h-32 rounded-full border-4 border-white shadow-xl bg-primary flex items-center justify-center text-white text-4xl font-serif font-black">
+                        <div class="w-32 h-32 rounded-full border-4 border-surface shadow-elevation-premium bg-primary flex items-center justify-center text-white text-4xl font-serif">
                             {{ userProfile()!.username.charAt(0).toUpperCase() }}
                         </div>
                         }
                         @if (isEditing()) {
-                            <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                            <label class="absolute inset-0 flex items-center justify-center bg-accent/50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 <input type="file" class="hidden" (change)="onAvatarSelected($event)">
                             </label>
@@ -47,33 +47,33 @@
                     </div>
                     <div class="flex-1 pb-2">
                         <app-typography variant="h3" [serif]="true" customClass="text-accent">{{ userProfile()!.username }}</app-typography>
-                        <div class="flex gap-2 mt-1">
-                            <app-badge variant="secondary">{{ userProfile()!.role }}</app-badge>
-                            <app-typography variant="caption" customClass="text-accent/40 font-mono text-[10px]">ID: {{ userProfile()!.id }}</app-typography>
+                        <div class="flex items-center justify-center md:justify-start gap-3 mt-2">
+                            <span class="px-3 py-1 rounded-sm bg-secondary/15 text-secondary-dark text-[10px] font-bold tracking-[0.18em] uppercase">{{ userProfile()!.role }}</span>
+                            <span class="text-muted font-mono text-[10px]">ID: {{ userProfile()!.id }}</span>
                         </div>
                     </div>
                     @if (!isEditing()) {
-                        <app-button variant="outline" size="sm" (onClick)="toggleEdit()">Edit Sanctuary</app-button>
+                        <app-button variant="outline" size="sm" (onClick)="toggleEdit()">Edit Profile</app-button>
                     }
                 </div>
 
                 <!-- Content Area -->
                 @if (!isEditing()) {
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12">
                     <div class="space-y-8">
                         <div>
-                            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary mb-1 block">Legal Name</app-typography>
-                            <app-typography variant="h6">{{ userProfile()!.username }}</app-typography>
+                            <span class="eyebrow text-primary block mb-1.5">Legal Name</span>
+                            <app-typography variant="h6" customClass="text-accent">{{ userProfile()!.username }}</app-typography>
                         </div>
                         <div>
-                            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary mb-1 block">Electronic Post</app-typography>
-                            <app-typography variant="h6">{{ userProfile()!.email }}</app-typography>
+                            <span class="eyebrow text-primary block mb-1.5">Email Address</span>
+                            <app-typography variant="h6" customClass="text-accent">{{ userProfile()!.email }}</app-typography>
                         </div>
                     </div>
-                    <div class="bg-background/30 p-6 rounded-xl border border-primary/5">
-                        <app-typography variant="h6" [serif]="true" customClass="mb-4">Account Security</app-typography>
-                        <app-typography variant="body" customClass="text-accent/60 text-sm mb-6">Your account is protected with industry-standard encryption. You can update your credentials or manage your data here.</app-typography>
-                        <app-button variant="ghost" size="sm" customClass="text-red-500 hover:bg-red-50" (onClick)="onDeleteUser()">Close Account</app-button>
+                    <div class="bg-background p-6 rounded-sm border border-line">
+                        <h6 class="font-serif text-lg text-accent mb-3">Account Security</h6>
+                        <p class="font-sans text-sm text-muted mb-6 leading-relaxed">Your account is protected with industry-standard encryption. You can update your credentials or manage your data here.</p>
+                        <app-button variant="ghost" size="sm" customClass="!px-0 text-primary" (onClick)="onDeleteUser()">Close Account</app-button>
                     </div>
                 </div>
                 }
@@ -83,35 +83,35 @@
                 <form #profileForm="ngForm" (ngSubmit)="onSubmit(profileForm)" class="space-y-8" novalidate>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
-                            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Username</app-typography>
+                            <label for="name" class="eyebrow text-accent block">Username</label>
                             <input id="name" name="name" type="text" [ngModel]="editFormName()"
-                                (ngModelChange)="editFormName.set($event)" required minlength="3" 
-                                class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+                                (ngModelChange)="editFormName.set($event)" required minlength="3"
+                                class="w-full px-4 py-3 rounded-sm border border-line bg-background focus:outline-none focus:border-primary/50 transition-all font-sans text-sm text-accent" />
                         </div>
 
                         <div class="space-y-2">
-                            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Email Address</app-typography>
+                            <label for="email" class="eyebrow text-accent block">Email Address</label>
                             <input id="email" name="email" type="email" [ngModel]="editFormEmail()"
-                                (ngModelChange)="editFormEmail.set($event)" required email 
-                                class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+                                (ngModelChange)="editFormEmail.set($event)" required email
+                                class="w-full px-4 py-3 rounded-sm border border-line bg-background focus:outline-none focus:border-primary/50 transition-all font-sans text-sm text-accent" />
                         </div>
                     </div>
 
                     @if (successMessage()) {
-                    <div class="p-4 bg-green-50 border border-green-100 rounded-lg text-green-600 text-sm font-bold text-center">
+                    <div class="p-4 bg-neutral/10 border border-neutral/20 rounded-sm text-neutral text-sm font-semibold text-center">
                         {{ successMessage() }}
                     </div>
                     }
 
                     @if (errorMessage()) {
-                    <div class="p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm font-bold text-center">
+                    <div class="p-4 bg-primary/10 border border-primary/20 rounded-sm text-primary text-sm font-semibold text-center">
                         {{ errorMessage() }}
                     </div>
                     }
 
                     <div class="flex flex-wrap gap-4 pt-4">
                         <app-button type="submit" [disabled]="isSubmitting() || profileForm.invalid">
-                            {{ isSubmitting() ? 'Preserving...' : 'Save Changes' }}
+                            {{ isSubmitting() ? 'Saving…' : 'Save Changes' }}
                         </app-button>
                         <app-button type="button" variant="outline" (onClick)="toggleEdit()" [disabled]="isSubmitting()">
                             Cancel

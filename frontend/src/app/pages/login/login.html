@@ -1,30 +1,33 @@
 <app-section background="zellige" padding="xl" class="min-h-[80vh] flex items-center">
-  <div class="max-w-md mx-auto w-full bg-white rounded-xl shadow-elevation-premium border border-primary/10 overflow-hidden">
+  <div class="max-w-md mx-auto w-full bg-surface rounded-sm shadow-elevation-premium border border-line overflow-hidden">
     <!-- Header Decor -->
-    <div class="h-2 bg-primary"></div>
-    
+    <div class="h-1 bg-primary"></div>
+
     <div class="p-8 md:p-12">
       <div class="text-center mb-10">
-        <app-typography variant="h2" [serif]="true" customClass="text-accent mb-2">Welcome Back</app-typography>
-        <app-typography variant="body" customClass="text-accent/60">Sign in to continue your journey through Moroccan crafts.</app-typography>
+        <span class="w-12 h-12 mx-auto mb-5 border border-secondary/70 rotate-45 flex items-center justify-center">
+          <span class="-rotate-45 font-serif text-primary text-xl">M</span>
+        </span>
+        <app-typography variant="h2" [serif]="true" customClass="text-accent mb-2 text-3xl">Welcome Back</app-typography>
+        <p class="font-sans text-sm text-muted">Sign in to continue your journey through Moroccan crafts.</p>
       </div>
 
       <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="space-y-6" novalidate>
         <div class="space-y-2">
-          <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Username or Email</app-typography>
+          <label for="identification" class="eyebrow text-accent block">Username or Email</label>
           <input id="identification" name="identification" type="text" [(ngModel)]="user.identification" required
-            minlength="3" placeholder="Enter your identification" 
-            class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+            minlength="3" placeholder="Enter your identification"
+            class="w-full px-4 py-3 rounded-sm border border-line bg-background focus:outline-none focus:border-primary/50 transition-all font-sans text-sm text-accent placeholder:text-muted" />
         </div>
 
         <div class="space-y-2">
           <div class="flex justify-between items-center">
-            <app-typography variant="caption" customClass="uppercase tracking-widest font-black text-primary">Password</app-typography>
-            <a href="#" class="text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary">Forgot?</a>
+            <label for="password" class="eyebrow text-accent">Password</label>
+            <a href="#" class="text-[10px] font-bold uppercase tracking-widest text-muted hover:text-primary transition-colors">Forgot?</a>
           </div>
           <input id="password" name="password" type="password" [(ngModel)]="user.password" required minlength="6"
-            placeholder="••••••••" 
-            class="w-full px-4 py-3 rounded-lg border border-primary/10 bg-background/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans text-accent" />
+            placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-sm border border-line bg-background focus:outline-none focus:border-primary/50 transition-all font-sans text-sm text-accent placeholder:text-muted" />
         </div>
 
         <app-button type="submit" [fullWidth]="true" [disabled]="!!isSubmitting() || loginForm.invalid">
@@ -33,22 +36,22 @@
       </form>
 
       @if (message) {
-        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg">
-          <app-typography variant="caption" customClass="text-green-600 font-bold text-center block">{{ message }}</app-typography>
+        <div class="mt-6 p-4 bg-neutral/10 border border-neutral/20 rounded-sm">
+          <p class="font-sans text-xs font-semibold text-neutral text-center">{{ message }}</p>
         </div>
       }
 
       @if (errorMessage()) {
-        <div class="mt-6 p-4 bg-red-50 border border-red-100 rounded-lg">
-          <app-typography variant="caption" customClass="text-red-600 font-bold text-center block">{{ errorMessage() }}</app-typography>
+        <div class="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-sm">
+          <p class="font-sans text-xs font-semibold text-primary text-center">{{ errorMessage() }}</p>
         </div>
       }
 
-      <div class="mt-10 pt-8 border-t border-primary/5 text-center">
-        <app-typography variant="body" customClass="text-accent/60">
-          Don't have an account? 
-          <a routerLink="/register" class="text-primary font-bold hover:underline">Register</a>
-        </app-typography>
+      <div class="mt-10 pt-8 border-t border-line text-center">
+        <p class="font-sans text-sm text-muted">
+          Don't have an account?
+          <a routerLink="/register" class="text-primary font-semibold hover:underline">Register</a>
+        </p>
       </div>
     </div>
   </div>
