@@ -16,8 +16,6 @@ services:
       context: ../
       dockerfile: ./media-service/media/Dockerfile
     container_name: media-service
-    ports:
-      - "8888:8888"
     env_file:
       - .env.media
     depends_on:
