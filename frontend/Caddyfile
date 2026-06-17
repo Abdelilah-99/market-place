@@ -20,13 +20,6 @@ jenkins.bouchikhi.com {
    reverse_proxy buy01-jenkins:8080
 }
 
-prometheus.bouchikhi.com {
-  basic_auth {
-    admin {$PROMETHEUS_AUTH_HASH}
-  }
-  reverse_proxy prometheus:9090
-}
-
 grafana.bouchikhi.com {
   reverse_proxy grafana:3000
 }

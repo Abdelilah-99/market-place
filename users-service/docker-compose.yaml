@@ -15,8 +15,6 @@ services:
       dockerfile: dockerfile
     restart: on-failure
     container_name: users-service
-    # ports:
-      # - "8080:8080"
     env_file:
       - .env.users
 

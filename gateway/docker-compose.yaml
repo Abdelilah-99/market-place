@@ -6,8 +6,6 @@ services:
     container_name: gateway
     env_file:
       - .env.gateway
-    ports:
-      - "10000:10000"
     volumes:
       - backend_m2:/root/.m2
       - maven_cash:/root/.m2
