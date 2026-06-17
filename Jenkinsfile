@@ -119,12 +119,17 @@ def sendEmail(String status, String message) {
 }
 
 def attemptRollback(String prefix, String previousCommit) {
-  try {
-    withCredentials(getCredentialsList()) {
-      sh 'bash scripts/ci/setup_env.sh'
-      sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
+    if (!previousCommit?.trim()) {
+        echo "No previous successful commit found. Skipping rollback."
+        return
     }
-  } catch (err) {
-    echo "Rollback failed: ${err.getMessage()}"
-  }
-}
+
+    try {
+        withCredentials(getCredentialsList()) {
+            sh 'bash scripts/ci/setup_env.sh'
+            sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
+        }
+    } catch (err) {
+        echo "Rollback failed: ${err.getMessage()}"
+    }
+} 
