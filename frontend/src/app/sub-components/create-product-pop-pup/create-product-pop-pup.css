@@ -1,0 +1,164 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(6px);
+}
+
+.product-modal {
+  width: min(100%, 720px);
+  max-height: min(92vh, 820px);
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.section-kicker {
+  color: var(--brand);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modal-header h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 950;
+}
+
+.icon-close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.icon-close:hover {
+  color: var(--text);
+  background: var(--surface-soft);
+}
+
+.modal-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.upload-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.upload-field > label {
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.upload-dropzone {
+  min-height: 220px;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.35rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.upload-dropzone:hover {
+  border-color: rgba(15, 118, 110, 0.45);
+  background: var(--brand-soft);
+}
+
+.upload-dropzone i {
+  color: var(--brand);
+  font-size: 2rem;
+}
+
+.upload-dropzone span {
+  color: var(--text);
+  font-weight: 900;
+}
+
+.upload-dropzone small {
+  color: var(--text-muted);
+}
+
+.hidden {
+  display: none;
+}
+
+.image-preview {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+}
+
+.image-preview button {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  background: rgba(255, 255, 255, 0.92);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+@media (max-width: 560px) {
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}

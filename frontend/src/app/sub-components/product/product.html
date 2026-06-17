@@ -1,68 +1,75 @@
-<div class="max-w-sm flex flex-col rounded-xl overflow-hidden shadow-lg bg-white border border-gray-100 h-full">
-  <div class="relative h-48 w-full bg-gray-100 flex-shrink-0">
-    <img class="w-full h-full object-cover"
-      [src]="imagePreview() || (product.image ? '/api/media/products/' + product.image : '')" [alt]="product.name" />
+<article class="product-card">
+  <div class="product-media">
+    <img [src]="imagePreview() || (product.image ? '/api/media/products/' + product.image : '')"
+      [alt]="product.name" />
+    <span class="condition-pill">Available</span>
     @if (isEditing) {
-    <button
-      class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md hover:bg-white transition-all"
-      (click)="fileInput.click()">
-      <i class="fa fa-camera text-gray-700"></i>
+    <button class="media-edit-button" (click)="fileInput.click()" aria-label="Change product image">
+      <i class="fa fa-camera"></i>
     </button>
     <input type="file" #fileInput class="hidden" (change)="onImageSelected($event)" accept="image/*" />
     }
   </div>
 
-  <div class="px-6 py-5 flex-grow">
+  <div class="product-body">
     @if (!isEditing) {
-    <div class="space-y-2">
-      <h3 class="font-bold text-xl text-gray-900 leading-tight truncate">{{ product.name }}</h3>
-      <p class="text-gray-600 text-sm line-clamp-3 h-15">{{ product.description }}</p>
-      <p class="text-indigo-600 font-extrabold text-xl pt-2">${{ product.price }}</p>
+    <div>
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.description }}</p>
+    </div>
+    <div class="price-row">
+      <strong>${{ product.price }}</strong>
+      <span>Ready to ship</span>
     </div>
     } @else {
-    <div class="flex flex-col gap-3">
-      <input type="text" [(ngModel)]="updatedProduct.name"
-        class="border border-gray-300 rounded-md w-full px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-      <textarea [(ngModel)]="updatedProduct.description" rows="3"
-        class="border border-gray-300 rounded-md w-full px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm resize-none"></textarea>
-      <div class="relative">
-        <span class="absolute left-3 top-2 text-gray-500">$</span>
-        <input type="number" [(ngModel)]="updatedProduct.price"
-          class="border border-gray-300 rounded-md w-full pl-7 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
+    <div class="edit-fields">
+      <label class="form-field">
+        <span>Name</span>
+        <input type="text" [(ngModel)]="updatedProduct.name" />
+      </label>
+      <label class="form-field">
+        <span>Description</span>
+        <textarea [(ngModel)]="updatedProduct.description" rows="3"></textarea>
+      </label>
+      <div class="form-field price-input">
+        <label>Price</label>
+        <div>
+          <span>$</span>
+          <input type="number" [(ngModel)]="updatedProduct.price" />
+        </div>
       </div>
     </div>
     }
   </div>
 
-  <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between mt-auto">
+  <div class="product-actions">
     @if (!isMyProduct) {
-    <button
-      class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-sm active:scale-95">
-      Buy Now
+    <button class="btn-primary buy-button">
+      <i class="fa fa-bag-shopping"></i>
+      Buy now
     </button>
     }
 
     @if (isMyProduct) {
-    <div class="flex items-center justify-end w-full space-x-5 text-lg">
+    <div class="seller-actions">
       @if (!isEditing) {
-      <button (click)="isEditing = true"
-        class="text-gray-400 hover:text-blue-600 transition-colors tooltip  cursor-pointer">
+      <button (click)="isEditing = true" class="icon-button" aria-label="Edit product">
         <i class="fa fa-pencil"></i>
       </button>
-      <button (click)="delete()" class="text-gray-400 hover:text-red-600 transition-colors  cursor-pointer">
+      <button (click)="delete()" class="icon-button danger" aria-label="Delete product">
         <i class="fa fa-trash"></i>
       </button>
       } @else {
-      <button (click)="cancel()"
-        class="text-gray-400 hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1 text-sm font-bold">
-        <i class="fa fa-times"></i> CANCEL
+      <button (click)="cancel()" class="btn-secondary compact">
+        <i class="fa fa-xmark"></i>
+        Cancel
       </button>
-      <button (click)="save()"
-        class="text-green-600 hover:text-green-700 transition-colors cursor-pointer flex items-center gap-1 text-sm font-bold">
-        <i class="fa fa-check"></i> SAVE
+      <button (click)="save()" class="btn-primary compact">
+        <i class="fa fa-check"></i>
+        Save
       </button>
       }
     </div>
     }
   </div>
-</div>
+</article>

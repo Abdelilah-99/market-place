@@ -1,8 +1,49 @@
-<div class="container mx-auto p-4">
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    <app-product 
-      *ngFor="let product of products()"
-      [product]="product">
-    </app-product>
-  </div>
-</div>
+<main class="home-page">
+  <section class="hero page-shell">
+    <div class="hero-copy">
+      <span class="eyebrow">Curated local finds</span>
+      <h1>Shop products from trusted sellers in one polished marketplace.</h1>
+      <p>Browse fresh listings, compare prices quickly, and discover items ready to buy today.</p>
+    </div>
+
+    <div class="hero-panel" aria-label="Marketplace highlights">
+      <div>
+        <strong>{{ products().length }}</strong>
+        <span>live listings</span>
+      </div>
+      <div>
+        <strong>24h</strong>
+        <span>seller response target</span>
+      </div>
+      <div>
+        <strong>4.8</strong>
+        <span>average shop rating</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="toolbar page-shell">
+    <div>
+      <span class="section-kicker">Marketplace</span>
+      <h2>Featured products</h2>
+    </div>
+    <div class="filter-row" aria-label="Product filters">
+      <button type="button" class="filter active">All</button>
+      <button type="button" class="filter">New</button>
+      <button type="button" class="filter">Popular</button>
+      <button type="button" class="filter">Deals</button>
+    </div>
+  </section>
+
+  <section class="product-grid page-shell">
+    @if (products().length === 0) {
+    <div class="empty-state">
+      <i class="fa fa-store"></i>
+      <h2>No products yet</h2>
+      <p>New listings will appear here as sellers publish them.</p>
+    </div>
+    } @else {
+    <app-product *ngFor="let product of products()" [product]="product"></app-product>
+    }
+  </section>
+</main>

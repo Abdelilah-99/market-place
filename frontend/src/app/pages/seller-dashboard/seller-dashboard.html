@@ -1,26 +1,45 @@
-<div class="w-full px-4 md:px-8 lg:px-12 mt-6">
-    <div class="mb-6 flex items-center justify-between p-4">
-        <!-- Product Info -->
+<main class="dashboard-page page-shell">
+    <section class="dashboard-header">
         <div>
-            <span class="text-gray-700 font-medium">
-                Total Products: {{ products().length }}
-            </span>
+            <span class="section-kicker">Seller workspace</span>
+            <h1>Your product catalog</h1>
+            <p>Manage listings, update pricing, and publish fresh inventory.</p>
         </div>
 
-        <!-- Create Button -->
-        <button
-            class="px-5 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition cursor-pointer"
-            (click)="togglePopUp()">
-            Create </button>
-    </div>
+        <button class="btn-primary" (click)="togglePopUp()">
+            <i class="fa fa-plus"></i>
+            Create product
+        </button>
+    </section>
 
-
-    <div class="container mx-auto p-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <app-product *ngFor="let product of products()" (deletedProductId)="deleteProductById($event)" [product]="product" class="block w-full"></app-product>
+    <section class="stats-row" aria-label="Seller stats">
+        <div class="stat-card">
+            <span>Total products</span>
+            <strong>{{ products().length }}</strong>
         </div>
-    </div>
-</div>
+        <div class="stat-card">
+            <span>Status</span>
+            <strong>Active</strong>
+        </div>
+        <div class="stat-card">
+            <span>Catalog health</span>
+            <strong>Good</strong>
+        </div>
+    </section>
+
+    <section class="seller-grid">
+        @if (products().length === 0) {
+        <div class="empty-state">
+            <i class="fa fa-box-open"></i>
+            <h2>No seller products yet</h2>
+            <p>Create your first product to start building your storefront.</p>
+        </div>
+        } @else {
+        <app-product *ngFor="let product of products()" (deletedProductId)="deleteProductById($event)"
+            [product]="product"></app-product>
+        }
+    </section>
+</main>
 
 <!-- Create Product Popup -->
 <app-create-product-pop-pup *ngIf="isPopPupOpen" (createdProduct)="onProductCreated($event)"

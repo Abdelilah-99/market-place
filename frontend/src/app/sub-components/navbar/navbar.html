@@ -1,77 +1,55 @@
-<nav class="bg-white shadow-md">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between h-16">
+<nav class="market-nav">
+  <div class="nav-inner">
+    <a routerLink="/" class="brand" aria-label="Marketo home">
+      <span class="brand-mark">M</span>
+      <span class="brand-copy">
+        <strong>Marketo</strong>
+        <small>Local marketplace</small>
+      </span>
+    </a>
 
-      <!-- Logo -->
-      <div class="flex-shrink-0 flex items-center">
-        <a routerLink="/" class="text-xl font-bold text-indigo-600">Marketo</a>
-      </div>
-
-      <!-- Desktop Menu -->
-      <div class="hidden md:flex md:items-center md:space-x-4">
-        @if (!isAuthenticated()) {
-        <a routerLink="/login" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-          Login
-        </a>
-
-        <a routerLink="/register"
-          class="text-indigo-600 hover:text-indigo-700 border border-indigo-200 px-3 py-2 rounded-md text-sm font-semibold bg-indigo-50">
-          Register
-        </a>
-        } @else {
-        <button (click)="logout()"
-          class="text-red-600 hover:text-red-700 border border-red-200 px-3 py-2 rounded-md text-sm font-semibold bg-red-50 cursor-pointer">
-          Logout
-        </button>
-        }
-
-        <!-- Dashboard Button -->
-        @if (isSeller()) {
-        <a routerLink="/dashboard" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-          Dashboard
-        </a>
-        }
-
-        <!-- Profile Avatar -->
-        @if(isAuthenticated()) {
-        <a routerLink="/profile" class="flex items-center">
-          <img [src]="profileAvatarSrc()" alt="Profile" class="h-8 w-8 rounded-full border-2 border-indigo-600">
-        </a>
-        }
-      </div>
-
-      <!-- Mobile menu button -->
-      <div class="flex items-center md:hidden">
-        <button (click)="toggleMenu()"
-          class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <svg *ngIf="!isOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-          <svg *ngIf="isOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
+    <div class="nav-search" aria-label="Search preview">
+      <i class="fa fa-magnifying-glass"></i>
+      <span>Search products, sellers, deals</span>
     </div>
+
+    <div class="desktop-actions">
+      @if (isSeller()) {
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      }
+
+      @if (!isAuthenticated()) {
+      <a routerLink="/login" class="nav-link">Login</a>
+      <a routerLink="/register" class="nav-cta">Register</a>
+      } @else {
+      <a routerLink="/profile" class="profile-link" aria-label="Open profile">
+        @if (profileAvatarSrc()) {
+        <img [src]="profileAvatarSrc()" alt="Profile" />
+        } @else {
+        <i class="fa fa-user"></i>
+        }
+      </a>
+      <button (click)="logout()" class="logout-btn">Logout</button>
+      }
+    </div>
+
+    <button (click)="toggleMenu()" class="menu-button" aria-label="Toggle menu">
+      <i [class]="isOpen ? 'fa fa-xmark' : 'fa fa-bars'"></i>
+    </button>
   </div>
 
-  <!-- Mobile Menu -->
-  <div *ngIf="isOpen" class="md:hidden bg-white px-2 pt-2 pb-3 space-y-1 shadow-md">
-    @if (!isAuthenticated()) {
-    <a routerLink="/login"
-      class="block text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Login</a>
-    <a routerLink="/register"
-      class="block text-indigo-600 hover:text-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Register</a>
-    } @else {
-    <button (click)="logout()"
-      class="block w-full text-left text-red-600 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
-    }
+  @if (isOpen) {
+  <div class="mobile-menu">
     @if (isSeller()) {
-    <a routerLink="/dashboard"
-      class="block text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+    <a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a>
     }
-    <a routerLink="/profile"
-      class="block text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Profile</a>
+    @if (!isAuthenticated()) {
+    <a routerLink="/login" (click)="toggleMenu()">Login</a>
+    <a routerLink="/register" (click)="toggleMenu()">Register</a>
+    } @else {
+    <a routerLink="/profile" (click)="toggleMenu()">Profile</a>
+    <button (click)="logout()">Logout</button>
+    }
   </div>
+  }
 </nav>
