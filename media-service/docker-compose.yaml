@@ -23,6 +23,7 @@ services:
     volumes:
       # - media_m2:/root/.m2
       - media-service-certs:/app/resources/certs:ro
+      - media_storage:/storage
       - /home/ubuntu/.m2:/root/.m2
       # - ./certs/media-service.p12:/app/resources/certs/media-service.p12:ro
       # - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
@@ -32,6 +33,7 @@ services:
 volumes:
   mongo_data:
   media_m2:
+  media_storage:
   media-service-certs:
     external: true
 

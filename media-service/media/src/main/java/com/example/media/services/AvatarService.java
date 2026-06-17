@@ -69,6 +69,18 @@ public class AvatarService {
         return repository.findById(id).orElse(null);
     }
 
+    public boolean hasReadableContent(UserAvatar avatar) {
+        if (avatar == null) {
+            return false;
+        }
+
+        try (InputStream ignored = contentStore.getContent(avatar)) {
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     @Transactional
     public void deleteAvatar(UserAvatar avatar) {
         if (avatar == null) {

@@ -22,9 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.media.models.ProductImage;
+import com.example.media.dto.MediaStatusResponse;
 import com.example.media.repositories.ProductImageRepository;
 import com.example.media.services.ProductImageService;
 import com.example.media.stores.ProductimageContentStore;
+import com.example.shared.common.types.ImageStatus;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -121,10 +123,38 @@ public class ProductController {
 
         } catch (Exception e) {
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body("Error reading image");
+                    .body("Image metadata exists, but the stored file content was not found");
         }
+    }
+
+    @GetMapping("/{id}/status")
+    @PermitAll
+    public ResponseEntity<MediaStatusResponse> getImageStatus(@PathVariable UUID id) {
+        ProductImage image = productImageService.getAvatarbyId(id);
+
+        if (image == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MediaStatusResponse.missing(id));
+        }
+
+        boolean contentExists = productImageService.hasReadableContent(image);
+        boolean linked = image.getStatus() == ImageStatus.LINKED && contentExists;
+        String message = linked
+                ? "Product image is linked and readable"
+                : "Product image metadata exists, but content is missing or not linked";
+
+        MediaStatusResponse response = new MediaStatusResponse(
+                image.getId(),
+                true,
+                contentExists,
+                linked,
+                image.getStatus(),
+                image.getContentLength(),
+                image.getMimeType(),
+                message);
+
+        return ResponseEntity.ok(response);
     }
 
 }

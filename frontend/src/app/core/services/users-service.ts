@@ -31,13 +31,13 @@ export interface Me {
   username: string;
   email: string;
   role: string;
-  avatarUrl: string;
+  avatarUrl: string | null;
 }
 
 export interface UpdateProfile {
   name: string;
   email: string;
-  uuid: string;
+  uuid: string | null;
 }
 
 export interface ApiMessageResponse {

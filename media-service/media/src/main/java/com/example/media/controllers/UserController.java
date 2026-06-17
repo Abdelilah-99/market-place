@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.media.models.UserAvatar;
+import com.example.media.dto.MediaStatusResponse;
 import com.example.media.services.AvatarService;
 import com.example.media.stores.UserAvatarContentStore;
+import com.example.shared.common.types.ImageStatus;
 
 import jakarta.annotation.security.PermitAll;
 import java.security.Principal;
@@ -110,10 +112,37 @@ public class UserController {
             }
 
         } catch (Exception e) {
-            // Return JSON error, even if endpoint usually returns image
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body("Error reading avatar");
+                    .body("Avatar metadata exists, but the stored file content was not found");
         }
+    }
+
+    @GetMapping("/{id}/status")
+    @PermitAll
+    public ResponseEntity<MediaStatusResponse> getAvatarStatus(@PathVariable UUID id) {
+        UserAvatar avatar = avatarService.getAvatarbyId(id);
+
+        if (avatar == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MediaStatusResponse.missing(id));
+        }
+
+        boolean contentExists = avatarService.hasReadableContent(avatar);
+        boolean linked = avatar.getStatus() == ImageStatus.LINKED && contentExists;
+        String message = linked
+                ? "Avatar is linked and readable"
+                : "Avatar metadata exists, but content is missing or not linked";
+
+        MediaStatusResponse response = new MediaStatusResponse(
+                avatar.getId(),
+                true,
+                contentExists,
+                linked,
+                avatar.getStatus(),
+                avatar.getContentLength(),
+                avatar.getMimeType(),
+                message);
+
+        return ResponseEntity.ok(response);
     }
 }

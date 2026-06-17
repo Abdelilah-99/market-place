@@ -62,6 +62,18 @@ public class ProductImageService {
         return repository.findById(id).orElse(null);
     }
 
+    public boolean hasReadableContent(ProductImage image) {
+        if (image == null) {
+            return false;
+        }
+
+        try (InputStream ignored = contentStore.getContent(image)) {
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     @Transactional
     public void deleteImage(ProductImage image) {
         if (image == null) {

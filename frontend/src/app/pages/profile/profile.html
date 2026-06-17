@@ -2,7 +2,7 @@
     <div class="profile-container">
         <div class="profile-header">
             <h1>My Profile</h1>
-            <p>View and manage your account information</p>
+            <p>Manage your public information and storefront identity.</p>
         </div>
 
         @if (isLoading()) {
@@ -21,22 +21,31 @@
 
         @if (!isLoading() && userProfile()) {
         <div class="profile-card">
-            <!-- Avatar Section -->
             <div class="avatar-section">
-                @if (profileAvatarSrc()) {
-                <img [src]="profileAvatarSrc()" [alt]="userProfile()!.username" class="profile-avatar" />
-                } @else {
-                <div class="profile-avatar-placeholder">
-                    {{ userProfile()!.username.charAt(0).toUpperCase() }}
+                <div class="avatar-preview-frame">
+                    @if (selectedAvatarPreview()) {
+                    <img [src]="selectedAvatarPreview()" [alt]="userProfile()!.username" class="profile-avatar" />
+                    } @else if (profileAvatarSrc() && !removeCurrentAvatar()) {
+                    <img [src]="profileAvatarSrc()" [alt]="userProfile()!.username" class="profile-avatar" />
+                    } @else {
+                    <div class="profile-avatar-placeholder">
+                        {{ userProfile()!.username.charAt(0).toUpperCase() }}
+                    </div>
+                    }
                 </div>
-                }
                 <div class="avatar-info">
                     <h2>{{ userProfile()!.username }}</h2>
                     <span class="role-badge">{{ userProfile()!.role }}</span>
+                    @if (selectedAvatar()) {
+                    <p>{{ selectedAvatarLabel() }}</p>
+                    } @else if (removeCurrentAvatar()) {
+                    <p>Avatar will be removed after saving.</p>
+                    } @else {
+                    <p>{{ userProfile()!.email }}</p>
+                    }
                 </div>
             </div>
 
-            <!-- View Mode -->
             @if (!isEditing()) {
             <div class="profile-details">
                 <div class="detail-row">
@@ -58,11 +67,13 @@
             </div>
 
             <div class="action-buttons">
-                <button (click)="toggleEdit()" class="edit-btn">Edit Profile</button>
+                <button (click)="toggleEdit()" class="edit-btn">
+                    <i class="fa fa-pencil"></i>
+                    Edit Profile
+                </button>
             </div>
             }
 
-            <!-- Edit Mode -->
             @if (isEditing()) {
             <form #profileForm="ngForm" (ngSubmit)="onSubmit(profileForm)" class="edit-form" novalidate>
                 <div class="field-group">
@@ -77,12 +88,41 @@
                         (ngModelChange)="editFormEmail.set($event)" required email placeholder="your@email.com" />
                 </div>
 
-                <div class="field-group">
-                    <label for="avatar">Avatar (optional)</label>
-                    <input id="avatar" name="avatar" type="file" accept="image/*" (change)="onAvatarSelected($event)" />
-                </div>
+                <div class="avatar-manager">
+                    <div>
+                        <span>Profile image</span>
+                        <p>Preview a new upload before saving, or remove the current avatar.</p>
+                    </div>
 
-                <div>
+                    <div class="avatar-tools">
+                        <label for="avatar" class="upload-avatar-btn">
+                            <i class="fa fa-cloud-arrow-up"></i>
+                            Upload image
+                        </label>
+                        <input id="avatar" name="avatar" type="file" accept="image/*" class="file-input"
+                            (change)="onAvatarSelected($event)" />
+
+                        @if (selectedAvatar()) {
+                        <button type="button" class="ghost-btn" (click)="clearSelectedAvatar()">
+                            <i class="fa fa-xmark"></i>
+                            Clear upload
+                        </button>
+                        }
+
+                        @if (profileAvatarSrc() && !removeCurrentAvatar() && !selectedAvatar()) {
+                        <button type="button" class="ghost-btn danger" (click)="removeAvatar()">
+                            <i class="fa fa-trash"></i>
+                            Remove avatar
+                        </button>
+                        }
+
+                        @if (removeCurrentAvatar()) {
+                        <button type="button" class="ghost-btn" (click)="undoRemoveAvatar()">
+                            <i class="fa fa-rotate-left"></i>
+                            Undo remove
+                        </button>
+                        }
+                    </div>
                 </div>
 
                 @if (successMessage()) {
@@ -100,7 +140,9 @@
                     <button type="button" (click)="toggleEdit()" [disabled]="isSubmitting()" class="cancel-btn">
                         Cancel
                     </button>
-                    <button type="button" (click)="onDeleteUser()" [disabled]="isSubmitting()" class="delete-btn">Delete User</button>
+                    <button type="button" (click)="onDeleteUser()" [disabled]="isSubmitting()" class="delete-btn">
+                        Delete User
+                    </button>
                 </div>
             </form>
             }

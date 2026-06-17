@@ -53,7 +53,7 @@ export class Navbar {
     // this.crrAvatar.set(this.currentUser()?.avatarUrl);
   }
 
-  loadProfileImg(avatarId: string | undefined): void {
+  loadProfileImg(avatarId: string | null | undefined): void {
     if (!avatarId) {
       // console.log("here");
 

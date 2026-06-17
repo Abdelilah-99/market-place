@@ -37,19 +37,11 @@ public class ProfileService {
 
         String updatedName = req.name() == null || req.name().isBlank() ? user.name() : req.name();
         String updatedEmail = req.email() == null || req.email().isBlank() ? user.email() : req.email();
-        UUID updatedAvatarUrl = (user.avatarUrl() != null && !user.avatarUrl().isBlank())
-                ? UUID.fromString(user.avatarUrl())
-                : null;
         UUID oldAvatarUrl = (user.avatarUrl() != null && !user.avatarUrl().isBlank())
                 ? UUID.fromString(user.avatarUrl())
                 : null;
-
-        System.err.println("===//§§>>  " + req.uuid());
-        String AvatarUrlSTr = null;
-        if (req.uuid() != null) {
-            updatedAvatarUrl = req.uuid();
-            AvatarUrlSTr = updatedAvatarUrl.toString();
-        }
+        UUID updatedAvatarUrl = req.uuid();
+        String AvatarUrlSTr = updatedAvatarUrl != null ? updatedAvatarUrl.toString() : null;
 
         User updated = new User(
                 user.id(),
@@ -64,6 +56,9 @@ public class ProfileService {
         if (updatedAvatarUrl != null) {
             KafkaConfirmAvatarEvent event = new KafkaConfirmAvatarEvent(updatedAvatarUrl);
             kafkaTemplate.send("confirm-avatar-events", null, event);
+        }
+        if (oldAvatarUrl != null && !oldAvatarUrl.equals(updatedAvatarUrl)) {
+            kafkaTemplate.send("delete-avatar-events", null, new KafkaConfirmAvatarEvent(oldAvatarUrl));
         }
         KafkaUserUpdatedEvent event = new KafkaUserUpdatedEvent(newUser.id(), newUser.name(),
                 oldAvatarUrl,

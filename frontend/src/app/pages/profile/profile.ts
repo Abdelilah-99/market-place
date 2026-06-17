@@ -1,11 +1,10 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, Signal, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { Me, UpdateProfile, UsersService } from '../../core/services/users-service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PLATFORM_ID, Inject } from '@angular/core';
-import { of, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -24,8 +23,10 @@ export class Profile implements OnInit, OnDestroy {
   editFormEmail = signal('');
   editFormAvatarUrl = signal('');
   profileAvatarSrc = signal('');
+  selectedAvatarPreview = signal('');
   selectedAvatar = signal<File | null>(null);
-  avatarName: string = '';
+  removeCurrentAvatar = signal(false);
+
   constructor(
     private userService: UsersService,
     private router: Router,
@@ -37,13 +38,13 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (isPlatformBrowser(this.platformId) && this.profileAvatarSrc()) {
-      URL.revokeObjectURL(this.profileAvatarSrc());
-    }
+    this.revokeObjectUrl(this.profileAvatarSrc());
+    this.revokeObjectUrl(this.selectedAvatarPreview());
   }
 
-  loadProfileImg(avatarId: string): void {
+  loadProfileImg(avatarId: string | null): void {
     if (!avatarId) {
+      this.revokeObjectUrl(this.profileAvatarSrc());
       this.profileAvatarSrc.set('');
       return;
     }
@@ -54,10 +55,7 @@ export class Profile implements OnInit, OnDestroy {
           return;
         }
 
-        if (this.profileAvatarSrc()) {
-          URL.revokeObjectURL(this.profileAvatarSrc());
-        }
-        console.log("profile image");
+        this.revokeObjectUrl(this.profileAvatarSrc());
 
         const objectUrl = URL.createObjectURL(res);
         this.profileAvatarSrc.set(objectUrl);
@@ -80,7 +78,7 @@ export class Profile implements OnInit, OnDestroy {
         this.editFormName.set(res.username);
         this.editFormEmail.set(res.email);
         this.editFormAvatarUrl.set(res.avatarUrl || '');
-        console.log(res);
+        this.removeCurrentAvatar.set(false);
 
         this.loadProfileImg(res.avatarUrl);
         this.isLoading.set(false);
@@ -101,6 +99,8 @@ export class Profile implements OnInit, OnDestroy {
         this.editFormEmail.set(profile.email);
         this.editFormAvatarUrl.set(profile.avatarUrl || '');
       }
+      this.clearSelectedAvatar();
+      this.removeCurrentAvatar.set(false);
     }
     this.isEditing.set(!this.isEditing());
     this.errorMessage.set('');
@@ -110,14 +110,53 @@ export class Profile implements OnInit, OnDestroy {
   onAvatarSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files.length > 0 ? input.files[0] : null;
-    if (file && file?.size > 1024 * 1024 * 2048) {
-      // this.errorMessage.set({ msg: 'file size must not passe 2mb', isthere: true });
-      return;
-    } else if (file && file.type != 'image/png') {
-      // this.errorMessage.set({ msg: 'file type must be image', isthere: true });
+    this.errorMessage.set('');
+
+    if (!file) {
       return;
     }
+
+    if (file.size > 2 * 1024 * 1024) {
+      this.errorMessage.set('Avatar image must be 2MB or smaller.');
+      input.value = '';
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage.set('Please choose a valid image file.');
+      input.value = '';
+      return;
+    }
+
+    this.revokeObjectUrl(this.selectedAvatarPreview());
     this.selectedAvatar.set(file);
+    this.selectedAvatarPreview.set(URL.createObjectURL(file));
+    this.removeCurrentAvatar.set(false);
+    input.value = '';
+  }
+
+  clearSelectedAvatar(): void {
+    this.revokeObjectUrl(this.selectedAvatarPreview());
+    this.selectedAvatarPreview.set('');
+    this.selectedAvatar.set(null);
+  }
+
+  removeAvatar(): void {
+    this.clearSelectedAvatar();
+    this.removeCurrentAvatar.set(true);
+  }
+
+  undoRemoveAvatar(): void {
+    this.removeCurrentAvatar.set(false);
+  }
+
+  selectedAvatarLabel(): string {
+    const file = this.selectedAvatar();
+    if (!file) {
+      return '';
+    }
+
+    return `${file.name} · ${this.formatFileSize(file.size)}`;
   }
 
   onSubmit(form: NgForm): void {
@@ -130,30 +169,32 @@ export class Profile implements OnInit, OnDestroy {
     this.successMessage.set('');
 
     const avatarFile = this.selectedAvatar();
+    const nextAvatarId = this.removeCurrentAvatar() ? null : this.editFormAvatarUrl() || null;
 
-    // Create the observable for update
     const update$ = avatarFile
       ? this.userService.uploadAvatar(avatarFile).pipe(
         switchMap((avatarIdOrUrl) => {
-          this.avatarName = avatarIdOrUrl;
           const updateData: UpdateProfile = {
             name: this.editFormName(),
             email: this.editFormEmail(),
-            uuid: avatarIdOrUrl, // avatar ID or URL returned from upload
+            uuid: avatarIdOrUrl,
           };
-          this.loadProfileImg(avatarIdOrUrl); // update preview
           return this.userService.updateUser(updateData);
         })
       )
       : this.userService.updateUser({
         name: this.editFormName(),
         email: this.editFormEmail(),
-        uuid: this.avatarName || this.editFormAvatarUrl(), // keep existing avatar if no new upload
+        uuid: nextAvatarId,
       });
 
     update$.subscribe({
       next: (res) => {
         this.userProfile.set(res);
+        this.editFormAvatarUrl.set(res.avatarUrl || '');
+        this.removeCurrentAvatar.set(false);
+        this.clearSelectedAvatar();
+        this.loadProfileImg(res.avatarUrl);
         this.successMessage.set('Profile updated successfully!');
         this.isSubmitting.set(false);
         this.isEditing.set(false);
@@ -199,5 +240,19 @@ export class Profile implements OnInit, OnDestroy {
         console.error("user has not been deleted ", err);
       }
     });
+  }
+
+  private formatFileSize(size: number): string {
+    if (size < 1024 * 1024) {
+      return `${Math.max(1, Math.round(size / 1024))} KB`;
+    }
+
+    return `${(size / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  private revokeObjectUrl(url: string): void {
+    if (isPlatformBrowser(this.platformId) && url) {
+      URL.revokeObjectURL(url);
+    }
   }
 }
