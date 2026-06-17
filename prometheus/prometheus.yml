@@ -18,9 +18,9 @@ scrape_configs:
   - job_name: "products-service"
     scheme: https
     tls_config:
-      ca_file: home/ubuntu/prometheus-certs/ca.crt
-      cert_file: home/ubuntu/prometheus-certs/client.crt
-      key_file: home/ubuntu/prometheus-certs/client.key
+      ca_file: /prometheus-certs/ca.crt
+      cert_file: /prometheus-certs/client.crt
+      key_file: /prometheus-certs/client.key
     metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: ["products-service:8000"]
