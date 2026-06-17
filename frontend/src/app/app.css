@@ -1,0 +1,29 @@
+.route-stage {
+  min-height: calc(100vh - 72px);
+  view-transition-name: route-stage;
+}
+
+.route-stage ::ng-deep router-outlet + * {
+  display: block;
+  animation: route-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-stage ::ng-deep router-outlet + * {
+    animation: none;
+  }
+}
