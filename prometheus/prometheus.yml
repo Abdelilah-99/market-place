@@ -24,3 +24,33 @@ scrape_configs:
     metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: ["products-service:8000"]
+
+  - job_name: "gateway"
+    scheme: https
+    tls_config:
+      ca_file: /prometheus/certs/ca.crt
+      cert_file: /prometheus/certs/client.crt
+      key_file: /prometheus/certs/client.key
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["gateway:10000"]
+
+  - job_name: "users-service"
+    scheme: https
+    tls_config:
+      ca_file: /prometheus/certs/ca.crt
+      cert_file: /prometheus/certs/client.crt
+      key_file: /prometheus/certs/client.key
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["users-service:8080"]
+
+  - job_name: "media-service"
+    scheme: https
+    tls_config:
+      ca_file: /prometheus/certs/ca.crt
+      cert_file: /prometheus/certs/client.crt
+      key_file: /prometheus/certs/client.key
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["media-service:8888"]
