@@ -19,7 +19,7 @@ openssl req -new -x509 -days 3650 -key certs/ca.key \
   -subj "/CN=internal-ca/O=MyApp"
 
 # 2. Generate cert for each service
-for SERVICE in gateway users-service media-service products-service eureka-server; do
+for SERVICE in gateway users-service media-service products-service eureka-server prometheus; do
   openssl genrsa -out certs/$SERVICE.key 2048
   cat > certs/$SERVICE.ext <<EOF
  [v3_req]
