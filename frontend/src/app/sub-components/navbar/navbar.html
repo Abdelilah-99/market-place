@@ -1,7 +1,9 @@
 <nav class="market-nav">
   <div class="nav-inner">
     <a routerLink="/" class="brand" aria-label="Marketo home">
-      <span class="brand-mark">M</span>
+      <span class="brand-mark">
+        <img src="/marketo-logo.png" alt="" />
+      </span>
       <span class="brand-copy">
         <strong>Marketo</strong>
         <small>Local marketplace</small>
@@ -9,7 +11,7 @@
     </a>
 
     <div class="desktop-actions">
-      @if (isSeller()) {
+      @if (isAuthenticated() && isSeller()) {
       <a routerLink="/dashboard" class="nav-link">Dashboard</a>
       }
 
@@ -35,7 +37,7 @@
 
   @if (isOpen) {
   <div class="mobile-menu">
-    @if (isSeller()) {
+    @if (isAuthenticated() && isSeller()) {
     <a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a>
     }
     @if (!isAuthenticated()) {

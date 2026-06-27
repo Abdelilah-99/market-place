@@ -28,7 +28,10 @@ export class Navbar {
   ngOnInit() {
     this.stateService.currentUser$.subscribe((user: Me | null) => {
       if (user == null) {
-        return
+        this.currentUser.set(null);
+        this.isSeller.set(false);
+        this.profileAvatarSrc.set('');
+        return;
       }
       this.currentUser.set(user);
 
@@ -66,8 +69,6 @@ export class Navbar {
         if (this.profileAvatarSrc()) {
           URL.revokeObjectURL(this.profileAvatarSrc());
         }
-        console.log("profile image");
-
         const objectUrl = URL.createObjectURL(res);
         this.profileAvatarSrc.set(objectUrl);
       },
@@ -86,7 +87,7 @@ export class Navbar {
 
   isAuthenticated(): boolean {
     if (isPlatformBrowser(this.platformId)) {
-      return !!localStorage.getItem('token');
+      return !!localStorage.getItem('token') && this.currentUser() !== null;
     }
 
     return false;
