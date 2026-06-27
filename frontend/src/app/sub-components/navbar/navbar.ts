@@ -46,11 +46,7 @@ export class Navbar {
 
   loadUser(): void {
     this.stateService.getMyInfo();
-    // if (this.currentUser() && this.currentUser()?.avatarUrl)
-    console.log("image | === " + this.currentUser()?.avatarUrl);
-
     this.loadProfileImg(this.currentUser()?.avatarUrl);
-    // this.crrAvatar.set(this.currentUser()?.avatarUrl);
   }
 
   loadProfileImg(avatarId: string | null | undefined): void {
@@ -76,7 +72,10 @@ export class Navbar {
         this.profileAvatarSrc.set(objectUrl);
       },
       error: (err) => {
-        console.error("err: ==============> ", err);
+        this.profileAvatarSrc.set('');
+        if (err?.status !== 404) {
+          console.error("Failed to load profile image", err);
+        }
       }
     });
   }

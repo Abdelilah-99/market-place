@@ -61,7 +61,11 @@ export class Profile implements OnInit, OnDestroy {
         this.profileAvatarSrc.set(objectUrl);
       },
       error: (err) => {
-        console.error("err: ==============> ", err);
+        this.revokeObjectUrl(this.profileAvatarSrc());
+        this.profileAvatarSrc.set('');
+        if (err?.status !== 404) {
+          console.error("Failed to load profile image", err);
+        }
       }
     });
   }
