@@ -69,6 +69,31 @@
   padding: 1.25rem;
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.45fr);
+  gap: 1rem;
+}
+
+.form-field select {
+  min-height: 50px;
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%),
+    #ffffff;
+  background-position:
+    calc(100% - 18px) 21px,
+    calc(100% - 12px) 21px,
+    100% 0;
+  background-size:
+    6px 6px,
+    6px 6px,
+    2.8rem 100%;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
 .upload-field {
   display: grid;
   gap: 0.45rem;
@@ -154,6 +179,10 @@
 }
 
 @media (max-width: 560px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
   .modal-actions {
     flex-direction: column-reverse;
   }

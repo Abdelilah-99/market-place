@@ -21,9 +21,22 @@ export class CreateProductPopPup {
   product: Partial<Product> = {
     name: '',
     description: '',
+    category: '',
     price: 0,
     image: '',
   };
+
+  categories = [
+    'Electronics',
+    'Fashion',
+    'Home',
+    'Books',
+    'Sports',
+    'Beauty',
+    'Toys',
+    'Automotive',
+    'Other',
+  ];
 
 
   selectedImage = signal<File | null>(null);

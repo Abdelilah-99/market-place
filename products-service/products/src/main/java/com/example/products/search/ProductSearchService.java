@@ -111,7 +111,7 @@ public class ProductSearchService {
         try {
             ensureIndexExists();
             restClient.put()
-                    .uri("/{index}/_doc/{id}", indexName, document.getId())
+                    .uri("/{index}/_doc/{id}?refresh=wait_for", indexName, document.getId())
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(document)
                     .retrieve()
@@ -124,7 +124,7 @@ public class ProductSearchService {
     public void deleteProduct(String productId) {
         try {
             restClient.delete()
-                    .uri("/{index}/_doc/{id}", indexName, productId)
+                    .uri("/{index}/_doc/{id}?refresh=wait_for", indexName, productId)
                     .retrieve()
                     .toBodilessEntity();
         } catch (HttpClientErrorException.NotFound ignored) {
