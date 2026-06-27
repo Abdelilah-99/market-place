@@ -9,6 +9,9 @@ compose_up() {
   if [[ "$dir" == "kafka" ]]; then
     echo "[CD] Deploying ${dir}"
     (cd "${dir}" && docker compose down && docker compose up -d --build --force-recreate)
+  elif [[ "$dir" == "opensearch" && -f "${dir}/.env.opensearch" ]]; then
+    echo "[CD] Deploying ${dir}"
+    (cd "${dir}" && docker compose --env-file .env.opensearch up -d --build --force-recreate)
   else
     echo "[CD] Deploying ${dir}"
     (cd "${dir}" && docker compose up -d --build --force-recreate)
@@ -22,6 +25,7 @@ fi
 
 compose_up "eureka-server"
 compose_up "redis"
+compose_up "opensearch"
 compose_up "kafka"
 compose_up "products-service"
 compose_up "media-service"

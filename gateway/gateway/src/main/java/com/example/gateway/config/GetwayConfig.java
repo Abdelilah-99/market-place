@@ -39,6 +39,15 @@ public class GetwayConfig {
                                 })
                         )
                         .uri("lb://products"))
+                .route("products-admin", r -> r
+                        .path("/api/admin/products/**")
+                        .filters(f -> f
+                                .requestRateLimiter(c -> {
+                                    c.setRateLimiter(redisRateLimiter);
+                                    c.setKeyResolver(keyResolver);
+                                })
+                        )
+                        .uri("lb://products"))
                 .route("users", r -> r
                         .path("/api/users/**")
                         .filters(f -> f

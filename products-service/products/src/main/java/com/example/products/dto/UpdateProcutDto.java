@@ -14,6 +14,9 @@ public class UpdateProcutDto {
     @Size(min = 6, max = 255, message = "Description must be between 6 and 255 characters")
     private String description;
 
+    @Size(max = 120, message = "Category must be less than 120 characters")
+    private String category;
+
     @Positive(message = "Price must be greater than 0")
     private Double price;
 

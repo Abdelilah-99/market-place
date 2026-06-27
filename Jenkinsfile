@@ -81,7 +81,7 @@ pipeline {
         }
       }
       sh '''
-        rm -rf ./users-service/.env.users ./gateway/.env.gateway ./products-service/.env.product ./media-service/.env.media ./certs **/certs
+        rm -rf ./users-service/.env.users ./gateway/.env.gateway ./products-service/.env.product ./media-service/.env.media ./opensearch/.env.opensearch ./certs **/certs
       '''
     }
   }
@@ -97,6 +97,7 @@ def getCredentialsList() {
     file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
     file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
     file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
+    file(credentialsId: 'env-opensearch', variable: 'OPENSEARCH_ENV'),
     file(credentialsId: 'truststore',  variable: 'TRUSTSTORE'),
     file(credentialsId: 'gate-cert',   variable: 'GATE_CERT'),
     file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),

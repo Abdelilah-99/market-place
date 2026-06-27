@@ -2,7 +2,9 @@ export interface Product {
   id: string;       
   name: string;
   image: string;
+  images?: string[];
   description: string;
+  category?: string;
   price: number;
   userId: string;     
   createdAt?: string; 
@@ -113,5 +115,4 @@ export const products: Product[] = [
     updatedAt: new Date().toISOString()
   }
 ];
-
 

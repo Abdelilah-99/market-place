@@ -25,6 +25,7 @@ import com.example.products.kafka.MediaEvents;
 import com.example.products.kafka.ProductEvents;
 import com.example.products.models.Product;
 import com.example.products.repositories.ProductRepository;
+import com.example.products.search.ProductSearchService;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("null")
@@ -40,13 +41,15 @@ class ProductServiceTest {
     private ProductEvents productEvents;
     @Mock
     private MediaEvents mediaEvents;
+    @Mock
+    private ProductSearchService productSearchService;
     private ProductService productService;
 
     @BeforeEach
     void setUp() {
         // productEvents = new ProductEvents(kafkaTemplate);
         // mediaEvents = new MediaEvents(kafkaTemplate);
-        productService = new ProductService(productRepository, productEvents, mediaEvents);
+        productService = new ProductService(productRepository, productEvents, mediaEvents, productSearchService);
     }
 
     @Test

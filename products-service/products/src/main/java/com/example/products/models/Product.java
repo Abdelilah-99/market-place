@@ -28,6 +28,8 @@ public class Product extends BaseEntity {
 
     private String description;
 
+    private String category;
+
     private double price;
 
     private long quantity;
@@ -40,6 +42,7 @@ public class Product extends BaseEntity {
     public Product(CreateProdutDto dto, String userId) {
         this.name = dto.getName();
         this.description = dto.getDescription();
+        this.category = dto.getCategory();
         this.price = dto.getPrice();
         this.image = dto.getImage();
         this.userId = userId;

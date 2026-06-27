@@ -13,6 +13,8 @@ import com.example.products.kafka.ProductEvents;
 import com.example.products.kafka.MediaEvents;
 import com.example.products.models.Product;
 import com.example.products.repositories.ProductRepository;
+import com.example.products.search.ProductSearchService;
+import com.example.products.search.dto.ProductSearchResponse;
 
 @Service
 public class ProductService {
@@ -20,13 +22,16 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductEvents productEvents;
     private final MediaEvents mediaEvents;
+    private final ProductSearchService productSearchService;
 
     public ProductService(ProductRepository productRepository,
             ProductEvents productEvents,
-            MediaEvents mediaEvents) {
+            MediaEvents mediaEvents,
+            ProductSearchService productSearchService) {
         this.productRepository = productRepository;
         this.productEvents = productEvents;
         this.mediaEvents = mediaEvents;
+        this.productSearchService = productSearchService;
     }
 
     public List<Product> getAllProducts() {
@@ -35,6 +40,17 @@ public class ProductService {
 
     public List<Product> getMyProducts(String userId) {
         return productRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public ProductSearchResponse searchProducts(
+            String q,
+            String category,
+            Double minPrice,
+            Double maxPrice,
+            int page,
+            int size,
+            String sort) {
+        return productSearchService.search(q, category, minPrice, maxPrice, page, size, sort);
     }
 
     public Product getProductById(UUID id) {
@@ -59,6 +75,7 @@ public class ProductService {
         Product product = getProductById(id);
 
         productRepository.deleteById(id);
+        productEvents.sendRemoveEvent(product);
         mediaEvents.deleteImageEvent(product.getImage());
     }
 
@@ -70,6 +87,10 @@ public class ProductService {
 
         if (productDto.getDescription() != null && !productDto.getDescription().isBlank()) {
             product.setDescription(productDto.getDescription());
+        }
+
+        if (productDto.getCategory() != null && !productDto.getCategory().isBlank()) {
+            product.setCategory(productDto.getCategory());
         }
 
         if (productDto.getPrice() != null && productDto.getPrice() > 0) {
@@ -89,10 +110,13 @@ public class ProductService {
 
             // delete old image after success
             mediaEvents.deleteImageEvent(oldImage);
+            productEvents.sendUpdateEvent(saved);
 
             return saved;
         }
 
-        return productRepository.save(product);
+        Product saved = productRepository.save(product);
+        productEvents.sendUpdateEvent(saved);
+        return saved;
     }
 }

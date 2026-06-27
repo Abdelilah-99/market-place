@@ -14,3 +14,4 @@ docker compose -f ../kafka/docker-compose.yaml down
 
 docker compose -f ../redis/docker-compose.yaml down
 
+docker compose -f ../opensearch/docker-compose.yaml down

@@ -4,6 +4,24 @@ import { ApiResponse } from '../models/ApiResponse';
 import { Product } from '../models/Product';
 import { Observable } from 'rxjs';
 
+export interface ProductSearchResponse {
+  items: Product[];
+  total: number;
+  page: number;
+  size: number;
+  totalPages: number;
+}
+
+export interface ProductSearchParams {
+  q?: string;
+  category?: string;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -25,6 +43,23 @@ export class ProductsService {
   getAllProducts(): Observable<ApiResponse<Product[]>> {
     return this.http.get<ApiResponse<Product[]>>(
       `${this.apiUrl}/`
+    );
+  }
+
+  searchProducts(params: ProductSearchParams): Observable<ApiResponse<ProductSearchResponse>> {
+    const query: Record<string, string> = {};
+
+    if (params.q) query['q'] = params.q;
+    if (params.category) query['category'] = params.category;
+    if (params.minPrice !== null && params.minPrice !== undefined) query['minPrice'] = String(params.minPrice);
+    if (params.maxPrice !== null && params.maxPrice !== undefined) query['maxPrice'] = String(params.maxPrice);
+    query['page'] = String(params.page ?? 0);
+    query['size'] = String(params.size ?? 12);
+    query['sort'] = params.sort ?? 'newest';
+
+    return this.http.get<ApiResponse<ProductSearchResponse>>(
+      `${this.apiUrl}/search`,
+      { params: query }
     );
   }
 

@@ -72,6 +72,10 @@ copy_if_exists \
     "${ROOT_DIR}/media-service/.env.media" \
     "${TEMP_DIR}/media-service/.env.media"
 
+copy_if_exists \
+    "${ROOT_DIR}/opensearch/.env.opensearch" \
+    "${TEMP_DIR}/opensearch/.env.opensearch"
+
 # ------------------------------------------------------------------
 # Copy certificates if used by services
 # ------------------------------------------------------------------
@@ -103,22 +107,35 @@ fi
 
 compose_up() {
     local service="$1"
+    local required="${2:-true}"
     local compose_file="${TEMP_DIR}/${service}/docker-compose.yaml"
 
     if [[ ! -f "${compose_file}" ]]; then
+        if [[ "${required}" == "false" ]]; then
+            echo "[CD] Skipping ${service}; compose file not present in rollback commit."
+            return 0
+        fi
         echo "[ERROR] Compose file not found: ${compose_file}"
         return 1
     fi
 
     echo "[CD] Deploying ${service}"
 
-    docker compose \
-        -f "${compose_file}" \
-        up -d --build
+    if [[ "${service}" == "opensearch" && -f "${TEMP_DIR}/${service}/.env.opensearch" ]]; then
+        docker compose \
+            --env-file "${TEMP_DIR}/${service}/.env.opensearch" \
+            -f "${compose_file}" \
+            up -d --build
+    else
+        docker compose \
+            -f "${compose_file}" \
+            up -d --build
+    fi
 }
 
 compose_up "eureka-server"
 compose_up "redis"
+compose_up "opensearch" "false"
 compose_up "kafka"
 compose_up "products-service"
 compose_up "media-service"

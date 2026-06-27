@@ -10,6 +10,8 @@ docker compose -f ../eureka-server/docker-compose.yaml up -d
 
 docker compose -f ../redis/docker-compose.yaml up -d 
 
+docker compose -f ../opensearch/docker-compose.yaml up -d
+
 docker compose -f ../kafka/docker-compose.yaml up -d 
 
 # docker compose -f ../products-service/docker-compose.yaml up -d 
@@ -27,6 +29,8 @@ docker compose -f ../kafka/docker-compose.yaml up -d
 # docker compose -f ../eureka-server/docker-compose.yaml up -d  --build
  
 # docker compose -f ../redis/docker-compose.yaml up -d  --build
+
+# docker compose -f ../opensearch/docker-compose.yaml up -d  --build
 
 # docker compose -f ../kafka/docker-compose.yaml up -d  --build
 

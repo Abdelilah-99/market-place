@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.products.dto.CreateProdutDto;
 import com.example.products.dto.UpdateProcutDto;
 import com.example.products.models.Product;
+import com.example.products.search.dto.ProductSearchResponse;
 import com.example.products.services.ProductService;
 
 import com.example.shared.common.utils.ApiResponse;
@@ -43,6 +45,20 @@ public class ProductController {
     @PermitAll
     public ResponseEntity<ApiResponse<List<Product>>> getProducts() {
         return ResponseEntity.ok(ApiResponse.success(productService.getAllProducts()));
+    }
+
+    @GetMapping("/search")
+    @PermitAll
+    public ResponseEntity<ApiResponse<ProductSearchResponse>> searchProducts(
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "minPrice", required = false) Double minPrice,
+            @RequestParam(name = "maxPrice", required = false) Double maxPrice,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size,
+            @RequestParam(name = "sort", defaultValue = "newest") String sort) {
+        return ResponseEntity.ok(ApiResponse.success(
+                productService.searchProducts(q, category, minPrice, maxPrice, page, size, sort)));
     }
 
     @GetMapping("/me")

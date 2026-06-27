@@ -16,3 +16,4 @@ eureka-server/eureka/src/main/resources/certs/
 .env.product
 .env.gateway
 .env.media
+.env.opensearch

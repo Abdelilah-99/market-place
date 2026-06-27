@@ -25,25 +25,79 @@
   <section class="toolbar page-shell">
     <div>
       <span class="section-kicker">Marketplace</span>
-      <h2>Featured products</h2>
-    </div>
-    <div class="filter-row" aria-label="Product filters">
-      <button type="button" class="filter active">All</button>
-      <button type="button" class="filter">New</button>
-      <button type="button" class="filter">Popular</button>
-      <button type="button" class="filter">Deals</button>
+      <h2>{{ searchMode() ? 'Search results' : 'Featured products' }}</h2>
+      @if (searchMode()) {
+      <p>{{ total() }} products found</p>
+      }
     </div>
   </section>
 
+  <section class="search-panel page-shell" aria-label="Product search">
+    <form class="search-form" (ngSubmit)="search(0)">
+      <input
+        type="search"
+        name="query"
+        [(ngModel)]="query"
+        placeholder="Search products"
+        aria-label="Search products"
+      />
+      <input
+        type="text"
+        name="category"
+        [(ngModel)]="category"
+        placeholder="Category"
+        aria-label="Category"
+      />
+      <input
+        type="number"
+        name="minPrice"
+        [(ngModel)]="minPrice"
+        min="0"
+        placeholder="Min price"
+        aria-label="Minimum price"
+      />
+      <input
+        type="number"
+        name="maxPrice"
+        [(ngModel)]="maxPrice"
+        min="0"
+        placeholder="Max price"
+        aria-label="Maximum price"
+      />
+      <select name="sort" [(ngModel)]="sort" aria-label="Sort products">
+        <option value="newest">Newest</option>
+        <option value="price_asc">Price: low to high</option>
+        <option value="price_desc">Price: high to low</option>
+        <option value="relevance">Relevance</option>
+      </select>
+      <button type="submit" [disabled]="loading()">Search</button>
+      <button type="button" class="secondary" (click)="resetSearch()" [disabled]="loading()">Reset</button>
+    </form>
+  </section>
+
   <section class="product-grid page-shell">
-    @if (products().length === 0) {
+    @if (loading()) {
+    <div class="empty-state">
+      <i class="fa fa-spinner"></i>
+      <h2>Loading products</h2>
+      <p>Finding the best matches.</p>
+    </div>
+    } @else if (products().length === 0) {
     <div class="empty-state">
       <i class="fa fa-store"></i>
-      <h2>No products yet</h2>
-      <p>New listings will appear here as sellers publish them.</p>
+      <h2>{{ searchMode() ? 'No matching products' : 'No products yet' }}</h2>
+      <p>{{ searchMode() ? 'Try a different keyword, category, or price range.' : 'New listings will appear here as sellers publish them.' }}</p>
     </div>
     } @else {
     <app-product *ngFor="let product of products()" [product]="product"></app-product>
     }
   </section>
+
+  @if (searchMode() && totalPages() > 1) {
+  <nav class="pagination page-shell" aria-label="Search pages">
+    <button type="button" (click)="previousPage()" [disabled]="page() === 0 || loading()">Previous</button>
+    <span>Page {{ page() + 1 }} of {{ totalPages() }}</span>
+    <button type="button" (click)="nextPage()" [disabled]="page() + 1 >= totalPages() || loading()">Next</button>
+  </nav>
+  }
 </main>

@@ -223,7 +223,7 @@ class ProductControllerTest {
         String lastCreateUserId = null;
 
         public FakeProductService() {
-            super(null, null, null);
+            super(null, null, null, null);
         }
 
         @Override

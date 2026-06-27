@@ -31,6 +31,11 @@ public class SecurityConfig {
                         // Public product listing (GET /api/products)
                         .requestMatchers(HttpMethod.GET, "/api/products/")
                         .hasAnyRole("GUEST", "BUYER", "SELLER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/products/search")
+                        .hasAnyRole("GUEST", "BUYER", "SELLER", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/admin/products/reindex-search")
+                        .hasRole("ADMIN")
 
                         // Actuator only for admin
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
