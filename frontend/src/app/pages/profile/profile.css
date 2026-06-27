@@ -4,7 +4,7 @@
 }
 
 .profile-container {
-    max-width: 920px;
+    width: min(100%, 920px);
     margin: 0 auto;
 }
 
@@ -80,7 +80,7 @@
 
 .avatar-section {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 1.25rem;
     align-items: center;
     padding: 1.5rem;
@@ -120,6 +120,7 @@
     color: var(--text);
     font-size: 1.45rem;
     font-weight: 900;
+    overflow-wrap: anywhere;
 }
 
 .role-badge {
@@ -190,6 +191,7 @@
 }
 
 .field-group input {
+    width: 100%;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 0.75rem 0.85rem;
@@ -227,13 +229,6 @@
     border: 0;
     color: #fff;
     background: var(--brand);
-}
-
-.retry-btn:hover,
-.edit-btn:hover,
-.save-btn:hover,
-.upload-avatar-btn:hover {
-    background: var(--brand-dark);
 }
 
 .cancel-btn,
@@ -277,6 +272,10 @@ button:disabled {
 }
 
 @media (max-width: 700px) {
+    .profile-shell {
+        padding-top: 1rem;
+    }
+
     .avatar-section,
     .profile-details {
         grid-template-columns: 1fr;

@@ -61,6 +61,7 @@
 }
 
 button {
+    width: 100%;
     margin-top: 0.35rem;
     border: none;
     border-radius: var(--radius-sm);
@@ -70,6 +71,21 @@ button {
     background: var(--brand);
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+@media (max-width: 430px) {
+    .auth-shell {
+        align-items: start;
+        padding-top: 1rem;
+    }
+
+    .auth-card {
+        padding: 1.1rem;
+    }
+
+    .auth-branding h1 {
+        font-size: 1.35rem;
+    }
 }
 
 button:hover:not(:disabled) {

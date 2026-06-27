@@ -66,11 +66,6 @@
   cursor: pointer;
 }
 
-.icon-close:hover {
-  color: var(--text);
-  background: var(--surface-soft);
-}
-
 .modal-form {
   display: grid;
   gap: 1.1rem;
@@ -161,7 +156,6 @@
 }
 
 .upload-dropzone:hover {
-  transform: translateY(-1px);
   border-color: rgba(15, 118, 110, 0.45);
   background: var(--brand-soft);
 }
@@ -230,6 +224,15 @@
 }
 
 @media (max-width: 820px) {
+  .modal-backdrop {
+    align-items: start;
+    overflow-y: auto;
+  }
+
+  .product-modal {
+    max-height: none;
+  }
+
   .form-layout {
     grid-template-columns: 1fr;
   }
@@ -242,6 +245,20 @@
 }
 
 @media (max-width: 560px) {
+  .modal-backdrop {
+    padding: 0;
+  }
+
+  .product-modal {
+    min-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .modal-header h2 {
+    font-size: 1.2rem;
+    line-height: 1.15;
+  }
+
   .modal-header,
   .modal-form {
     padding-left: 1rem;
