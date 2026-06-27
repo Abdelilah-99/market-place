@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -21,6 +22,10 @@ public class CreateProdutDto {
 
     @Size(max = 120, message = "Category must be less than 120 characters")
     private String category;
+
+    @NotBlank(message = "Condition is required")
+    @Pattern(regexp = "(?i)^(new|used)$", message = "Condition must be new or used")
+    private String condition;
 
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be greater than 0")

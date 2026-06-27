@@ -3,7 +3,7 @@
     <a [routerLink]="['/products', product.id]" class="media-link" aria-label="Open product details">
       <img [src]="imagePreview() || productImage()" [alt]="product.name" />
     </a>
-    <span class="condition-pill">Available</span>
+    <span class="condition-pill">{{ conditionLabel(product.condition) }}</span>
     @if (isEditing) {
     <button class="media-edit-button" (click)="fileInput.click()" aria-label="Change product image">
       <i class="fa fa-camera"></i>
@@ -21,6 +21,7 @@
       @if (product.category) {
       <span class="category-chip">{{ product.category }}</span>
       }
+      <span class="category-chip condition-chip">{{ conditionLabel(product.condition) }}</span>
       <p>{{ product.description }}</p>
     </div>
     <div class="price-row">
@@ -40,6 +41,12 @@
       <label class="form-field">
         <span>Category</span>
         <input type="text" [(ngModel)]="updatedProduct.category" />
+      </label>
+      <label class="form-field">
+        <span>Condition</span>
+        <select [(ngModel)]="updatedProduct.condition">
+          <option *ngFor="let condition of conditions" [value]="condition.value">{{ condition.label }}</option>
+        </select>
       </label>
       <div class="form-field price-input">
         <label>Price</label>

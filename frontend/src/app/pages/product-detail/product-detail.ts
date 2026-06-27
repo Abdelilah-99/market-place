@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Product } from '../../core/models/Product';
-import { ProductsService } from '../../core/services/products-service';
+import { ProductRatingStats, ProductsService } from '../../core/services/products-service';
+import { ToasterService } from '../../core/services/toaster-service';
 
 @Component({
   selector: 'app-product-detail',
@@ -16,20 +17,20 @@ export class ProductDetail {
   loading = signal(true);
   error = signal('');
   activeImage = signal(0);
-
-  readonly rating = 4.8;
-  readonly reviewCount = 24;
-  readonly ratingBreakdown = [
-    { stars: 5, percent: 82 },
-    { stars: 4, percent: 13 },
-    { stars: 3, percent: 4 },
-    { stars: 2, percent: 1 },
-    { stars: 1, percent: 0 },
-  ];
+  ratingStats = signal<ProductRatingStats>({
+    average: 0,
+    count: 0,
+    breakdown: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 },
+    myRating: null,
+  });
+  selectedRating = signal(0);
+  hoverRating = signal(0);
+  ratingSubmitting = signal(false);
 
   constructor(
     private route: ActivatedRoute,
-    private productsService: ProductsService
+    private productsService: ProductsService,
+    private toaster: ToasterService
   ) {}
 
   ngOnInit() {
@@ -43,11 +44,31 @@ export class ProductDetail {
     this.productsService.getProduct(id).subscribe({
       next: (res) => {
         this.product.set(res.data);
+        this.loadRatings(id);
         this.loading.set(false);
       },
       error: () => {
         this.error.set('Product not found.');
         this.loading.set(false);
+      }
+    });
+  }
+
+  loadRatings(productId: string) {
+    this.productsService.getProductRatings(productId).subscribe({
+      next: (res) => {
+        const stats = res.data ?? this.emptyRatingStats();
+        this.ratingStats.set(stats);
+        this.selectedRating.set(stats.myRating ?? 0);
+      },
+      error: () => {
+        this.ratingStats.set({
+          ...this.emptyRatingStats(),
+          average: this.product()?.averageRating ?? 0,
+          count: this.product()?.ratingCount ?? 0,
+          breakdown: this.product()?.ratingBreakdown ?? this.emptyRatingStats().breakdown,
+          myRating: null,
+        });
       }
     });
   }
@@ -58,6 +79,11 @@ export class ProductDetail {
 
     const images = product.images?.length ? product.images : product.image ? [product.image] : [];
     return images.filter(Boolean).map(image => `/api/media/products/${image}`);
+  }
+
+  conditionLabel(condition?: string): string {
+    if (!condition) return 'Used';
+    return condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
   }
 
   selectImage(index: number) {
@@ -78,5 +104,55 @@ export class ProductDetail {
 
   stars(): number[] {
     return [1, 2, 3, 4, 5];
+  }
+
+  displayRating(): number {
+    return this.hoverRating() || this.selectedRating();
+  }
+
+  roundedAverage(): number {
+    return Math.round(this.ratingStats().average || 0);
+  }
+
+  ratingBreakdownRows() {
+    const stats = this.ratingStats();
+    return [5, 4, 3, 2, 1].map(stars => {
+      const count = Number(stats.breakdown?.[String(stars)] ?? 0);
+      const percent = stats.count ? Math.round((count / stats.count) * 100) : 0;
+      return { stars, count, percent };
+    });
+  }
+
+  submitRating(stars: number) {
+    const product = this.product();
+    if (!product || this.ratingSubmitting()) return;
+
+    this.selectedRating.set(stars);
+    this.ratingSubmitting.set(true);
+    this.productsService.rateProduct(product.id, stars).subscribe({
+      next: (res) => {
+        const stats = res.data ?? this.emptyRatingStats();
+        this.ratingStats.set(stats);
+        this.selectedRating.set(stats.myRating ?? stars);
+        this.ratingSubmitting.set(false);
+        this.toaster.success('Your rating was saved.');
+      },
+      error: (err) => {
+        this.ratingSubmitting.set(false);
+        const message = err?.status === 401
+          ? 'Please log in to rate this product.'
+          : err?.error?.message || 'Could not save your rating.';
+        this.toaster.error(message);
+      }
+    });
+  }
+
+  private emptyRatingStats(): ProductRatingStats {
+    return {
+      average: 0,
+      count: 0,
+      breakdown: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 },
+      myRating: null,
+    };
   }
 }

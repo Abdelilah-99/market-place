@@ -21,9 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.products.dto.CreateProdutDto;
+import com.example.products.dto.ProductRatingStatsDto;
+import com.example.products.dto.RateProductDto;
 import com.example.products.dto.UpdateProcutDto;
 import com.example.products.models.Product;
 import com.example.products.search.dto.ProductSearchResponse;
+import com.example.products.services.ProductRatingService;
 import com.example.products.services.ProductService;
 
 import com.example.shared.common.utils.ApiResponse;
@@ -35,10 +38,12 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/products")
 public class ProductController {
     private final ProductService productService;
+    private final ProductRatingService productRatingService;
 
     @Autowired
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, ProductRatingService productRatingService) {
         this.productService = productService;
+        this.productRatingService = productRatingService;
     }
 
     @GetMapping("/")
@@ -61,6 +66,13 @@ public class ProductController {
                 productService.searchProducts(q, category, minPrice, maxPrice, page, size, sort)));
     }
 
+    @GetMapping("/category/{category}")
+    @PermitAll
+    public ResponseEntity<ApiResponse<List<Product>>> getProductsByCategory(
+            @PathVariable("category") String category) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getProductsByCategory(category)));
+    }
+
     @GetMapping("/me")
     @PermitAll
     public ResponseEntity<ApiResponse<List<Product>>> getMyProducts(Authentication authentication) {
@@ -76,6 +88,25 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("", 404));
         }
         return ResponseEntity.ok(ApiResponse.success(product));
+    }
+
+    @GetMapping("/{id}/ratings")
+    @PermitAll
+    public ResponseEntity<ApiResponse<ProductRatingStatsDto>> getProductRatings(
+            @PathVariable("id") UUID id,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(
+                productRatingService.getStats(id, extractOptionalUserId(authentication))));
+    }
+
+    @PostMapping("/{id}/ratings")
+    public ResponseEntity<ApiResponse<ProductRatingStatsDto>> rateProduct(
+            @PathVariable("id") UUID id,
+            @RequestBody @Valid RateProductDto ratingDto,
+            Authentication authentication) {
+        String userId = extractUserId(authentication);
+        return ResponseEntity.ok(ApiResponse.success(
+                productRatingService.rateProduct(id, userId, ratingDto)));
     }
 
     @PostMapping("/")
@@ -147,6 +178,26 @@ public class ProductController {
         Object principal = authentication.getPrincipal();
         if (principal == null)
             return authentication.getName();
+        if (principal instanceof String)
+            return (String) principal;
+        if (principal instanceof UserDetails)
+            return ((UserDetails) principal).getUsername();
+        if (principal instanceof Principal)
+            return ((Principal) principal).getName();
+        return authentication.getName();
+    }
+
+    private String extractOptionalUserId(Authentication authentication) {
+        if (authentication == null) {
+            authentication = SecurityContextHolder.getContext().getAuthentication();
+        }
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal == null || "anonymousUser".equals(principal)) {
+            return null;
+        }
         if (principal instanceof String)
             return (String) principal;
         if (principal instanceof UserDetails)

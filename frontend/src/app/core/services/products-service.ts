@@ -22,6 +22,13 @@ export interface ProductSearchParams {
   sort?: string;
 }
 
+export interface ProductRatingStats {
+  average: number;
+  count: number;
+  breakdown: Record<string, number>;
+  myRating?: number | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -66,6 +73,22 @@ export class ProductsService {
   getProduct(id: string): Observable<ApiResponse<Product>> {
     return this.http.get<ApiResponse<Product>>(
       `${this.apiUrl}/${id}`
+    );
+  }
+
+  getProductRatings(id: string): Observable<ApiResponse<ProductRatingStats>> {
+    return this.http.get<ApiResponse<ProductRatingStats>>(
+      `${this.apiUrl}/${id}/ratings`
+    );
+  }
+
+  rateProduct(id: string, stars: number): Observable<ApiResponse<ProductRatingStats>> {
+    return this.http.post<ApiResponse<ProductRatingStats>>(
+      `${this.apiUrl}/${id}/ratings`,
+      { stars },
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 

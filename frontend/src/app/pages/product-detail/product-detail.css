@@ -184,6 +184,10 @@
   color: #f59e0b;
 }
 
+.rating-summary i.muted {
+  color: #d7dee8;
+}
+
 .rating-summary small,
 .price-box span {
   color: var(--text-muted);
@@ -219,6 +223,46 @@
   margin: 0.25rem 0 0.45rem;
   font-size: 1.45rem;
   font-weight: 950;
+}
+
+.rate-product {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.rate-product span,
+.rate-product small {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 850;
+}
+
+.rating-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.rating-actions button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #c5ceda;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.rating-actions button:hover,
+.rating-actions button.active {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
+}
+
+.rating-actions button:disabled {
+  cursor: wait;
+  opacity: 0.75;
 }
 
 .rating-bars {

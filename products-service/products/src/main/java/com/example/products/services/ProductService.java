@@ -3,6 +3,7 @@ package com.example.products.services;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import com.example.products.dto.UpdateProcutDto;
 import com.example.products.kafka.ProductEvents;
 import com.example.products.kafka.MediaEvents;
 import com.example.products.models.Product;
+import com.example.products.repositories.ProductRatingRepository;
 import com.example.products.repositories.ProductRepository;
 import com.example.products.search.ProductSearchService;
 import com.example.products.search.dto.ProductSearchResponse;
@@ -26,15 +28,18 @@ public class ProductService {
     private final ProductEvents productEvents;
     private final MediaEvents mediaEvents;
     private final ProductSearchService productSearchService;
+    private final ProductRatingRepository productRatingRepository;
 
     public ProductService(ProductRepository productRepository,
             ProductEvents productEvents,
             MediaEvents mediaEvents,
-            ProductSearchService productSearchService) {
+            ProductSearchService productSearchService,
+            ProductRatingRepository productRatingRepository) {
         this.productRepository = productRepository;
         this.productEvents = productEvents;
         this.mediaEvents = mediaEvents;
         this.productSearchService = productSearchService;
+        this.productRatingRepository = productRatingRepository;
     }
 
     public List<Product> getAllProducts() {
@@ -43,6 +48,14 @@ public class ProductService {
 
     public List<Product> getMyProducts(String userId) {
         return productRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public List<Product> getProductsByCategory(String category) {
+        String normalizedCategory = normalizeCategory(category);
+        if (normalizedCategory == null) {
+            return List.of();
+        }
+        return productRepository.findAllByCategoryIgnoreCaseOrderByCreatedAtDesc(normalizedCategory);
     }
 
     public ProductSearchResponse searchProducts(
@@ -78,6 +91,7 @@ public class ProductService {
         Product product = getProductById(id);
 
         productRepository.deleteById(id);
+        productRatingRepository.deleteByProductId(id);
         productEvents.sendRemoveEvent(product);
         mediaEvents.deleteImageEvents(product.getImages());
     }
@@ -94,6 +108,10 @@ public class ProductService {
 
         if (productDto.getCategory() != null && !productDto.getCategory().isBlank()) {
             product.setCategory(productDto.getCategory());
+        }
+
+        if (productDto.getCondition() != null && !productDto.getCondition().isBlank()) {
+            product.setCondition(productDto.getCondition());
         }
 
         if (productDto.getPrice() != null && productDto.getPrice() > 0) {
@@ -138,5 +156,12 @@ public class ProductService {
         return oldImages.stream()
                 .filter(image -> image != null && (newImages == null || !newImages.contains(image)))
                 .toList();
+    }
+
+    private String normalizeCategory(String category) {
+        if (category == null || category.isBlank()) {
+            return null;
+        }
+        return category.trim().toLowerCase(Locale.ROOT);
     }
 }

@@ -28,6 +28,7 @@ export class CreateProductPopPup {
     name: '',
     description: '',
     category: '',
+    condition: '',
     price: 0,
     image: '',
   };
@@ -42,6 +43,11 @@ export class CreateProductPopPup {
     'Toys',
     'Automotive',
     'Other',
+  ];
+
+  conditions = [
+    { value: 'new', label: 'New' },
+    { value: 'used', label: 'Used' },
   ];
 
 

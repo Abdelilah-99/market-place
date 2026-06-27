@@ -2,7 +2,10 @@ package com.example.products.models;
 
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import com.example.shared.common.database.BaseEntity;
@@ -32,6 +35,8 @@ public class Product extends BaseEntity {
 
     private String category;
 
+    private String condition;
+
     private double price;
 
     private long quantity;
@@ -40,17 +45,32 @@ public class Product extends BaseEntity {
 
     private List<UUID> images = new ArrayList<>();
 
+    private double averageRating;
+
+    private long ratingCount;
+
+    private Map<Integer, Long> ratingBreakdown = defaultRatingBreakdown();
+
     @Field("user_id")
     private String userId;
 
     public Product(CreateProdutDto dto, String userId) {
         this.name = dto.getName();
         this.description = dto.getDescription();
-        this.category = dto.getCategory();
+        this.category = normalizeCategory(dto.getCategory());
+        this.condition = normalizeCondition(dto.getCondition());
         this.price = dto.getPrice();
         this.image = dto.getImage();
         this.images = normalizeImages(dto.getImage(), dto.getImages());
         this.userId = userId;
+    }
+
+    public void setCategory(String category) {
+        this.category = normalizeCategory(category);
+    }
+
+    public void setCondition(String condition) {
+        this.condition = normalizeCondition(condition);
     }
 
     public List<UUID> getImages() {
@@ -62,6 +82,10 @@ public class Product extends BaseEntity {
 
     public void setImages(List<UUID> images) {
         this.images = normalizeImages(this.image, images);
+    }
+
+    public void setRatingBreakdown(Map<Integer, Long> ratingBreakdown) {
+        this.ratingBreakdown = ratingBreakdown == null ? defaultRatingBreakdown() : ratingBreakdown;
     }
 
     private List<UUID> normalizeImages(UUID primaryImage, List<UUID> imageList) {
@@ -77,5 +101,27 @@ public class Product extends BaseEntity {
             normalized.add(primaryImage);
         }
         return normalized;
+    }
+
+    private String normalizeCategory(String category) {
+        if (category == null || category.isBlank()) {
+            return null;
+        }
+        return category.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeCondition(String condition) {
+        if (condition == null || condition.isBlank()) {
+            return null;
+        }
+        return condition.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static Map<Integer, Long> defaultRatingBreakdown() {
+        Map<Integer, Long> breakdown = new LinkedHashMap<>();
+        for (int stars = 5; stars >= 1; stars--) {
+            breakdown.put(stars, 0L);
+        }
+        return breakdown;
     }
 }

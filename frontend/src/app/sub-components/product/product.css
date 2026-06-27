@@ -101,6 +101,7 @@
 .category-chip {
   display: inline-flex;
   margin-top: 0.45rem;
+  margin-right: 0.35rem;
   border-radius: 999px;
   color: var(--brand-dark);
   background: var(--brand-soft);
@@ -108,6 +109,11 @@
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: capitalize;
+}
+
+.condition-chip {
+  color: #365314;
+  background: #ecfccb;
 }
 
 .product-body p {

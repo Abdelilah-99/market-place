@@ -3,7 +3,6 @@ package com.example.products.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +24,7 @@ import com.example.products.dto.UpdateProcutDto;
 import com.example.products.kafka.MediaEvents;
 import com.example.products.kafka.ProductEvents;
 import com.example.products.models.Product;
+import com.example.products.repositories.ProductRatingRepository;
 import com.example.products.repositories.ProductRepository;
 import com.example.products.search.ProductSearchService;
 
@@ -44,13 +44,16 @@ class ProductServiceTest {
     private MediaEvents mediaEvents;
     @Mock
     private ProductSearchService productSearchService;
+    @Mock
+    private ProductRatingRepository productRatingRepository;
     private ProductService productService;
 
     @BeforeEach
     void setUp() {
         // productEvents = new ProductEvents(kafkaTemplate);
         // mediaEvents = new MediaEvents(kafkaTemplate);
-        productService = new ProductService(productRepository, productEvents, mediaEvents, productSearchService);
+        productService = new ProductService(productRepository, productEvents, mediaEvents, productSearchService,
+                productRatingRepository);
     }
 
     @Test
@@ -85,6 +88,27 @@ class ProductServiceTest {
     }
 
     @Test
+    void getProductsByCategoryNormalizesCategoryBeforeQueryingRepository() {
+        Product product = new Product();
+        product.setCategory("electronics");
+        when(productRepository.findAllByCategoryIgnoreCaseOrderByCreatedAtDesc("electronics"))
+                .thenReturn(List.of(product));
+
+        List<Product> result = productService.getProductsByCategory(" Electronics ");
+
+        assertEquals(1, result.size());
+        assertEquals("electronics", result.get(0).getCategory());
+        verify(productRepository).findAllByCategoryIgnoreCaseOrderByCreatedAtDesc("electronics");
+    }
+
+    @Test
+    void getProductsByCategoryReturnsEmptyListForBlankCategory() {
+        List<Product> result = productService.getProductsByCategory(" ");
+
+        assertEquals(0, result.size());
+    }
+
+    @Test
     void deleteProductDeletesRepositoryAndImage() {
         UUID productId = UUID.randomUUID();
         UUID imageId = UUID.randomUUID();
@@ -96,6 +120,7 @@ class ProductServiceTest {
         productService.deleteProduct(productId);
 
         verify(productRepository).deleteById(productId);
+        verify(productRatingRepository).deleteByProductId(productId);
         verify(mediaEvents).deleteImageEvents(List.of(imageId));
     }
 

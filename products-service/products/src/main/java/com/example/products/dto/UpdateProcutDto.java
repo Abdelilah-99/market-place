@@ -3,6 +3,7 @@ package com.example.products.dto;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -17,6 +18,9 @@ public class UpdateProcutDto {
 
     @Size(max = 120, message = "Category must be less than 120 characters")
     private String category;
+
+    @Pattern(regexp = "(?i)^(new|used)$", message = "Condition must be new or used")
+    private String condition;
 
     @Positive(message = "Price must be greater than 0")
     private Double price;

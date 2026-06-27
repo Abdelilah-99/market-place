@@ -15,6 +15,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 
@@ -125,6 +126,15 @@ public class GlobalExceptionHandler {
                                 "Invalid parameter: " + ex.getName(),
                                 HttpStatus.BAD_REQUEST);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        @ExceptionHandler(ResponseStatusException.class)
+        public ResponseEntity<ApiResponse<String>> handleResponseStatusException(ResponseStatusException ex) {
+                HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
+                ApiResponse<String> response = ApiResponse.error(
+                                ex.getReason(),
+                                status);
+                return new ResponseEntity<>(response, status);
         }
 
         @ExceptionHandler(Exception.class)

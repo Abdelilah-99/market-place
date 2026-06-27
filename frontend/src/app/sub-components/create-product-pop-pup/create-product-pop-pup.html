@@ -36,6 +36,14 @@
             </label>
 
             <label class="form-field">
+              <span>Condition</span>
+              <select name="condition" [(ngModel)]="product.condition" required>
+                <option value="" disabled>Select condition</option>
+                <option *ngFor="let condition of conditions" [value]="condition.value">{{ condition.label }}</option>
+              </select>
+            </label>
+
+            <label class="form-field">
               <span>Price</span>
               <input type="number" name="price" [(ngModel)]="product.price" required min="0.01" step="0.01"
                 placeholder="0.00" />

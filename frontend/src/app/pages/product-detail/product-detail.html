@@ -53,18 +53,21 @@
     </div>
 
     <aside class="product-panel">
+      <div class="product-meta">
       @if (item.category) {
       <span class="category-pill">{{ item.category }}</span>
       }
+        <span class="category-pill condition-pill">{{ conditionLabel(item.condition) }}</span>
+      </div>
       <h1>{{ item.name }}</h1>
       <p>{{ item.description }}</p>
 
       <div class="rating-summary">
-        <strong>{{ rating }}</strong>
+        <strong>{{ ratingStats().average || 'New' }}</strong>
         <span>
-          <i class="fa fa-star" *ngFor="let star of stars()"></i>
+          <i class="fa fa-star" *ngFor="let star of stars()" [class.muted]="star > roundedAverage()"></i>
         </span>
-        <small>{{ reviewCount }} buyer reviews</small>
+        <small>{{ ratingStats().count }} buyer rating{{ ratingStats().count === 1 ? '' : 's' }}</small>
       </div>
 
       <div class="price-box">
@@ -83,14 +86,32 @@
     <div>
       <span class="section-kicker">Ratings</span>
       <h2>Buyer confidence</h2>
-      <p>Ratings are displayed as a marketplace-ready section for product trust and future review integration.</p>
+      <p>{{ ratingStats().count ? 'Based on real buyer feedback for this listing.' : 'Be the first buyer to rate this listing.' }}</p>
+
+      <div class="rate-product" aria-label="Rate this product">
+        <span>Your rating</span>
+        <div class="rating-actions" (mouseleave)="hoverRating.set(0)">
+          <button type="button" *ngFor="let star of stars()" (mouseenter)="hoverRating.set(star)"
+            (click)="submitRating(star)" [class.active]="star <= displayRating()" [disabled]="ratingSubmitting()"
+            [attr.aria-label]="'Rate ' + star + ' stars'">
+            <i class="fa fa-star"></i>
+          </button>
+        </div>
+        <small>
+          @if (selectedRating()) {
+          You rated this product {{ selectedRating() }}/5.
+          } @else {
+          Login as a buyer to save a rating.
+          }
+        </small>
+      </div>
     </div>
 
     <div class="rating-bars">
-      <div class="rating-row" *ngFor="let row of ratingBreakdown">
+      <div class="rating-row" *ngFor="let row of ratingBreakdownRows()">
         <span>{{ row.stars }} star</span>
         <div><strong [style.width.%]="row.percent"></strong></div>
-        <small>{{ row.percent }}%</small>
+        <small>{{ row.count }}</small>
       </div>
     </div>
   </section>

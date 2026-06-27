@@ -12,6 +12,8 @@ import com.example.products.models.Product;
 public interface ProductRepository extends MongoRepository<Product, UUID> {
     List<Product> findAllByUserIdOrderByCreatedAtDesc(String userId);
 
+    List<Product> findAllByCategoryIgnoreCaseOrderByCreatedAtDesc(String category);
+
     List<Product> findAllByOrderByCreatedAtDesc();
 
     List<Product> findByUserId(String userId);

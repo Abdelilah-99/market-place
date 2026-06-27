@@ -5,7 +5,11 @@ export interface Product {
   images?: string[];
   description: string;
   category?: string;
+  condition?: 'new' | 'used' | string;
   price: number;
+  averageRating?: number;
+  ratingCount?: number;
+  ratingBreakdown?: Record<string, number>;
   userId: string;     
   createdAt?: string; 
   updatedAt?: string; 

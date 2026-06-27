@@ -29,6 +29,10 @@ export class ProductItem {
 
   isMyProduct: boolean = false;
   isEditing = false;
+  conditions = [
+    { value: 'new', label: 'New' },
+    { value: 'used', label: 'Used' },
+  ];
 
   constructor(
     private router: Router,
@@ -46,6 +50,11 @@ export class ProductItem {
   productImage(): string {
     const image = this.product.image || this.product.images?.[0] || '';
     return image ? `/api/media/products/${image}` : '';
+  }
+
+  conditionLabel(condition?: string): string {
+    if (!condition) return 'Used';
+    return condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
   }
 
   onImageSelected(event: Event) {

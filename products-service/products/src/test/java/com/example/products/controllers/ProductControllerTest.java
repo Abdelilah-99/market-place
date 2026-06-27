@@ -16,14 +16,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import com.example.products.dto.CreateProdutDto;
+import com.example.products.dto.ProductRatingStatsDto;
+import com.example.products.dto.RateProductDto;
 import com.example.products.dto.UpdateProcutDto;
 import com.example.products.models.Product;
+import com.example.products.services.ProductRatingService;
 import com.example.products.services.ProductService;
 import com.example.shared.common.utils.ApiResponse;
 
 @SuppressWarnings("null")
 class ProductControllerTest {
     private ProductService productService;
+    private FakeProductRatingService productRatingService;
     private ProductController controller;
 
     private UUID productId;
@@ -35,7 +39,8 @@ class ProductControllerTest {
     @BeforeEach
     void setUp() {
         productService = new FakeProductService();
-        controller = new ProductController(productService);
+        productRatingService = new FakeProductRatingService();
+        controller = new ProductController(productService, productRatingService);
 
         productId = UUID.randomUUID();
         userId = "user-123";
@@ -136,6 +141,22 @@ class ProductControllerTest {
     }
 
     @Test
+    void getProductsByCategoryReturnsApiResponse() {
+        FakeProductService fake = (FakeProductService) productService;
+        testProduct.setCategory("electronics");
+        fake.categoryProducts = List.of(testProduct);
+
+        ResponseEntity<ApiResponse<List<Product>>> response = controller.getProductsByCategory("Electronics");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().data().size());
+        assertEquals("electronics", response.getBody().data().get(0).getCategory());
+        assertTrue(fake.getProductsByCategoryCalled);
+        assertEquals("Electronics", fake.lastCategory);
+    }
+
+    @Test
     void createProductReturnsCreatedResponse() {
         Product createdProduct = new Product(createDto, userId);
         createdProduct.setId(productId);
@@ -148,6 +169,35 @@ class ProductControllerTest {
         assertNotNull(response.getBody());
         assertEquals("New Product", response.getBody().data().getName());
         assertTrue(userId.equals(fake.lastCreateUserId));
+    }
+
+    @Test
+    void getProductRatingsReturnsStats() {
+        ProductRatingStatsDto stats = new ProductRatingStatsDto(4.5, 2, java.util.Map.of(5, 1L, 4, 1L), null);
+        productRatingService.stats = stats;
+
+        ResponseEntity<ApiResponse<ProductRatingStatsDto>> response =
+                controller.getProductRatings(productId, authentication(userId));
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(4.5, response.getBody().data().average());
+        assertTrue(productRatingService.getStatsCalled);
+        assertEquals(productId, productRatingService.lastProductId);
+    }
+
+    @Test
+    void rateProductUsesAuthenticatedPrincipal() {
+        RateProductDto dto = new RateProductDto();
+        dto.setStars(5);
+        productRatingService.stats = new ProductRatingStatsDto(5.0, 1, java.util.Map.of(5, 1L), 5);
+
+        ResponseEntity<ApiResponse<ProductRatingStatsDto>> response =
+                controller.rateProduct(productId, dto, authentication(userId));
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(5, response.getBody().data().myRating());
+        assertTrue(productRatingService.rateProductCalled);
+        assertEquals(userId, productRatingService.lastUserId);
     }
 
     @Test
@@ -207,11 +257,14 @@ class ProductControllerTest {
     static class FakeProductService extends ProductService {
         List<Product> allProducts = List.of();
         List<Product> myProducts = List.of();
+        List<Product> categoryProducts = List.of();
         Product productById = null;
         Product createdProduct = null;
         boolean getAllProductsCalled = false;
         boolean getMyProductsCalled = false;
         String lastGetMyProductsUserId = null;
+        boolean getProductsByCategoryCalled = false;
+        String lastCategory = null;
         boolean getProductByIdCalled = false;
         java.util.UUID lastGetProductId = null;
         boolean deleteCalled = false;
@@ -223,7 +276,7 @@ class ProductControllerTest {
         String lastCreateUserId = null;
 
         public FakeProductService() {
-            super(null, null, null, null);
+            super(null, null, null, null, null);
         }
 
         @Override
@@ -237,6 +290,13 @@ class ProductControllerTest {
             this.getMyProductsCalled = true;
             this.lastGetMyProductsUserId = userId;
             return this.myProducts;
+        }
+
+        @Override
+        public List<Product> getProductsByCategory(String category) {
+            this.getProductsByCategoryCalled = true;
+            this.lastCategory = category;
+            return this.categoryProducts;
         }
 
         @Override
@@ -264,6 +324,34 @@ class ProductControllerTest {
             this.lastUpdateProduct = product;
             this.lastUpdateDto = productDto;
             return this.updatedProduct;
+        }
+    }
+
+    static class FakeProductRatingService extends ProductRatingService {
+        ProductRatingStatsDto stats = new ProductRatingStatsDto(0, 0, java.util.Map.of(), null);
+        boolean getStatsCalled = false;
+        boolean rateProductCalled = false;
+        java.util.UUID lastProductId = null;
+        String lastUserId = null;
+
+        public FakeProductRatingService() {
+            super(null, null, null);
+        }
+
+        @Override
+        public ProductRatingStatsDto getStats(java.util.UUID productId, String userId) {
+            this.getStatsCalled = true;
+            this.lastProductId = productId;
+            this.lastUserId = userId;
+            return stats;
+        }
+
+        @Override
+        public ProductRatingStatsDto rateProduct(java.util.UUID productId, String userId, RateProductDto dto) {
+            this.rateProductCalled = true;
+            this.lastProductId = productId;
+            this.lastUserId = userId;
+            return stats;
         }
     }
 }

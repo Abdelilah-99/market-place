@@ -90,8 +90,11 @@ public class ProductSearchService {
                                     "name": { "type": "text", "analyzer": "product_text", "fields": { "keyword": { "type": "keyword" } } },
                                     "description": { "type": "text", "analyzer": "product_text" },
                                     "category": { "type": "keyword" },
+                                    "condition": { "type": "keyword" },
                                     "price": { "type": "double" },
                                     "images": { "type": "keyword" },
+                                    "averageRating": { "type": "double" },
+                                    "ratingCount": { "type": "long" },
                                     "userId": { "type": "keyword" },
                                     "createdAt": { "type": "date" }
                                 }
@@ -196,7 +199,15 @@ public class ProductSearchService {
         }
 
         if (category != null && !category.isBlank()) {
-            filter.add(Map.of("term", Map.of("category", category)));
+            String normalizedCategory = category.trim().toLowerCase(Locale.ROOT);
+            filter.add(Map.of("bool", Map.of(
+                    "should", List.of(
+                            Map.of("term", Map.of("category", category.trim())),
+                            Map.of("term", Map.of("category", normalizedCategory)),
+                            Map.of("wildcard", Map.of("category", Map.of(
+                                    "value", category.trim(),
+                                    "case_insensitive", true)))),
+                    "minimum_should_match", 1)));
         }
 
         if (minPrice != null || maxPrice != null) {
