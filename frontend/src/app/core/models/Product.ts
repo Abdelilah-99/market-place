@@ -115,4 +115,3 @@ export const products: Product[] = [
     updatedAt: new Date().toISOString()
   }
 ];
-

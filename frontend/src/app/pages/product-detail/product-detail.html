@@ -1,0 +1,98 @@
+<main class="detail-page page-shell">
+  <a routerLink="/" class="back-link">
+    <i class="fa fa-arrow-left"></i>
+    Back to marketplace
+  </a>
+
+  @if (loading()) {
+  <section class="state-panel">
+    <i class="fa fa-spinner"></i>
+    <h1>Loading product</h1>
+  </section>
+  } @else if (error()) {
+  <section class="state-panel">
+    <i class="fa fa-box-open"></i>
+    <h1>{{ error() }}</h1>
+  </section>
+  } @else if (product(); as item) {
+  <section class="detail-layout">
+    <div class="gallery">
+      <div class="gallery-main">
+        @if (productImages().length) {
+        <img [src]="productImages()[activeImage()]" [alt]="item.name" />
+        } @else {
+        <div class="image-placeholder">
+          <i class="fa fa-image"></i>
+        </div>
+        }
+
+        @if (productImages().length > 1) {
+        <button type="button" class="gallery-arrow previous" (click)="previousImage()" aria-label="Previous image">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <button type="button" class="gallery-arrow next" (click)="nextImage()" aria-label="Next image">
+          <i class="fa fa-chevron-right"></i>
+        </button>
+        <div class="gallery-dots" aria-label="Product image pages">
+          <button type="button" *ngFor="let image of productImages(); let index = index"
+            [class.active]="activeImage() === index" (click)="selectImage(index)"
+            [attr.aria-label]="'Show image ' + (index + 1)">
+          </button>
+        </div>
+        }
+      </div>
+
+      @if (productImages().length > 1) {
+      <div class="gallery-thumbs">
+        <button type="button" *ngFor="let image of productImages(); let index = index"
+          [class.active]="activeImage() === index" (click)="selectImage(index)">
+          <img [src]="image" alt="" />
+        </button>
+      </div>
+      }
+    </div>
+
+    <aside class="product-panel">
+      @if (item.category) {
+      <span class="category-pill">{{ item.category }}</span>
+      }
+      <h1>{{ item.name }}</h1>
+      <p>{{ item.description }}</p>
+
+      <div class="rating-summary">
+        <strong>{{ rating }}</strong>
+        <span>
+          <i class="fa fa-star" *ngFor="let star of stars()"></i>
+        </span>
+        <small>{{ reviewCount }} buyer reviews</small>
+      </div>
+
+      <div class="price-box">
+        <span>Price</span>
+        <strong>${{ item.price }}</strong>
+      </div>
+
+      <button class="btn-primary buy-action">
+        <i class="fa fa-bag-shopping"></i>
+        Buy now
+      </button>
+    </aside>
+  </section>
+
+  <section class="ratings-section">
+    <div>
+      <span class="section-kicker">Ratings</span>
+      <h2>Buyer confidence</h2>
+      <p>Ratings are displayed as a marketplace-ready section for product trust and future review integration.</p>
+    </div>
+
+    <div class="rating-bars">
+      <div class="rating-row" *ngFor="let row of ratingBreakdown">
+        <span>{{ row.stars }} star</span>
+        <div><strong [style.width.%]="row.percent"></strong></div>
+        <small>{{ row.percent }}%</small>
+      </div>
+    </div>
+  </section>
+  }
+</main>

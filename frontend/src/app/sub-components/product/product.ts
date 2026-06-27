@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { Product } from '../../core/models/Product';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductsService } from '../../core/services/products-service';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +11,7 @@ import { ToasterService } from '../../core/services/toaster-service';
 @Component({
   selector: 'app-product',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './product.html',
   styleUrls: ['./product.css'],
 })
@@ -40,6 +41,11 @@ export class ProductItem {
     this.updatedProduct = structuredClone(this.product);
     const currentUrl = this.router.url;
     this.isMyProduct = currentUrl === '/dashboard';
+  }
+
+  productImage(): string {
+    const image = this.product.image || this.product.images?.[0] || '';
+    return image ? `/api/media/products/${image}` : '';
   }
 
   onImageSelected(event: Event) {

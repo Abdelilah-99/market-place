@@ -1,0 +1,268 @@
+.detail-page {
+  padding: 1.4rem 0 4rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.detail-layout {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.gallery,
+.product-panel,
+.ratings-section,
+.state-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.gallery {
+  padding: 0.8rem;
+}
+
+.gallery-main {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-muted);
+}
+
+.gallery-main img,
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.gallery-main img {
+  object-fit: cover;
+}
+
+.image-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 2rem;
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.9);
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.gallery-arrow.previous {
+  left: 0.8rem;
+}
+
+.gallery-arrow.next {
+  right: 0.8rem;
+}
+
+.gallery-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 0.75rem;
+  display: flex;
+  gap: 0.35rem;
+  transform: translateX(-50%);
+}
+
+.gallery-dots button {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.gallery-dots button.active {
+  background: #ffffff;
+}
+
+.gallery-thumbs {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.gallery-thumbs button {
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  cursor: pointer;
+}
+
+.gallery-thumbs button.active {
+  border-color: var(--brand);
+}
+
+.gallery-thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.category-pill {
+  width: fit-content;
+  border-radius: 999px;
+  color: var(--brand-dark);
+  background: var(--brand-soft);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.product-panel h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  line-height: 1.05;
+}
+
+.product-panel p,
+.ratings-section p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.rating-summary,
+.price-box {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fbfcfe;
+  padding: 0.9rem;
+}
+
+.rating-summary {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.rating-summary strong,
+.price-box strong {
+  color: var(--text);
+  font-size: 1.6rem;
+  font-weight: 950;
+}
+
+.rating-summary i {
+  color: #f59e0b;
+}
+
+.rating-summary small,
+.price-box span {
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.price-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buy-action {
+  width: 100%;
+}
+
+.ratings-section {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(280px, 1fr);
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.section-kicker {
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.ratings-section h2 {
+  margin: 0.25rem 0 0.45rem;
+  font-size: 1.45rem;
+  font-weight: 950;
+}
+
+.rating-bars {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.rating-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 42px;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.rating-row div {
+  height: 9px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.rating-row strong {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand);
+}
+
+.state-panel {
+  min-height: 320px;
+  margin-top: 1rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 820px) {
+  .detail-layout,
+  .ratings-section {
+    grid-template-columns: 1fr;
+  }
+}

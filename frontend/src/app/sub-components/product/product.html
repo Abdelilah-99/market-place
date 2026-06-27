@@ -1,7 +1,8 @@
 <article class="product-card">
   <div class="product-media">
-    <img [src]="imagePreview() || (product.image ? '/api/media/products/' + product.image : '')"
-      [alt]="product.name" />
+    <a [routerLink]="['/products', product.id]" class="media-link" aria-label="Open product details">
+      <img [src]="imagePreview() || productImage()" [alt]="product.name" />
+    </a>
     <span class="condition-pill">Available</span>
     @if (isEditing) {
     <button class="media-edit-button" (click)="fileInput.click()" aria-label="Change product image">
@@ -14,7 +15,12 @@
   <div class="product-body">
     @if (!isEditing) {
     <div>
-      <h3>{{ product.name }}</h3>
+      <a [routerLink]="['/products', product.id]" class="product-title">
+        <h3>{{ product.name }}</h3>
+      </a>
+      @if (product.category) {
+      <span class="category-chip">{{ product.category }}</span>
+      }
       <p>{{ product.description }}</p>
     </div>
     <div class="price-row">
@@ -30,6 +36,10 @@
       <label class="form-field">
         <span>Description</span>
         <textarea [(ngModel)]="updatedProduct.description" rows="3"></textarea>
+      </label>
+      <label class="form-field">
+        <span>Category</span>
+        <input type="text" [(ngModel)]="updatedProduct.category" />
       </label>
       <div class="form-field price-input">
         <label>Price</label>

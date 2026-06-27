@@ -1,5 +1,6 @@
 package com.example.products.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
@@ -27,4 +28,6 @@ public class CreateProdutDto {
 
 
     private UUID image;
+
+    private List<UUID> images;
 }

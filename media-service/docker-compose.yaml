@@ -32,8 +32,12 @@ services:
 
 volumes:
   mongo_data:
+    name: media-service_mongo_data
+    external: true
   media_m2:
   media_storage:
+    name: media-service_media_storage
+    external: true
   media-service-certs:
     external: true
 

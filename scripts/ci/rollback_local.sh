@@ -105,6 +105,17 @@ if ! docker network inspect shared-net >/dev/null 2>&1; then
     docker network create shared-net
 fi
 
+ensure_volume() {
+    local volume="$1"
+    if ! docker volume inspect "${volume}" >/dev/null 2>&1; then
+        echo "[CD] Creating Docker volume: ${volume}"
+        docker volume create "${volume}" >/dev/null
+    fi
+}
+
+ensure_volume "media-service_mongo_data"
+ensure_volume "media-service_media_storage"
+
 compose_up() {
     local service="$1"
     local required="${2:-true}"

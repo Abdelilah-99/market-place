@@ -1,5 +1,6 @@
 package com.example.products.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.constraints.Positive;
@@ -21,4 +22,6 @@ public class UpdateProcutDto {
     private Double price;
 
     private UUID image;
+
+    private List<UUID> images;
 }

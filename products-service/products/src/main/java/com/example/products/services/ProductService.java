@@ -1,6 +1,9 @@
 package com.example.products.services;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -66,7 +69,7 @@ public class ProductService {
 
         // 2 Then emit events
         productEvents.sendCreateEvent(saved);
-        mediaEvents.confimImageEvent(saved.getImage());
+        mediaEvents.confirmImageEvents(saved.getImages());
 
         return saved;
     }
@@ -76,7 +79,7 @@ public class ProductService {
 
         productRepository.deleteById(id);
         productEvents.sendRemoveEvent(product);
-        mediaEvents.deleteImageEvent(product.getImage());
+        mediaEvents.deleteImageEvents(product.getImages());
     }
 
     public Product updateProduct(Product product, UpdateProcutDto productDto) {
@@ -97,19 +100,16 @@ public class ProductService {
             product.setPrice(productDto.getPrice());
         }
 
-        if (productDto.getImage() != null &&
-                !productDto.getImage().equals(product.getImage())) {
-
-            // confirm new image first
-            mediaEvents.confimImageEvent(productDto.getImage());
-
-            UUID oldImage = product.getImage();
-            product.setImage(productDto.getImage());
+        List<UUID> oldImages = product.getImages();
+        List<UUID> requestedImages = normalizeImages(productDto.getImage(), productDto.getImages());
+        if (!requestedImages.isEmpty() && !requestedImages.equals(oldImages)) {
+            product.setImage(requestedImages.get(0));
+            product.setImages(requestedImages);
 
             Product saved = productRepository.save(product);
 
-            // delete old image after success
-            mediaEvents.deleteImageEvent(oldImage);
+            mediaEvents.confirmImageEvents(requestedImages);
+            mediaEvents.deleteImageEvents(imagesToDelete(oldImages, requestedImages));
             productEvents.sendUpdateEvent(saved);
 
             return saved;
@@ -118,5 +118,25 @@ public class ProductService {
         Product saved = productRepository.save(product);
         productEvents.sendUpdateEvent(saved);
         return saved;
+    }
+
+    private List<UUID> normalizeImages(UUID primaryImage, List<UUID> images) {
+        Set<UUID> normalized = new LinkedHashSet<>();
+        if (images != null) {
+            images.stream().filter(image -> image != null).forEach(normalized::add);
+        }
+        if (normalized.isEmpty() && primaryImage != null) {
+            normalized.add(primaryImage);
+        }
+        return new ArrayList<>(normalized);
+    }
+
+    private List<UUID> imagesToDelete(List<UUID> oldImages, List<UUID> newImages) {
+        if (oldImages == null || oldImages.isEmpty()) {
+            return List.of();
+        }
+        return oldImages.stream()
+                .filter(image -> image != null && (newImages == null || !newImages.contains(image)))
+                .toList();
     }
 }

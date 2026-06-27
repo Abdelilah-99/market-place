@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { Product } from '../../core/models/Product';
 import { MediaSevice } from '../../core/services/media-sevice';
 import { ProductsService } from '../../core/services/products-service';
@@ -44,8 +45,8 @@ export class CreateProductPopPup {
   ];
 
 
-  selectedImage = signal<File | null>(null);
-  imagePreview = signal<string | null>(null);
+  selectedImages = signal<File[]>([]);
+  imagePreviews = signal<string[]>([]);
   isSubmitting = signal(false);
   formError = signal('');
 
@@ -53,60 +54,65 @@ export class CreateProductPopPup {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
-    const file = input.files[0];
+    const files = Array.from(input.files).slice(0, 5);
+    const invalidFile = files.find(file => !this.mediaSevice.isImage(file));
 
-    if (!this.mediaSevice.isImage(file)) {
+    if (invalidFile) {
       this.formError.set('Please select a valid image file.');
       this.toaster.error('Please select a valid image file.');
 
-      this.selectedImage.set(null);
-      this.imagePreview.set(null);
+      this.selectedImages.set([]);
+      this.imagePreviews.set([]);
 
       input.value = '';
       return;
     }
 
     this.formError.set('');
-    this.selectedImage.set(file);
+    this.selectedImages.set(files);
+    this.imagePreviews.set(Array(files.length).fill(''));
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview.set(reader.result as string);
-      this.product.image = reader.result as string;
-    };
-    reader.readAsDataURL(file);
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreviews.update(current => {
+          const next = [...current];
+          next[index] = reader.result as string;
+          return next;
+        });
+      };
+      reader.readAsDataURL(file);
+    });
 
     input.value = '';
   }
 
-  removeImage() {
-    this.selectedImage.set(null);
-    this.imagePreview.set(null);
+  removeImage(index: number) {
+    this.selectedImages.update(files => files.filter((_, currentIndex) => currentIndex !== index));
+    this.imagePreviews.update(previews => previews.filter((_, currentIndex) => currentIndex !== index));
   }
 
   selectedImageLabel(): string {
-    const file = this.selectedImage();
-    if (!file) return '';
+    const files = this.selectedImages();
+    if (files.length === 0) return '';
 
-    const sizeInMb = file.size / (1024 * 1024);
-    return `${file.name} · ${sizeInMb.toFixed(2)} MB`;
+    const totalSizeInMb = files.reduce((total, file) => total + file.size, 0) / (1024 * 1024);
+    return `${files.length} image${files.length > 1 ? 's' : ''} · ${totalSizeInMb.toFixed(2)} MB`;
   }
 
 
   createProduct() {
-    const file = this.selectedImage();
-    if (!file || this.isSubmitting()) return;
+    const files = this.selectedImages();
+    if (files.length === 0 || this.isSubmitting()) return;
 
     this.formError.set('');
     this.isSubmitting.set(true);
 
-    // Step 1: Upload the image
-    this.mediaSevice.uploadProductImage(file).subscribe({
-      next: (res: any) => {
-        // Step 2: Set the uploaded image URL in the product
-        this.product.image = res;
+    forkJoin(files.map(file => this.mediaSevice.uploadProductImage(file))).subscribe({
+      next: (imageIds: string[]) => {
+        this.product.image = imageIds[0];
+        this.product.images = imageIds;
 
-        // Step 3: Create the product
         this.productsService.createProduct(this.product).subscribe({
           next: (res: any) => {
             this.isSubmitting.set(false);
@@ -138,5 +144,9 @@ export class CreateProductPopPup {
 
   close() {
     this.closePopUp.emit();
+  }
+
+  hasImages(): boolean {
+    return this.imagePreviews().some(Boolean);
   }
 }

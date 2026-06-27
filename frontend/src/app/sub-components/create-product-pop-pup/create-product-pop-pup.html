@@ -4,7 +4,7 @@
       <div>
         <span class="section-kicker">New listing</span>
         <h2>Create a polished product post</h2>
-        <p>Give buyers the essentials: clear title, category, price, and one strong image.</p>
+        <p>Give buyers the essentials: clear title, category, price, and a small image gallery.</p>
       </div>
       <button type="button" class="icon-close" (click)="close()" aria-label="Close modal">
         <i class="fa fa-xmark"></i>
@@ -45,24 +45,31 @@
 
         <aside class="media-panel">
           <div class="panel-heading">
-            <span>Product image</span>
-            <small>{{ imagePreview() ? 'Ready for listing' : 'Add one clear photo' }}</small>
+            <span>Product images</span>
+            <small>{{ hasImages() ? 'Gallery ready' : 'Add up to 5 photos' }}</small>
           </div>
 
-          @if (!imagePreview()) {
+          @if (!hasImages()) {
           <label class="upload-dropzone">
             <i class="fa fa-cloud-arrow-up"></i>
-            <span>Upload product photo</span>
-            <small>JPG, PNG, or WebP up to 2MB</small>
-            <input type="file" accept="image/*" (change)="onImageSelected($event)" class="hidden" />
+            <span>Upload product photos</span>
+            <small>JPG, PNG, or WebP. Up to 5 images.</small>
+            <input type="file" accept="image/*" multiple (change)="onImageSelected($event)" class="hidden" />
           </label>
           }
 
-          @if (imagePreview()) {
-          <div class="image-preview">
-            <img [src]="imagePreview()" alt="Selected product preview" />
-            <button type="button" (click)="removeImage()" aria-label="Remove selected image">
+          @if (hasImages()) {
+          <div class="image-preview gallery-preview">
+            <img [src]="imagePreviews()[0]" alt="Selected product preview" />
+            <button type="button" (click)="removeImage(0)" aria-label="Remove primary selected image">
               <i class="fa fa-trash"></i>
+            </button>
+          </div>
+          <div class="thumbnail-row" aria-label="Selected product images">
+            <button type="button" *ngFor="let preview of imagePreviews(); let index = index" (click)="removeImage(index)"
+              [attr.aria-label]="'Remove image ' + (index + 1)">
+              <img [src]="preview" alt="" />
+              <i class="fa fa-xmark"></i>
             </button>
           </div>
           <p class="file-meta">{{ selectedImageLabel() }}</p>
@@ -76,7 +83,7 @@
 
       <div class="modal-actions">
         <button type="button" (click)="close()" class="btn-secondary">Close</button>
-        <button type="submit" [disabled]="productForm.invalid || !imagePreview() || isSubmitting()" class="btn-primary">
+        <button type="submit" [disabled]="productForm.invalid || !hasImages() || isSubmitting()" class="btn-primary">
           <i [class]="isSubmitting() ? 'fa fa-circle-notch fa-spin' : 'fa fa-check'"></i>
           {{ isSubmitting() ? 'Publishing' : 'Publish listing' }}
         </button>

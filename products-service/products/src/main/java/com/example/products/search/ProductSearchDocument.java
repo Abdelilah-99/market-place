@@ -25,14 +25,13 @@ public class ProductSearchDocument {
     private String createdAt;
 
     public static ProductSearchDocument fromProduct(Product product) {
-        UUID image = product.getImage();
         return new ProductSearchDocument(
                 product.getId().toString(),
                 product.getName(),
                 product.getDescription(),
                 product.getCategory(),
                 product.getPrice(),
-                image == null ? List.of() : List.of(image.toString()),
+                product.getImages().stream().map(UUID::toString).toList(),
                 product.getUserId(),
                 product.getCreatedAt() == null ? null : product.getCreatedAt().toString());
     }

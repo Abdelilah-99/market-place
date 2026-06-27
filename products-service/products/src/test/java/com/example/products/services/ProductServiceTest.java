@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +81,7 @@ class ProductServiceTest {
         assertEquals(saved, result);
         verify(productRepository).save(any(Product.class));
         verify(productEvents).sendCreateEvent(saved);
-        verify(mediaEvents).confimImageEvent(imageId);
+        verify(mediaEvents).confirmImageEvents(List.of(imageId));
     }
 
     @Test
@@ -95,7 +96,7 @@ class ProductServiceTest {
         productService.deleteProduct(productId);
 
         verify(productRepository).deleteById(productId);
-        verify(mediaEvents).deleteImageEvent(imageId);
+        verify(mediaEvents).deleteImageEvents(List.of(imageId));
     }
 
     @Test
@@ -118,8 +119,8 @@ class ProductServiceTest {
         assertEquals(product, result);
         assertEquals("New Name", product.getName());
         assertEquals(newImage, product.getImage());
-        verify(mediaEvents).confimImageEvent(newImage);
-        verify(mediaEvents).deleteImageEvent(oldImage);
+        verify(mediaEvents).confirmImageEvents(List.of(newImage));
+        verify(mediaEvents).deleteImageEvents(List.of(oldImage));
         verify(productRepository).save(product);
     }
 }

@@ -63,6 +63,12 @@ export class ProductsService {
     );
   }
 
+  getProduct(id: string): Observable<ApiResponse<Product>> {
+    return this.http.get<ApiResponse<Product>>(
+      `${this.apiUrl}/${id}`
+    );
+  }
+
   getMyProducts() {
     return this.http.get<ApiResponse<Product[]>>(
       `${this.apiUrl}/me`
