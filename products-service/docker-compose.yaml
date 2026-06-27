@@ -16,6 +16,12 @@ services:
     container_name: products-service
     env_file:
       - .env.product
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      OPENSEARCH_HOST: opensearch
+      OPENSEARCH_PORT: 9200
+      OPENSEARCH_SCHEME: http
+      PRODUCT_SEARCH_INDEX: products-search
 
     depends_on:
       - products-service-mongodb

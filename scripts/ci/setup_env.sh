@@ -9,6 +9,22 @@ cp "$PRDCT_ENV"   ./products-service/.env.product
 cp "$MDA_ENV"     ./media-service/.env.media
 cp "$OPENSEARCH_ENV" ./opensearch/.env.opensearch
 
+ensure_env_value() {
+  local file="$1"
+  local key="$2"
+  local value="$3"
+
+  if ! grep -qE "^${key}=.+" "$file"; then
+    printf '%s=%s\n' "$key" "$value" >> "$file"
+  fi
+}
+
+ensure_env_value ./products-service/.env.product SPRING_KAFKA_BOOTSTRAP_SERVERS kafka:29092
+ensure_env_value ./products-service/.env.product OPENSEARCH_HOST opensearch
+ensure_env_value ./products-service/.env.product OPENSEARCH_PORT 9200
+ensure_env_value ./products-service/.env.product OPENSEARCH_SCHEME http
+ensure_env_value ./products-service/.env.product PRODUCT_SEARCH_INDEX products-search
+
 chmod 600 \
   ./users-service/.env.users \
   ./gateway/.env.gateway \
