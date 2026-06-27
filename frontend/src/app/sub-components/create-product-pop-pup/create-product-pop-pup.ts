@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Product } from '../../core/models/Product';
 import { MediaSevice } from '../../core/services/media-sevice';
 import { ProductsService } from '../../core/services/products-service';
+import { ToasterService } from '../../core/services/toaster-service';
 
 @Component({
   selector: 'app-create-product-pop-pup',
@@ -13,7 +14,11 @@ import { ProductsService } from '../../core/services/products-service';
 })
 export class CreateProductPopPup {
 
-  constructor(private mediaSevice: MediaSevice, private productsService: ProductsService) { }
+  constructor(
+    private mediaSevice: MediaSevice,
+    private productsService: ProductsService,
+    private toaster: ToasterService
+  ) { }
 
   @Output() closePopUp = new EventEmitter<void>();
   @Output() createdProduct = new EventEmitter<any>();
@@ -52,6 +57,7 @@ export class CreateProductPopPup {
 
     if (!this.mediaSevice.isImage(file)) {
       this.formError.set('Please select a valid image file.');
+      this.toaster.error('Please select a valid image file.');
 
       this.selectedImage.set(null);
       this.imagePreview.set(null);
@@ -104,11 +110,14 @@ export class CreateProductPopPup {
         this.productsService.createProduct(this.product).subscribe({
           next: (res: any) => {
             this.isSubmitting.set(false);
+            this.toaster.success('Product listing published.');
             this.createdProduct.emit(res.data);
           },
           error: (err) => {
             console.error('Error creating product:', err);
-            this.formError.set('Product details were saved incorrectly. Please review and try again.');
+            const message = 'Product details were saved incorrectly. Please review and try again.';
+            this.formError.set(message);
+            this.toaster.error(message);
             this.isSubmitting.set(false);
           }
         });
@@ -116,7 +125,9 @@ export class CreateProductPopPup {
       },
       error: (err) => {
         console.error('Error uploading image:', err);
-        this.formError.set('Image upload failed. Please try another image or upload again.');
+        const message = 'Image upload failed. Please try another image or upload again.';
+        this.formError.set(message);
+        this.toaster.error(message);
         this.isSubmitting.set(false);
       }
     });

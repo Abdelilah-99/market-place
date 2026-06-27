@@ -7,7 +7,7 @@
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
-  z-index: 80;
+  z-index: 220;
   width: min(calc(100% - 2rem), 420px);
   min-height: 58px;
   border: 1px solid var(--border);
@@ -96,20 +96,16 @@
 
 .route-stage ::ng-deep router-outlet + * {
   display: block;
-  animation: route-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: route-enter 260ms ease both;
 }
 
 @keyframes route-enter {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.995);
-    filter: blur(4px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 

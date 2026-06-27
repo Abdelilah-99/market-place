@@ -3,6 +3,7 @@ import { Component, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { StateService } from '../../core/services/state-service';
 import { Me, UsersService } from '../../core/services/users-service';
+import { ToasterService } from '../../core/services/toaster-service';
 
 @Component({
   selector: 'app-navbar',
@@ -22,6 +23,7 @@ export class Navbar {
     private userService: UsersService,
     private router: Router,
     private stateService: StateService,
+    private toaster: ToasterService,
     @Inject(PLATFORM_ID) private platformId: object
   ) { }
 
@@ -103,6 +105,7 @@ export class Navbar {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     this.isOpen = false;
+    this.toaster.info('You have been logged out.');
     this.router.navigateByUrl('/login');
   }
 }

@@ -36,18 +36,15 @@ public class AuthService {
 
     public RegisterResDTOs register(RegisterReqDTOs req) {
         Role role = normalizeRole(req.role());
-        System.out.println("avatar uuid: " + req.avatarUrl());
-        System.out.println("role: " + req.role());
         boolean exist = userRepository.existsByEmail(req.email());
 
         if (exist) {
-            throw new UserExistException("Invalid Email");
+            throw new UserExistException("Email is already registered");
         }
         String avatarUUID = null;
         if (req.avatarUrl() != null) {
             avatarUUID = req.avatarUrl().toString();
         }
-        System.out.println(req.name() + " -----------------------------------");
         User user = new User(null, req.name(), req.email(), passwordEncoder.encode(req.password()),
                 role.toString().substring(5), avatarUUID);
 
@@ -88,7 +85,7 @@ public class AuthService {
             case "BUYER" -> Role.ROLE_BUYER;
             case "SELLER" -> Role.ROLE_SELLER;
             default -> throw new IllegalArgumentException(
-                    "Invalid role. Use CLIENT or SELLER");
+                    "Invalid role. Use BUYER or SELLER");
         };
     }
 }
