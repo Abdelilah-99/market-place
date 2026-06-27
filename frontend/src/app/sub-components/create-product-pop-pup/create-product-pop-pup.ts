@@ -41,6 +41,8 @@ export class CreateProductPopPup {
 
   selectedImage = signal<File | null>(null);
   imagePreview = signal<string | null>(null);
+  isSubmitting = signal(false);
+  formError = signal('');
 
   onImageSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -49,7 +51,7 @@ export class CreateProductPopPup {
     const file = input.files[0];
 
     if (!this.mediaSevice.isImage(file)) {
-      alert('Please select a valid image file!');
+      this.formError.set('Please select a valid image file.');
 
       this.selectedImage.set(null);
       this.imagePreview.set(null);
@@ -58,6 +60,7 @@ export class CreateProductPopPup {
       return;
     }
 
+    this.formError.set('');
     this.selectedImage.set(file);
 
     const reader = new FileReader();
@@ -75,10 +78,21 @@ export class CreateProductPopPup {
     this.imagePreview.set(null);
   }
 
+  selectedImageLabel(): string {
+    const file = this.selectedImage();
+    if (!file) return '';
+
+    const sizeInMb = file.size / (1024 * 1024);
+    return `${file.name} · ${sizeInMb.toFixed(2)} MB`;
+  }
+
 
   createProduct() {
     const file = this.selectedImage();
-    if (!file) return;
+    if (!file || this.isSubmitting()) return;
+
+    this.formError.set('');
+    this.isSubmitting.set(true);
 
     // Step 1: Upload the image
     this.mediaSevice.uploadProductImage(file).subscribe({
@@ -89,16 +103,21 @@ export class CreateProductPopPup {
         // Step 3: Create the product
         this.productsService.createProduct(this.product).subscribe({
           next: (res: any) => {
+            this.isSubmitting.set(false);
             this.createdProduct.emit(res.data);
           },
           error: (err) => {
             console.error('Error creating product:', err);
+            this.formError.set('Product details were saved incorrectly. Please review and try again.');
+            this.isSubmitting.set(false);
           }
         });
 
       },
       error: (err) => {
         console.error('Error uploading image:', err);
+        this.formError.set('Image upload failed. Please try another image or upload again.');
+        this.isSubmitting.set(false);
       }
     });
   }
@@ -106,7 +125,7 @@ export class CreateProductPopPup {
 
 
 
-close() {
-  this.closePopUp.emit();
-}
+  close() {
+    this.closePopUp.emit();
+  }
 }

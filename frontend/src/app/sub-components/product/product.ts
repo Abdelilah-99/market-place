@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ProductsService } from '../../core/services/products-service';
 import { FormsModule } from '@angular/forms';
 import { MediaSevice } from '../../core/services/media-sevice';
+import { ToasterService } from '../../core/services/toaster-service';
 
 @Component({
   selector: 'app-product',
@@ -21,11 +22,19 @@ export class ProductItem {
   // Signals for image preview and selected file
   imagePreview = signal<string | null>(null);
   selectedImage = signal<File | null>(null);
+  isSaving = signal(false);
+  isDeleting = signal(false);
+  isDeleteConfirmOpen = signal(false);
 
   isMyProduct: boolean = false;
   isEditing = false;
 
-  constructor(private router: Router, private producteService: ProductsService, private mediaSevice: MediaSevice) { }
+  constructor(
+    private router: Router,
+    private producteService: ProductsService,
+    private mediaSevice: MediaSevice,
+    private toaster: ToasterService
+  ) { }
 
   ngOnInit() {
     this.updatedProduct = structuredClone(this.product);
@@ -39,9 +48,8 @@ export class ProductItem {
 
     const file = input.files[0];
 
-    // Optional: validate image type
     if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file!');
+      this.toaster.error('Please select a valid image file.');
       this.selectedImage.set(null);
       this.imagePreview.set(null);
       input.value = '';
@@ -63,46 +71,41 @@ export class ProductItem {
 
   save() {
     const file = this.selectedImage();
+    if (this.isSaving()) return;
+
+    this.isSaving.set(true);
 
     if (file) {
-      // Step 1: Upload image
       this.mediaSevice.uploadProductImage(file).subscribe({
         next: (imageUrl: any) => {
-          console.log(imageUrl);
-          
-          // Step 2: Set the uploaded image URL in the updated product
           this.updatedProduct.image = imageUrl;
-
-          // Step 3: Update the product with new image
-          this.producteService.updateProduct(this.product.id, this.updatedProduct).subscribe({
-            next: () => {
-              this.product = structuredClone(this.updatedProduct);
-              this.closeUpdate();
-            },
-            error: (err) => {
-              console.error('Error updating product:', err);
-              alert('Failed to update product. Please try again.');
-            }
-          });
+          this.updateProductDetails();
         },
         error: (err) => {
           console.error('Error uploading image:', err);
-          alert('Failed to upload image. Please try again.');
+          this.toaster.error('Image upload failed. Please try again.');
+          this.isSaving.set(false);
         }
       });
     } else {
-      // No new image selected, just update the product
-      this.producteService.updateProduct(this.product.id, this.updatedProduct).subscribe({
-        next: () => {
-          this.product = structuredClone(this.updatedProduct);
-          this.closeUpdate();
-        },
-        error: (err) => {
-          console.error('Error updating product:', err);
-          alert('Failed to update product. Please try again.');
-        }
-      });
+      this.updateProductDetails();
     }
+  }
+
+  private updateProductDetails() {
+    this.producteService.updateProduct(this.product.id, this.updatedProduct).subscribe({
+      next: () => {
+        this.product = structuredClone(this.updatedProduct);
+        this.closeUpdate();
+        this.toaster.success('Product updated successfully.');
+        this.isSaving.set(false);
+      },
+      error: (err) => {
+        console.error('Error updating product:', err);
+        this.toaster.error('Failed to update product. Please try again.');
+        this.isSaving.set(false);
+      }
+    });
   }
 
   cancel() {
@@ -116,17 +119,30 @@ export class ProductItem {
     this.imagePreview.set(null);
   }
 
+  requestDelete() {
+    this.isDeleteConfirmOpen.set(true);
+  }
+
+  cancelDelete() {
+    if (this.isDeleting()) return;
+    this.isDeleteConfirmOpen.set(false);
+  }
+
   delete() {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (this.isDeleting()) return;
+    this.isDeleting.set(true);
 
     this.producteService.deleteProducts(this.product.id).subscribe({
       next: () => {
-        alert('Product deleted successfully!');
-        this.deletedProductId.emit(this.product.id); // emit after success
+        this.toaster.success('Product deleted successfully.');
+        this.deletedProductId.emit(this.product.id);
+        this.isDeleting.set(false);
+        this.isDeleteConfirmOpen.set(false);
       },
       error: (err) => {
         console.error('Error deleting product:', err);
-        alert('Failed to delete product. Please try again.');
+        this.toaster.error('Failed to delete product. Please try again.');
+        this.isDeleting.set(false);
       },
     });
   }

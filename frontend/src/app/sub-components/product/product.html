@@ -56,7 +56,7 @@
       <button (click)="isEditing = true" class="icon-button" aria-label="Edit product">
         <i class="fa fa-pencil"></i>
       </button>
-      <button (click)="delete()" class="icon-button danger" aria-label="Delete product">
+      <button (click)="requestDelete()" class="icon-button danger" aria-label="Delete product">
         <i class="fa fa-trash"></i>
       </button>
       } @else {
@@ -64,12 +64,35 @@
         <i class="fa fa-xmark"></i>
         Cancel
       </button>
-      <button (click)="save()" class="btn-primary compact">
-        <i class="fa fa-check"></i>
-        Save
+      <button (click)="save()" [disabled]="isSaving()" class="btn-primary compact">
+        <i [class]="isSaving() ? 'fa fa-circle-notch fa-spin' : 'fa fa-check'"></i>
+        {{ isSaving() ? 'Saving' : 'Save' }}
       </button>
       }
     </div>
     }
   </div>
+
+  @if (isDeleteConfirmOpen()) {
+  <div class="confirm-backdrop" role="dialog" aria-modal="true" aria-label="Confirm product deletion">
+    <section class="confirm-panel">
+      <span class="confirm-icon">
+        <i class="fa fa-trash"></i>
+      </span>
+      <div>
+        <h4>Delete this post?</h4>
+        <p>This removes "{{ product.name }}" from your marketplace listings.</p>
+      </div>
+      <div class="confirm-actions">
+        <button type="button" class="btn-secondary compact" (click)="cancelDelete()" [disabled]="isDeleting()">
+          Cancel
+        </button>
+        <button type="button" class="btn-danger compact" (click)="delete()" [disabled]="isDeleting()">
+          <i [class]="isDeleting() ? 'fa fa-circle-notch fa-spin' : 'fa fa-trash'"></i>
+          {{ isDeleting() ? 'Deleting' : 'Delete' }}
+        </button>
+      </div>
+    </section>
+  </div>
+  }
 </article>

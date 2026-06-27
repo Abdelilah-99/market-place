@@ -2,3 +2,15 @@
 <main class="route-stage">
   <router-outlet></router-outlet>
 </main>
+
+@if (toaster.toaster$ | async; as toast) {
+<aside class="toast-shell" [class]="toast.type" role="status" aria-live="polite">
+  <span class="toast-icon">
+    <i [class]="toastIcon(toast.type)"></i>
+  </span>
+  <p>{{ toast.message }}</p>
+  <button type="button" (click)="toaster.clear()" aria-label="Dismiss notification">
+    <i class="fa fa-xmark"></i>
+  </button>
+</aside>
+}

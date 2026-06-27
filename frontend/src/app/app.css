@@ -3,6 +3,97 @@
   view-transition-name: route-stage;
 }
 
+.toast-shell {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 80;
+  width: min(calc(100% - 2rem), 420px);
+  min-height: 58px;
+  border: 1px solid var(--border);
+  border-left-width: 5px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text);
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.8rem;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(14px);
+  animation: toast-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.toast-shell.success {
+  border-left-color: var(--success);
+}
+
+.toast-shell.error {
+  border-left-color: var(--danger);
+}
+
+.toast-shell.warning {
+  border-left-color: var(--accent);
+}
+
+.toast-shell.info {
+  border-left-color: var(--brand);
+}
+
+.toast-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  background: var(--surface-soft);
+}
+
+.toast-shell.success .toast-icon {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.toast-shell.error .toast-icon {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.toast-shell.warning .toast-icon {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.toast-shell.info .toast-icon {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.toast-shell p {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.toast-shell button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.toast-shell button:hover {
+  color: var(--text);
+  background: var(--surface-soft);
+}
+
 .route-stage ::ng-deep router-outlet + * {
   display: block;
   animation: route-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -22,8 +113,31 @@
   }
 }
 
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 560px) {
+  .toast-shell {
+    right: 1rem;
+    bottom: 1rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .route-stage ::ng-deep router-outlet + * {
+    animation: none;
+  }
+
+  .toast-shell {
     animation: none;
   }
 }

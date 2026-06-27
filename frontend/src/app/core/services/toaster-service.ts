@@ -8,12 +8,28 @@ import { ToastMessage, ToastType } from '../models/ToastType';
 })
 export class ToasterService {
   public toaster$ = new BehaviorSubject<ToastMessage | null>(null);
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  // Default duration 3000ms
   show(message: string, type: ToastType, duration: number = 3000) {
-    const toast = new ToastMessage(type, message); 
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
+
+    const toast = new ToastMessage(type, message);
     this.toaster$.next(toast);
 
+    this.timeoutId = setTimeout(() => {
+      this.clear();
+    }, duration);
+  }
+
+  clear() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+
+    this.toaster$.next(null);
   }
 
   success(message: string, duration?: number) {

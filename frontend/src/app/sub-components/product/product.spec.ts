@@ -5,12 +5,14 @@ import { MediaSevice } from '../../core/services/media-sevice';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { Product } from '../../core/models/Product';
+import { ToasterService } from '../../core/services/toaster-service';
 
 describe('ProductItem Component', () => {
   let component: ProductItem;
   let mockProductsService: any;
   let mockMediaService: any;
   let mockRouter: any;
+  let mockToaster: any;
 
   const mockProduct: Product = {
     id: '1',
@@ -36,10 +38,18 @@ describe('ProductItem Component', () => {
       navigateByUrl: vi.fn()
     };
 
+    mockToaster = {
+      success: vi.fn(),
+      error: vi.fn(),
+      warning: vi.fn(),
+      info: vi.fn()
+    };
+
     component = new ProductItem(
       mockRouter,
       mockProductsService,
-      mockMediaService
+      mockMediaService,
+      mockToaster as ToasterService
     );
 
     component.product = mockProduct;
@@ -102,12 +112,10 @@ describe('ProductItem Component', () => {
       }
     } as any;
 
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
     component.onImageSelected(mockEvent);
 
-    expect(alertSpy).toHaveBeenCalledWith('Please select a valid image file!');
+    expect(mockToaster.error).toHaveBeenCalledWith('Please select a valid image file.');
     expect(component.selectedImage()).toBeNull();
-    alertSpy.mockRestore();
   });
 
   it('should handle empty file input', () => {
@@ -141,7 +149,6 @@ describe('ProductItem Component', () => {
 
   it('should handle image upload error', () => {
     const mockFile = new File(['image-data'], 'product.jpg', { type: 'image/jpeg' });
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     mockMediaService.uploadProductImage.mockReturnValue(
@@ -152,12 +159,11 @@ describe('ProductItem Component', () => {
     component.save();
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    alertSpy.mockRestore();
+    expect(mockToaster.error).toHaveBeenCalledWith('Image upload failed. Please try again.');
     consoleErrorSpy.mockRestore();
   });
 
   it('should handle update error', () => {
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     mockProductsService.updateProduct.mockReturnValue(
@@ -168,7 +174,7 @@ describe('ProductItem Component', () => {
     component.save();
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    alertSpy.mockRestore();
+    expect(mockToaster.error).toHaveBeenCalledWith('Failed to update product. Please try again.');
     consoleErrorSpy.mockRestore();
   });
 
@@ -180,13 +186,10 @@ describe('ProductItem Component', () => {
     const emitSpy = vi.spyOn(component.deletedProductId, 'emit');
     mockProductsService.deleteProducts.mockReturnValue(of({}));
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
     component.delete();
 
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(mockToaster.success).toHaveBeenCalledWith('Product deleted successfully.');
     expect(emitSpy).toHaveBeenCalledWith(mockProduct.id);
-    confirmSpy.mockRestore();
   });
 
   // ============================================

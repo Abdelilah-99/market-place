@@ -3,7 +3,8 @@
     <header class="modal-header">
       <div>
         <span class="section-kicker">New listing</span>
-        <h2>Create product</h2>
+        <h2>Create a polished product post</h2>
+        <p>Give buyers the essentials: clear title, category, price, and one strong image.</p>
       </div>
       <button type="button" class="icon-close" (click)="close()" aria-label="Close modal">
         <i class="fa fa-xmark"></i>
@@ -11,59 +12,73 @@
     </header>
 
     <form (ngSubmit)="createProduct()" #productForm="ngForm" class="modal-form">
-      <label class="form-field">
-        <span>Product name</span>
-        <input type="text" name="name" [(ngModel)]="product.name" required placeholder="Enter product name" />
-      </label>
+      <div class="form-layout">
+        <div class="form-main">
+          <label class="form-field">
+            <span>Product name</span>
+            <input type="text" name="name" [(ngModel)]="product.name" required
+              placeholder="Example: Sony WH-1000XM5 headphones" />
+          </label>
 
-      <label class="form-field">
-        <span>Description</span>
-        <textarea name="description" [(ngModel)]="product.description" required rows="3"
-          placeholder="Describe condition, features, and delivery details"></textarea>
-      </label>
+          <label class="form-field">
+            <span>Description</span>
+            <textarea name="description" [(ngModel)]="product.description" required rows="5"
+              placeholder="Mention condition, included accessories, delivery details, and why it is worth buying."></textarea>
+          </label>
 
-      <div class="form-grid">
-        <label class="form-field">
-          <span>Category</span>
-          <select name="category" [(ngModel)]="product.category" required>
-            <option value="" disabled>Select category</option>
-            <option *ngFor="let category of categories" [value]="category.toLowerCase()">{{ category }}</option>
-          </select>
-        </label>
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Category</span>
+              <select name="category" [(ngModel)]="product.category" required>
+                <option value="" disabled>Select category</option>
+                <option *ngFor="let category of categories" [value]="category.toLowerCase()">{{ category }}</option>
+              </select>
+            </label>
 
-        <label class="form-field">
-          <span>Price</span>
-          <input type="number" name="price" [(ngModel)]="product.price" required min="0.01" step="0.01"
-            placeholder="0.00" />
-        </label>
-      </div>
-
-      <div class="upload-field">
-        <label>Product image</label>
-        @if (!imagePreview()) {
-        <label class="upload-dropzone">
-          <i class="fa fa-cloud-arrow-up"></i>
-          <span>Click to upload an image</span>
-          <small>JPG, PNG, or WebP</small>
-          <input type="file" accept="image/*" (change)="onImageSelected($event)" class="hidden" />
-        </label>
-        }
-
-        @if (imagePreview()) {
-        <div class="image-preview">
-          <img [src]="imagePreview()" alt="Selected product preview" />
-          <button type="button" (click)="removeImage()" aria-label="Remove selected image">
-            <i class="fa fa-trash"></i>
-          </button>
+            <label class="form-field">
+              <span>Price</span>
+              <input type="number" name="price" [(ngModel)]="product.price" required min="0.01" step="0.01"
+                placeholder="0.00" />
+            </label>
+          </div>
         </div>
-        }
+
+        <aside class="media-panel">
+          <div class="panel-heading">
+            <span>Product image</span>
+            <small>{{ imagePreview() ? 'Ready for listing' : 'Add one clear photo' }}</small>
+          </div>
+
+          @if (!imagePreview()) {
+          <label class="upload-dropzone">
+            <i class="fa fa-cloud-arrow-up"></i>
+            <span>Upload product photo</span>
+            <small>JPG, PNG, or WebP up to 2MB</small>
+            <input type="file" accept="image/*" (change)="onImageSelected($event)" class="hidden" />
+          </label>
+          }
+
+          @if (imagePreview()) {
+          <div class="image-preview">
+            <img [src]="imagePreview()" alt="Selected product preview" />
+            <button type="button" (click)="removeImage()" aria-label="Remove selected image">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+          <p class="file-meta">{{ selectedImageLabel() }}</p>
+          }
+        </aside>
       </div>
+
+      @if (formError()) {
+      <p class="feedback error">{{ formError() }}</p>
+      }
 
       <div class="modal-actions">
         <button type="button" (click)="close()" class="btn-secondary">Close</button>
-        <button type="submit" [disabled]="productForm.invalid || !imagePreview()" class="btn-primary">
-          <i class="fa fa-check"></i>
-          Create
+        <button type="submit" [disabled]="productForm.invalid || !imagePreview() || isSubmitting()" class="btn-primary">
+          <i [class]="isSubmitting() ? 'fa fa-circle-notch fa-spin' : 'fa fa-check'"></i>
+          {{ isSubmitting() ? 'Publishing' : 'Publish listing' }}
         </button>
       </div>
     </form>
