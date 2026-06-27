@@ -26,8 +26,8 @@
 }
 
 .brand-mark {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   border-radius: var(--radius-md);
   display: grid;
   place-items: center;
@@ -199,7 +199,7 @@
   }
 
   .brand-mark {
-    width: 44px;
-    height: 44px;
+    width: 50px;
+    height: 50px;
   }
 }
