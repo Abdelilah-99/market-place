@@ -1,0 +1,73 @@
+package com.buy01.users.Service;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
+import com.buy01.users.DTOs.AdminRoleUpdateReqDTOs;
+import com.buy01.users.DTOs.PageResponseDTOs;
+import com.buy01.users.DTOs.ProfileResDTOs;
+import com.buy01.users.DTOs.RegisterResDTOs;
+import com.buy01.users.Entity.User;
+import com.buy01.users.Repository.UserRepository;
+import com.example.shared.common.kafka.dtos.users.KafkaUserRemovedEvent;
+
+@Service
+public class AdminUserService {
+    private final UserRepository userRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    public AdminUserService(UserRepository userRepository, KafkaTemplate<String, Object> kafkaTemplate) {
+        this.userRepository = userRepository;
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    public PageResponseDTOs<ProfileResDTOs> getUsers(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        Page<User> users = userRepository.findAll(PageRequest.of(safePage, safeSize, Sort.by("name").ascending()));
+        return new PageResponseDTOs<>(
+                users.getContent().stream().map(this::toProfile).toList(),
+                users.getTotalElements(),
+                users.getNumber(),
+                users.getSize(),
+                users.getTotalPages(),
+                users.hasNext());
+    }
+
+    public ProfileResDTOs updateRole(String id, AdminRoleUpdateReqDTOs req) {
+        User user = getUser(id);
+        String normalizedRole = req.role().trim().toUpperCase();
+        User updated = new User(user.id(), user.name(), user.email(), user.password(), normalizedRole, user.avatarUrl());
+        return toProfile(userRepository.save(updated));
+    }
+
+    public RegisterResDTOs deleteUser(String id) {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (id.equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Admin cannot delete their own account");
+        }
+        User user = getUser(id);
+        userRepository.deleteById(user.id());
+        kafkaTemplate.send("remove-user-events", null, new KafkaUserRemovedEvent(user.id()));
+        return new RegisterResDTOs("user deleted successfully");
+    }
+
+    private User getUser(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    private ProfileResDTOs toProfile(User user) {
+        UUID avatar = user.avatarUrl() == null || user.avatarUrl().isBlank() ? null : UUID.fromString(user.avatarUrl());
+        return new ProfileResDTOs(user.id(), user.name(), user.email(), user.role(), avatar);
+    }
+}

@@ -14,6 +14,9 @@
       @if (isAuthenticated() && isSeller()) {
       <a routerLink="/dashboard" class="nav-link">Dashboard</a>
       }
+      @if (isAuthenticated() && isAdmin()) {
+      <a routerLink="/admin" class="nav-link">Admin</a>
+      }
 
       @if (!isAuthenticated()) {
       <a routerLink="/login" class="nav-link">Login</a>
@@ -39,6 +42,9 @@
   <div class="mobile-menu">
     @if (isAuthenticated() && isSeller()) {
     <a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a>
+    }
+    @if (isAuthenticated() && isAdmin()) {
+    <a routerLink="/admin" (click)="toggleMenu()">Admin</a>
     }
     @if (!isAuthenticated()) {
     <a routerLink="/login" (click)="toggleMenu()">Login</a>

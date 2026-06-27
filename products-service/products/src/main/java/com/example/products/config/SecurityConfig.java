@@ -42,6 +42,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/products/*/ratings")
                         .hasAnyRole("BUYER", "SELLER", "ADMIN")
 
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/admin/products/reindex-search")
                         .hasRole("ADMIN")
 

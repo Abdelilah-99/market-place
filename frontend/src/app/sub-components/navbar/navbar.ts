@@ -14,6 +14,7 @@ import { ToasterService } from '../../core/services/toaster-service';
 export class Navbar {
   isOpen = false;
   isSeller = signal(false);
+  isAdmin = signal(false);
   currentUser = signal<Me | null>(null);
   // crrAvatar = signal('');
   profileAvatarSrc = signal('');
@@ -32,6 +33,7 @@ export class Navbar {
       if (user == null) {
         this.currentUser.set(null);
         this.isSeller.set(false);
+        this.isAdmin.set(false);
         this.profileAvatarSrc.set('');
         return;
       }
@@ -42,6 +44,7 @@ export class Navbar {
       } else {
         this.isSeller.set(false);
       }
+      this.isAdmin.set(user.role === 'ADMIN' || user.role === 'ROLE_ADMIN');
     });
     if (!this.currentUser()?.id) {
       return;

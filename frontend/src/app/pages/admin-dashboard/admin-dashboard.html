@@ -1,0 +1,77 @@
+<main class="admin-page page-shell">
+  <section class="admin-header">
+    <div>
+      <span class="section-kicker">Admin workspace</span>
+      <h1>Manage marketplace users and posts</h1>
+      <p>Review accounts, update roles, and moderate product listings from one place.</p>
+    </div>
+  </section>
+
+  <section class="admin-grid">
+    <article class="admin-panel">
+      <header>
+        <div>
+          <span class="section-kicker">Users</span>
+          <h2>{{ usersTotal() }} accounts</h2>
+        </div>
+      </header>
+
+      <div class="table-list">
+        @for (user of users(); track user.id) {
+        <div class="table-row">
+          <div>
+            <strong>{{ user.username }}</strong>
+            <span>{{ user.email }}</span>
+          </div>
+          <select [ngModel]="user.role" (ngModelChange)="updateUserRole(user, $event)">
+            <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+          </select>
+          <button type="button" class="danger-action" (click)="deleteUser(user)">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        } @empty {
+        <div class="empty-state">No users found.</div>
+        }
+      </div>
+
+      @if (usersHasNext()) {
+      <button type="button" class="btn-secondary load-more" (click)="loadMoreUsers()" [disabled]="usersLoading()">
+        {{ usersLoading() ? 'Loading' : 'Load more users' }}
+      </button>
+      }
+    </article>
+
+    <article class="admin-panel">
+      <header>
+        <div>
+          <span class="section-kicker">Products</span>
+          <h2>{{ productsTotal() }} posts</h2>
+        </div>
+      </header>
+
+      <div class="table-list">
+        @for (product of products(); track product.id) {
+        <div class="table-row product-row">
+          <img [src]="product.image ? '/api/media/products/' + product.image : '/marketo-logo.png'" alt="" />
+          <div>
+            <strong>{{ product.name }}</strong>
+            <span>{{ product.category || 'uncategorized' }} · {{ product.condition || 'used' }} · ${{ product.price }}</span>
+          </div>
+          <button type="button" class="danger-action" (click)="deleteProduct(product)">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        } @empty {
+        <div class="empty-state">No products found.</div>
+        }
+      </div>
+
+      @if (productsHasNext()) {
+      <button type="button" class="btn-secondary load-more" (click)="loadMoreProducts()" [disabled]="productsLoading()">
+        {{ productsLoading() ? 'Loading' : 'Load more products' }}
+      </button>
+      }
+    </article>
+  </section>
+</main>

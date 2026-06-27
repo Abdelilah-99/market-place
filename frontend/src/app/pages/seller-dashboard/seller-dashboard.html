@@ -15,7 +15,7 @@
     <section class="stats-row" aria-label="Seller stats">
         <div class="stat-card">
             <span>Total products</span>
-            <strong>{{ products().length }}</strong>
+            <strong>{{ total() }}</strong>
         </div>
         <div class="stat-card">
             <span>Status</span>
@@ -39,6 +39,15 @@
             [product]="product"></app-product>
         }
     </section>
+
+    @if (hasNext()) {
+    <nav class="pagination" aria-label="Load more seller products">
+        <button type="button" class="btn-secondary" (click)="loadMore()" [disabled]="loading()">
+            {{ loading() ? 'Loading' : 'Load more' }}
+        </button>
+        <span>{{ products().length }} of {{ total() }} products</span>
+    </nav>
+    }
 </main>
 
 <!-- Create Product Popup -->

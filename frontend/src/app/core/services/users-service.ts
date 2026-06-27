@@ -44,6 +44,15 @@ export interface ApiMessageResponse {
   msg: string;
 }
 
+export interface PageResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  size: number;
+  totalPages: number;
+  hasNext: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -125,5 +134,19 @@ export class UsersService {
 
   deleteUser() {
     return this.http.delete<ApiMessageResponse>(`${this.deletePath}`);
+  }
+
+  getAdminUsers(page = 0, size = 12): Observable<PageResponse<Me>> {
+    return this.http.get<PageResponse<Me>>('/api/admin/users', {
+      params: { page, size },
+    });
+  }
+
+  updateAdminUserRole(id: string, role: string): Observable<Me> {
+    return this.http.patch<Me>(`/api/admin/users/${id}/role`, { role });
+  }
+
+  deleteAdminUser(id: string): Observable<ApiMessageResponse> {
+    return this.http.delete<ApiMessageResponse>(`/api/admin/users/${id}`);
   }
 }

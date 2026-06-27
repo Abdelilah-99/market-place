@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.products.dto.CreateProdutDto;
+import com.example.products.dto.PageResponseDto;
 import com.example.products.dto.ProductRatingStatsDto;
 import com.example.products.dto.RateProductDto;
 import com.example.products.dto.UpdateProcutDto;
@@ -52,6 +53,14 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(productService.getAllProducts()));
     }
 
+    @GetMapping("/page")
+    @PermitAll
+    public ResponseEntity<ApiResponse<PageResponseDto<Product>>> getProductsPage(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getProductsPage(page, size)));
+    }
+
     @GetMapping("/search")
     @PermitAll
     public ResponseEntity<ApiResponse<ProductSearchResponse>> searchProducts(
@@ -79,6 +88,15 @@ public class ProductController {
         String userId = extractUserId(authentication);
 
         return ResponseEntity.ok(ApiResponse.success(productService.getMyProducts(userId)));
+    }
+
+    @GetMapping("/me/page")
+    public ResponseEntity<ApiResponse<PageResponseDto<Product>>> getMyProductsPage(
+            Authentication authentication,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size) {
+        String userId = extractUserId(authentication);
+        return ResponseEntity.ok(ApiResponse.success(productService.getMyProductsPage(userId, page, size)));
     }
 
     @GetMapping("/{id}")

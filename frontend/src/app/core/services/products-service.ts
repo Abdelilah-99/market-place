@@ -12,6 +12,15 @@ export interface ProductSearchResponse {
   totalPages: number;
 }
 
+export interface PageResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  size: number;
+  totalPages: number;
+  hasNext: boolean;
+}
+
 export interface ProductSearchParams {
   q?: string;
   category?: string;
@@ -50,6 +59,13 @@ export class ProductsService {
   getAllProducts(): Observable<ApiResponse<Product[]>> {
     return this.http.get<ApiResponse<Product[]>>(
       `${this.apiUrl}/`
+    );
+  }
+
+  getProductsPage(page = 0, size = 12): Observable<ApiResponse<PageResponse<Product>>> {
+    return this.http.get<ApiResponse<PageResponse<Product>>>(
+      `${this.apiUrl}/page`,
+      { params: { page, size } }
     );
   }
 
@@ -96,6 +112,24 @@ export class ProductsService {
     return this.http.get<ApiResponse<Product[]>>(
       `${this.apiUrl}/me`
     );
+  }
+
+  getMyProductsPage(page = 0, size = 12) {
+    return this.http.get<ApiResponse<PageResponse<Product>>>(
+      `${this.apiUrl}/me/page`,
+      { params: { page, size } }
+    );
+  }
+
+  getAdminProducts(page = 0, size = 12) {
+    return this.http.get<ApiResponse<PageResponse<Product>>>(
+      `/api/admin/products`,
+      { params: { page, size } }
+    );
+  }
+
+  adminDeleteProduct(id: string) {
+    return this.http.delete<ApiResponse<any>>(`/api/admin/products/${id}`);
   }
 
   deleteProducts(id: string) {

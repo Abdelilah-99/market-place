@@ -93,7 +93,14 @@
     }
   </section>
 
-  @if (searchMode() && totalPages() > 1) {
+  @if (hasNext()) {
+  <nav class="pagination page-shell" aria-label="Load more products">
+    <button type="button" (click)="loadMore()" [disabled]="loading()">
+      {{ loading() ? 'Loading' : 'Load more' }}
+    </button>
+    <span>{{ products().length }} of {{ total() }} products</span>
+  </nav>
+  } @else if (searchMode() && totalPages() > 1) {
   <nav class="pagination page-shell" aria-label="Search pages">
     <button type="button" (click)="previousPage()" [disabled]="page() === 0 || loading()">Previous</button>
     <span>Page {{ page() + 1 }} of {{ totalPages() }}</span>

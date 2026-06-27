@@ -28,7 +28,8 @@ public class UserDetailServices implements UserDetailsService {
         // String email = user.email();
         String password = user.password();
         List<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(user.role()));
+        String role = user.role() == null ? "GUEST" : user.role();
+        roles.add(new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role));
         // public User(String username, @Nullable String password, Collection<? extends
         // GrantedAuthority> authorities) {
         // this(username, password, true, true, true, true, authorities);

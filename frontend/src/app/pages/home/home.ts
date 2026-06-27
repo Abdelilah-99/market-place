@@ -18,6 +18,7 @@ export class Home {
   public total = signal(0);
   public page = signal(0);
   public totalPages = signal(0);
+  public hasNext = signal(false);
   public searchMode = signal(false);
 
   public query = '';
@@ -33,26 +34,29 @@ export class Home {
     this.loadProducts();
   }
 
-  loadProducts() {
+  loadProducts(page = 0, append = false) {
     this.loading.set(true);
     this.searchMode.set(false);
-    this.productsService.getAllProducts().subscribe({
-      next: (res: any) => {
-        const products = res.data ?? [];
-        this.products.set(products);
-        this.total.set(products.length);
-        this.page.set(0);
-        this.totalPages.set(products.length > 0 ? 1 : 0);
+    this.productsService.getProductsPage(page, this.pageSize).subscribe({
+      next: (res) => {
+        const data = res.data;
+        const products = data?.items ?? [];
+        this.products.set(append ? [...this.products(), ...products] : products);
+        this.total.set(data?.total ?? products.length);
+        this.page.set(data?.page ?? page);
+        this.totalPages.set(data?.totalPages ?? 0);
+        this.hasNext.set(data?.hasNext ?? false);
         this.loading.set(false);
       },
       error: (err) => {
         console.error('Error loading products', err);
+        this.hasNext.set(false);
         this.loading.set(false);
       }
     });
   }
 
-  search(page = 0) {
+  search(page = 0, append = false) {
     const hasSearchFilters = this.query.trim() || this.category.trim() || this.minPrice !== null || this.maxPrice !== null;
     if (!hasSearchFilters && this.sort === 'newest') {
       this.loadProducts();
@@ -72,13 +76,15 @@ export class Home {
     }).subscribe({
       next: (res) => {
         const data = res.data;
-        this.products.set((data?.items ?? []).map((product) => ({
+        const products = (data?.items ?? []).map((product) => ({
           ...product,
           image: product.image || product.images?.[0] || ''
-        })));
+        }));
+        this.products.set(append ? [...this.products(), ...products] : products);
         this.total.set(data?.total ?? 0);
         this.page.set(data?.page ?? 0);
         this.totalPages.set(data?.totalPages ?? 0);
+        this.hasNext.set((data?.page ?? 0) + 1 < (data?.totalPages ?? 0));
         this.loading.set(false);
       },
       error: (err) => {
@@ -86,6 +92,7 @@ export class Home {
         this.products.set([]);
         this.total.set(0);
         this.totalPages.set(0);
+        this.hasNext.set(false);
         this.loading.set(false);
       }
     });
@@ -103,6 +110,15 @@ export class Home {
   nextPage() {
     if (this.page() + 1 < this.totalPages()) {
       this.search(this.page() + 1);
+    }
+  }
+
+  loadMore() {
+    if (this.loading() || !this.hasNext()) return;
+    if (this.searchMode()) {
+      this.search(this.page() + 1, true);
+    } else {
+      this.loadProducts(this.page() + 1, true);
     }
   }
 

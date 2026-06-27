@@ -7,11 +7,15 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.products.dto.CreateProdutDto;
+import com.example.products.dto.PageResponseDto;
 import com.example.products.dto.UpdateProcutDto;
 import com.example.products.kafka.ProductEvents;
 import com.example.products.kafka.MediaEvents;
@@ -46,8 +50,18 @@ public class ProductService {
         return productRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    public PageResponseDto<Product> getProductsPage(int page, int size) {
+        Page<Product> products = productRepository.findAll(pageRequest(page, size));
+        return toPageResponse(products);
+    }
+
     public List<Product> getMyProducts(String userId) {
         return productRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public PageResponseDto<Product> getMyProductsPage(String userId, int page, int size) {
+        Page<Product> products = productRepository.findAllByUserId(userId, pageRequest(page, size));
+        return toPageResponse(products);
     }
 
     public List<Product> getProductsByCategory(String category) {
@@ -163,5 +177,21 @@ public class ProductService {
             return null;
         }
         return category.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private PageRequest pageRequest(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        return PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+    }
+
+    private PageResponseDto<Product> toPageResponse(Page<Product> page) {
+        return new PageResponseDto<>(
+                page.getContent(),
+                page.getTotalElements(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalPages(),
+                page.hasNext());
     }
 }

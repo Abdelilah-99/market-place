@@ -1,0 +1,132 @@
+.admin-page {
+  padding: 2rem 0 4rem;
+}
+
+.admin-header,
+.admin-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-header {
+  padding: 1.25rem;
+}
+
+.section-kicker {
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-header h1,
+.admin-panel h2 {
+  margin: 0.25rem 0 0;
+  color: var(--text);
+  font-weight: 950;
+}
+
+.admin-header p {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+}
+
+.admin-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-panel {
+  padding: 1rem;
+}
+
+.table-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 42px;
+  gap: 0.65rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+.product-row {
+  grid-template-columns: 52px minmax(0, 1fr) 42px;
+}
+
+.product-row img {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.table-row strong,
+.table-row span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-row span {
+  margin-top: 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.table-row select {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem;
+  background: #ffffff;
+}
+
+.danger-action {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  color: #b91c1c;
+  background: #fff1f2;
+}
+
+.load-more {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.empty-state {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  padding: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .table-row,
+  .product-row {
+    grid-template-columns: 1fr;
+  }
+
+  .danger-action {
+    width: 100%;
+  }
+}
