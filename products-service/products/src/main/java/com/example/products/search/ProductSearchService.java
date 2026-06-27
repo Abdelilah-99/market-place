@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
@@ -23,10 +26,13 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class ProductSearchService {
+    private static final Logger log = LoggerFactory.getLogger(ProductSearchService.class);
+
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
     private final ProductRepository productRepository;
     private final String indexName;
+    private volatile boolean indexReady = false;
 
     public ProductSearchService(
             ProductRepository productRepository,
@@ -44,13 +50,28 @@ public class ProductSearchService {
     }
 
     @PostConstruct
-    public void ensureIndexExists() throws IOException {
+    public void initializeSearchIndex() {
+        try {
+            ensureIndexExists();
+        } catch (RuntimeException | IOException e) {
+            log.warn("OpenSearch index {} is not ready during startup. The service will retry on search/index operations.",
+                    indexName, e);
+        }
+    }
+
+    private void ensureIndexExists() throws IOException {
+        if (indexReady) {
+            return;
+        }
+
         if (indexExists()) {
+            indexReady = true;
             return;
         }
 
         restClient.put()
                 .uri("/{index}", indexName)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body("""
                         {
                             "settings": {
@@ -79,6 +100,7 @@ public class ProductSearchService {
                         """)
                 .retrieve()
                 .toBodilessEntity();
+        indexReady = true;
     }
 
     public void indexProduct(Product product) {
@@ -87,12 +109,14 @@ public class ProductSearchService {
 
     public void indexDocument(ProductSearchDocument document) {
         try {
+            ensureIndexExists();
             restClient.put()
                     .uri("/{index}/_doc/{id}", indexName, document.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
                     .body(document)
                     .retrieve()
                     .toBodilessEntity();
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             throw new IllegalStateException("Failed to index product " + document.getId(), e);
         }
     }
@@ -122,6 +146,8 @@ public class ProductSearchService {
         int safeSize = Math.min(Math.max(size, 1), 50);
 
         try {
+            ensureIndexExists();
+
             Map<String, Object> request = new LinkedHashMap<>();
             request.put("from", safePage * safeSize);
             request.put("size", safeSize);
@@ -130,6 +156,7 @@ public class ProductSearchService {
 
             JsonNode response = restClient.post()
                     .uri("/{index}/_search", indexName)
+                    .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()
                     .body(JsonNode.class);
@@ -144,7 +171,7 @@ public class ProductSearchService {
             int totalPages = safeSize == 0 ? 0 : (int) Math.ceil((double) total / safeSize);
 
             return new ProductSearchResponse(items, total, safePage, safeSize, totalPages);
-        } catch (IOException e) {
+        } catch (RuntimeException | IOException e) {
             throw new IllegalStateException("Failed to search products", e);
         }
     }
