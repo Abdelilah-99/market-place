@@ -10,6 +10,12 @@ users-service/service/src/main/resources/certs/
 eureka-server/certs/
 eureka-server/eureka/src/main/resources/certs/
 
+# JWT signing keys are injected by Jenkins/runtime credentials.
+users-service/service/src/main/resources/keys/
+gateway/gateway/src/main/resources/keys/
+**/jwt-private.pem
+**/jwt-public.pem
+
 # Environment files
 .env
 .env.users

@@ -30,6 +30,7 @@ pipeline {
         // Wrap blocks to prevent plain-text files on disk
         withCredentials(getCredentialsList()) {
           sh 'bash scripts/ci/setup_env.sh'
+          sh 'bash scripts/ci/setup_runtime_secrets.sh'
           sh 'bash scripts/ci/build_and_test.sh'
         }
       }
@@ -61,6 +62,7 @@ pipeline {
           try {
             withCredentials(getCredentialsList()) {
               sh 'bash scripts/ci/setup_env.sh'
+              sh 'bash scripts/ci/setup_runtime_secrets.sh'
               sh 'bash scripts/ci/deploy_local.sh'
             }
           } catch (err) {
@@ -118,7 +120,9 @@ def getCredentialsList() {
     file(credentialsId: 'gate-cert',   variable: 'GATE_CERT'),
     file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),
     file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
-    file(credentialsId: 'usr-cert',    variable: 'USR_CERT')
+    file(credentialsId: 'usr-cert',    variable: 'USR_CERT'),
+    file(credentialsId: 'jwt-private-key', variable: 'JWT_PRIVATE_KEY'),
+    file(credentialsId: 'jwt-public-key',  variable: 'JWT_PUBLIC_KEY')
   ]
 }
 
@@ -144,6 +148,7 @@ def attemptRollback(String prefix, String previousCommit) {
     try {
         withCredentials(getCredentialsList()) {
             sh 'bash scripts/ci/setup_env.sh'
+            sh 'bash scripts/ci/setup_runtime_secrets.sh'
             sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
         }
     } catch (err) {

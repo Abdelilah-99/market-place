@@ -33,6 +33,34 @@ ensure_volume() {
 
 ensure_volume "media-service_mongo_data"
 ensure_volume "media-service_media_storage"
+ensure_volume "eureka-server-certs"
+ensure_volume "products-service-certs"
+ensure_volume "media-service-certs"
+ensure_volume "users-service-certs"
+ensure_volume "gateway-certs"
+
+sync_volume() {
+  local src="$1"
+  local volume="$2"
+
+  if [[ ! -d "${src}" ]]; then
+    echo "[WARN] Missing certificate directory: ${src}"
+    return
+  fi
+
+  echo "[CD] Syncing ${src} to Docker volume ${volume}"
+  docker run --rm \
+    -v "${ROOT_DIR}/${src}:/src:ro" \
+    -v "${volume}:/dst" \
+    alpine:3.20 \
+    sh -c 'rm -rf /dst/* && cp -a /src/. /dst/ && chmod -R go-rwx /dst'
+}
+
+sync_volume "certs" "eureka-server-certs"
+sync_volume "products-service/certs" "products-service-certs"
+sync_volume "media-service/certs" "media-service-certs"
+sync_volume "users-service/certs" "users-service-certs"
+sync_volume "gateway/certs" "gateway-certs"
 
 compose_up "eureka-server"
 compose_up "redis"
