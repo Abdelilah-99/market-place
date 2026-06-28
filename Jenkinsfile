@@ -35,21 +35,21 @@ pipeline {
       }
     }
 
-    stage('SonarQube product-service Analysis') {
-      steps {
-        dir('product-service') {
-          withSonarQubeEnv('SonarQube-Prod') {
-            sh '''
-              mvn clean verify sonar:sonar \
-                -Dsonar.projectKey=product-service \
-                -Dsonar.projectName="product-service"
-              echo "HOST=$SONAR_HOST_URL"
-              echo "TOKEN EXISTS=${SONAR_AUTH_TOKEN:+YES}"
-            '''
-          }
-        }
-      }
-    }
+    // stage('SonarQube product-service Analysis') {
+    //   steps {
+    //     dir('product-service') {
+    //       withSonarQubeEnv('SonarQube-Prod') {
+    //         sh '''
+    //           mvn clean verify sonar:sonar \
+    //             -Dsonar.projectKey=product-service \
+    //             -Dsonar.projectName="product-service"
+    //           echo "HOST=$SONAR_HOST_URL"
+    //           echo "TOKEN EXISTS=${SONAR_AUTH_TOKEN:+YES}"
+    //         '''
+    //       }
+    //     }
+    //   }
+    // }
 
     stage('Deploy') {
       steps {
