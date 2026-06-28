@@ -37,7 +37,7 @@ pipeline {
 
     stage('SonarQube product-service Analysis') {
       steps {
-        dir('user-service') {
+        dir('product-service') {
             withSonarQubeEnv('SonarQube-Prod') {
                 sh '''
                     mvn clean verify sonar:sonar \
