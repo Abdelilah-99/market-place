@@ -72,7 +72,7 @@ run_gradle_sonar() {
   (
     cd "${dir}"
     chmod +x ./gradlew
-    timeout 900 ./gradlew sonar -Dorg.gradle.workers.max=1 \
+    timeout 900 ./gradlew test jacocoTestReport sonar -Dorg.gradle.workers.max=1 \
       -Dsonar.host.url="${SONAR_HOST_URL}" \
       -Dsonar.token="${SONAR_TOKEN}" \
       -Dsonar.organization="${SONAR_ORGANIZATION}" \

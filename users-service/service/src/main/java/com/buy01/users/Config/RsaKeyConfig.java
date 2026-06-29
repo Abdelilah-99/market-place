@@ -1,4 +1,4 @@
-package com.buy01.users.config;
+package com.buy01.users.Config;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
