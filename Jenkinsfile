@@ -15,6 +15,7 @@ pipeline {
     CI_STATE_DIR                = "${WORKSPACE}/.jenkins-state"
     LAST_SUCCESSFUL_COMMIT_FILE = "${WORKSPACE}/.jenkins-state/last_successful_commit"
     NOTIFICATION_EMAIL          = 'bouchikhiabdelilah0@gmail.com'
+    SONAR_HOST_URL              = 'https://sonarcloud.io'
   }
 
   stages {
@@ -35,21 +36,22 @@ pipeline {
       }
     }
 
-    // stage('SonarQube product-service Analysis') {
-    //   steps {
-    //     dir('product-service') {
-    //       withSonarQubeEnv('SonarQube-Prod') {
-    //         sh '''
-    //           mvn clean verify sonar:sonar \
-    //             -Dsonar.projectKey=product-service \
-    //             -Dsonar.projectName="product-service"
-    //           echo "HOST=$SONAR_HOST_URL"
-    //           echo "TOKEN EXISTS=${SONAR_AUTH_TOKEN:+YES}"
-    //         '''
-    //       }
-    //     }
-    //   }
-    // }
+    stage('SonarQube Products Analysis') {
+      steps {
+        dir('products-service/products') {
+          withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+            sh '''
+              ./mvnw -B -DskipTests verify sonar:sonar \
+                -Dsonar.host.url="${SONAR_HOST_URL}" \
+                -Dsonar.token="${SONAR_TOKEN}" \
+                -Dsonar.organization="abdelilah-99" \
+                -Dsonar.projectKey=buy01-products-service \
+                -Dsonar.projectName="Buy01 Products Service"
+            '''
+          }
+        }
+      }
+    }
 
     stage('Deploy') {
       steps {
