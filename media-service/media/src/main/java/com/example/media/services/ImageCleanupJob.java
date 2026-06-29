@@ -1,6 +1,7 @@
 package com.example.media.services;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,7 +41,7 @@ public class ImageCleanupJob {
     @Transactional
     public void deleteExpiredTemporaryImages() {
         System.out.println("====> Deleteing Temporary images");
-        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime cutoff = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(1);
 
         List<ProductImage> expiredImages = imageRepository.findByStatusAndCreatedAtBefore(ImageStatus.TEMPORARY,
                 cutoff);

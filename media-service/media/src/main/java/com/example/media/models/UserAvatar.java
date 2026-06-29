@@ -1,6 +1,7 @@
 package com.example.media.models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import org.springframework.content.commons.annotations.ContentId;
@@ -25,7 +26,7 @@ public class UserAvatar {
     private String userId;
 
     @Field("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
 
     private ImageStatus status = ImageStatus.TEMPORARY;
 

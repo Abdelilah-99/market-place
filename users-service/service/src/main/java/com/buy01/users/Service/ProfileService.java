@@ -71,19 +71,14 @@ public class ProfileService {
         String authName = SecurityContextHolder.getContext().getAuthentication().getName();
         System.out.println("====================== " + authName);
         return userRepository.findById(authName)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found 1"));
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid user session"));
     }
 
     public RegisterResDTOs deleteCurrentUser() {
-        String authName = SecurityContextHolder.getContext().getAuthentication().getName();
-        boolean exist = userRepository.existsById(authName);
-        System.out.println("============ existe ============= " + exist);
-        if (exist) {
-            userRepository.deleteById(authName);
-            KafkaUserRemovedEvent event = new KafkaUserRemovedEvent(authName);
-            kafkaTemplate.send("remove-user-events", null, event);
-            return new RegisterResDTOs("user deleted successfully");
-        }
-        throw new UsernameNotFoundException("User not found");
+        User user = getAuthenticatedUser();
+        userRepository.deleteById(user.id());
+        KafkaUserRemovedEvent event = new KafkaUserRemovedEvent(user.id());
+        kafkaTemplate.send("remove-user-events", null, event);
+        return new RegisterResDTOs("user deleted successfully");
     }
 }

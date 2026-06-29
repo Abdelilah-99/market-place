@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -26,6 +27,14 @@ public class GlobalExceptions {
         public ResponseEntity<ApiResponseUtils<String>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
                 ApiResponseUtils<String> response = ApiResponseUtils.error(
                                 ex.getMessage(),
+                                HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        @ExceptionHandler(BadCredentialsException.class)
+        public ResponseEntity<ApiResponseUtils<String>> handleBadCredentialsException(BadCredentialsException ex) {
+                ApiResponseUtils<String> response = ApiResponseUtils.error(
+                                "Invalid credentials",
                                 HttpStatus.UNAUTHORIZED);
                 return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }

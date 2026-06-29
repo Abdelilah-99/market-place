@@ -81,7 +81,8 @@ class ProfileServiceTest {
 
     @Test
     void deleteCurrentUserDeletesAndSendsEventWhenUserExists() {
-        when(userRepository.existsById("u-1")).thenReturn(true);
+        when(userRepository.findById("u-1"))
+                .thenReturn(Optional.of(new User("u-1", "Alice", "mail@example.com", "secret", "BUYER", null)));
 
         RegisterResDTOs result = profileService.deleteCurrentUser();
 
@@ -93,7 +94,7 @@ class ProfileServiceTest {
 
     @Test
     void deleteCurrentUserThrowsWhenMissing() {
-        when(userRepository.existsById("u-1")).thenReturn(false);
+        when(userRepository.findById("u-1")).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class, () -> profileService.deleteCurrentUser());
     }

@@ -124,7 +124,8 @@ class UsersServiceKafkaEventTest {
 
     @Test
     void testUserRemovedEventEmittedOnDelete() {
-    when(userRepository.existsById(userId)).thenReturn(true);
+    when(userRepository.findById(userId))
+        .thenReturn(Optional.of(new User(userId, userName, userEmail, "hashed-password", "BUYER", null)));
 
     profileService.deleteCurrentUser();
 

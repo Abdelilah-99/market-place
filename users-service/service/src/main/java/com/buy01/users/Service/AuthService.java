@@ -3,7 +3,7 @@ package com.buy01.users.Service;
 import java.util.UUID;
 
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -66,12 +66,12 @@ public class AuthService {
 
     public LoginResDTOs login(LoginReqDTOs req) {
         User user = userRepository.findByEmail(req.identification())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found 1"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
         if (passwordEncoder.matches(req.password(), user.password())) {
             String token = jwtUtils.generateToken(user.id(), user.role());
             return new LoginResDTOs(token, user.role(), "ok");
         }
-        throw new UsernameNotFoundException("Invalid credentials");
+        throw new BadCredentialsException("Invalid credentials");
     }
 
     private Role normalizeRole(String roleInput) {
