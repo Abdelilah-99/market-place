@@ -32,10 +32,10 @@ public class UsersService {
     }
 
     public void updateUser(KafkaUserUpdatedEvent obj) {
-        User u = this.userRepository.findById(obj.userId()).orElse(null);
-        ;
-        u.update(obj);
-        this.userRepository.save(u);
+        this.userRepository.findById(obj.userId()).ifPresent(u -> {
+            u.update(obj);
+            this.userRepository.save(u);
+        });
     }
 
     public void deleteUser(KafkaUserRemovedEvent obj) {

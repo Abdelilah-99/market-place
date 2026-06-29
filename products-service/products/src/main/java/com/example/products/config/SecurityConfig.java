@@ -24,8 +24,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    @SuppressWarnings("java:S4502")
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Stateless internal API: authentication is propagated by the gateway,
+                // and this service does not use browser cookie sessions.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Public product listing (GET /api/products)
