@@ -13,6 +13,8 @@ export GRADLE_OPTS="${GRADLE_OPTS:--Xmx1g -Xms256m -Dorg.gradle.parallel=false -
 
 log() { echo "[CI][SonarCloud] $*"; }
 
+failed_analyses=()
+
 ensure_java_21() {
   local java_major
   java_major="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}')"
@@ -84,13 +86,32 @@ run_gradle_sonar() {
   )
 }
 
+run_analysis() {
+  local project_name="$1"
+  shift
+
+  if "$@"; then
+    log "Analysis passed for ${project_name}"
+  else
+    local status=$?
+    failed_analyses+=("${project_name} (exit ${status})")
+    log "Analysis failed for ${project_name}; continuing with remaining services."
+  fi
+}
+
 ensure_java_21
 
-run_maven_sonar "shared" "buy01-shared" "Buy01 Shared" "install"
-run_maven_sonar "eureka-server/eureka" "buy01-eureka-server" "Buy01 Eureka Server"
-run_maven_sonar "gateway/gateway" "buy01-gateway" "Buy01 Gateway"
-run_maven_sonar "products-service/products" "buy01-products-service" "Buy01 Products Service" "verify"
-run_maven_sonar "media-service/media" "buy01-media-service" "Buy01 Media Service" "verify"
-run_gradle_sonar "users-service/service" "buy01-users-service" "Buy01 Users Service"
+run_analysis "Buy01 Shared" run_maven_sonar "shared" "buy01-shared" "Buy01 Shared" "install"
+run_analysis "Buy01 Eureka Server" run_maven_sonar "eureka-server/eureka" "buy01-eureka-server" "Buy01 Eureka Server"
+run_analysis "Buy01 Gateway" run_maven_sonar "gateway/gateway" "buy01-gateway" "Buy01 Gateway"
+run_analysis "Buy01 Products Service" run_maven_sonar "products-service/products" "buy01-products-service" "Buy01 Products Service" "verify"
+run_analysis "Buy01 Media Service" run_maven_sonar "media-service/media" "buy01-media-service" "Buy01 Media Service" "verify"
+run_analysis "Buy01 Users Service" run_gradle_sonar "users-service/service" "buy01-users-service" "Buy01 Users Service"
+
+if [[ ${#failed_analyses[@]} -gt 0 ]]; then
+  log "One or more SonarCloud analyses failed:"
+  printf '  - %s\n' "${failed_analyses[@]}"
+  exit 1
+fi
 
 log "SonarCloud analysis completed successfully."

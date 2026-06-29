@@ -76,8 +76,6 @@ pipeline {
     }
     failure {
       script {
-        def previousCommit = fileExists(env.LAST_SUCCESSFUL_COMMIT_FILE) ? readFile(env.LAST_SUCCESSFUL_COMMIT_FILE).trim() : ''
-        attemptRollback('Build failed', previousCommit)
         sendEmail('FAILED', "Build failed. Logs: ${env.BUILD_URL}console")
       }
     }

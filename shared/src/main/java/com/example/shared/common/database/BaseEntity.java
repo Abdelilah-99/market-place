@@ -1,6 +1,7 @@
 package com.example.shared.common.database;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -17,11 +18,11 @@ public abstract class BaseEntity {
     private UUID id = UUID.randomUUID();
 
     @Field("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
 
     @LastModifiedDate
     @Field("updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now(ZoneOffset.UTC);
 
     public UUID getId() {
         return id;
