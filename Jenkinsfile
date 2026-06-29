@@ -16,6 +16,7 @@ pipeline {
     LAST_SUCCESSFUL_COMMIT_FILE = "${WORKSPACE}/.jenkins-state/last_successful_commit"
     NOTIFICATION_EMAIL          = 'bouchikhiabdelilah0@gmail.com'
     SONAR_HOST_URL              = 'https://sonarcloud.io'
+    SONAR_ORGANIZATION          = 'abdelilah-99'
   }
 
   stages {
@@ -36,21 +37,10 @@ pipeline {
       }
     }
 
-    stage('SonarQube Products Analysis') {
+    stage('SonarCloud Analysis') {
       steps {
-        dir('products-service/products') {
-          withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-            sh '''
-              ./mvnw -B -DskipTests verify sonar:sonar \
-                -Dsonar.host.url="${SONAR_HOST_URL}" \
-                -Dsonar.token="${SONAR_TOKEN}" \
-                -Dsonar.organization="abdelilah-99" \
-                -Dsonar.projectKey=buy01-products-service \
-                -Dsonar.projectName="Buy01 Products Service" \
-                -Dsonar.qualitygate.wait=true \
-                -Dsonar.qualitygate.timeout=300
-            '''
-          }
+        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+          sh 'bash scripts/ci/sonarqube_analysis.sh'
         }
       }
     }
