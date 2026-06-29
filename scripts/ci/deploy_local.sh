@@ -39,44 +39,7 @@ ensure_volume "media-service-certs"
 ensure_volume "users-service-certs"
 ensure_volume "gateway-certs"
 
-sync_volume() {
-  local src="$1"
-  local volume="$2"
-  local src_path="${ROOT_DIR}/${src}"
-  local container_name="sync-${volume}-$$"
-
-  if [[ ! -d "${src_path}" ]]; then
-    echo "[WARN] Missing certificate directory: ${src_path}"
-    return
-  fi
-
-  echo "[CD] Syncing ${src} to Docker volume ${volume}"
-  docker run --rm \
-    -v "${volume}:/dst" \
-    alpine:3.20 \
-    sh -c 'rm -rf /dst/*'
-
-  docker run -d --name "${container_name}" \
-    -v "${volume}:/dst" \
-    alpine:3.20 \
-    sh -c 'sleep 300' >/dev/null
-
-  docker cp "${src_path}/." "${container_name}:/dst/" || {
-    docker rm -f "${container_name}" >/dev/null
-    return 1
-  }
-  docker exec "${container_name}" sh -c 'chmod -R go-rwx /dst' || {
-    docker rm -f "${container_name}" >/dev/null
-    return 1
-  }
-  docker rm -f "${container_name}" >/dev/null
-}
-
-sync_volume "certs" "eureka-server-certs"
-sync_volume "products-service/certs" "products-service-certs"
-sync_volume "media-service/certs" "media-service-certs"
-sync_volume "users-service/certs" "users-service-certs"
-sync_volume "gateway/certs" "gateway-certs"
+echo "[CD] Skipping certificate volume sync; cert volumes are managed on the host."
 
 compose_up "eureka-server"
 compose_up "redis"
