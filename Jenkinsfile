@@ -46,7 +46,9 @@ pipeline {
                 -Dsonar.token="${SONAR_TOKEN}" \
                 -Dsonar.organization="abdelilah-99" \
                 -Dsonar.projectKey=buy01-products-service \
-                -Dsonar.projectName="Buy01 Products Service"
+                -Dsonar.projectName="Buy01 Products Service" \
+                -Dsonar.qualitygate.wait=true \
+                -Dsonar.qualitygate.timeout=300
             '''
           }
         }
