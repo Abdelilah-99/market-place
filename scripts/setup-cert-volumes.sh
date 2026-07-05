@@ -275,29 +275,8 @@ prepare_jwt_keys() {
 
 prepare_jwt_keys
 
-if [[ -z "${JWT_PRIVATE_SRC}" ]]; then
-  for candidate in \
-    "${CERT_DIR}/jwt-private.pem" \
-    "${CERT_DIR}/private.pem" \
-    "${ROOT_DIR}/users-service/certs/jwt-private.pem"; do
-    if [[ -f "${candidate}" ]]; then
-      JWT_PRIVATE_SRC="${candidate}"
-      break
-    fi
-  done
-fi
-
-if [[ -z "${JWT_PUBLIC_SRC}" ]]; then
-  for candidate in \
-    "${CERT_DIR}/jwt-public.pem" \
-    "${CERT_DIR}/public.pem" \
-    "${ROOT_DIR}/gateway/certs/jwt-public.pem"; do
-    if [[ -f "${candidate}" ]]; then
-      JWT_PUBLIC_SRC="${candidate}"
-      break
-    fi
-  done
-fi
+echo "[cert-volumes] users-service JWT private key: ${JWT_PRIVATE_SRC}"
+echo "[cert-volumes] gateway JWT public key: ${JWT_PUBLIC_SRC}"
 
 copy_into_volume "gateway-certs" "gateway" "${JWT_PUBLIC_SRC}:jwt-public.pem"
 copy_into_volume "users-service-certs" "users-service" "${JWT_PRIVATE_SRC}:jwt-private.pem"

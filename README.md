@@ -320,17 +320,16 @@ cd shared
 ./mvnw clean install
 ```
 
-Generate certificates and JWT keys before running the secured backend stack:
+Generate mTLS certificates before running the secured backend stack:
 
 ```bash
 ./scripts/generate-certs.sh
-./scripts/generate-jwt-keys.sh
 ```
 
-Copy the generated certificates into the Docker volumes used by the service compose files:
+Copy the generated certificates into Docker volumes. This also prepares the JWT key pair for users-service and gateway when no JWT keys are supplied:
 
 ```bash
-./scripts/setup-cert-volumes.sh --jwt-private /tmp/marketo-jwt-keys/private.pem --jwt-public /tmp/marketo-jwt-keys/public.pem
+./scripts/setup-cert-volumes.sh
 ```
 
 Start the platform:
