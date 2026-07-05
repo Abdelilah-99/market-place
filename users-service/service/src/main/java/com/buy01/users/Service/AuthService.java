@@ -14,6 +14,7 @@ import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Exceptions.UserExistException;
 import com.buy01.users.Repository.UserRepository;
+import com.buy01.users.Search.UserSearchService;
 import com.buy01.users.Utils.JwtUtils;
 import com.example.shared.common.kafka.dtos.media.KafkaConfirmAvatarEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserCreatedEvent;
@@ -25,13 +26,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final UserSearchService userSearchService;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils,
-            KafkaTemplate<String, Object> kafkaTemplate) {
+            KafkaTemplate<String, Object> kafkaTemplate,
+            UserSearchService userSearchService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.kafkaTemplate = kafkaTemplate;
+        this.userSearchService = userSearchService;
     }
 
     public RegisterResDTOs register(RegisterReqDTOs req) {
@@ -49,6 +53,7 @@ public class AuthService {
                 role.toString().substring(5), avatarUUID);
 
         user = userRepository.save(user);
+        userSearchService.indexUser(user);
         UUID avatar = (user.avatarUrl() != null && !user.avatarUrl().isBlank())
                 ? UUID.fromString(user.avatarUrl())
                 : null;

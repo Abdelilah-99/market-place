@@ -5,6 +5,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { switchMap } from 'rxjs';
+import { BuyerProfileAnalytics, PurchaseAnalyticsService } from '../../core/services/purchase-analytics-service';
 
 @Component({
   selector: 'app-profile',
@@ -26,9 +27,22 @@ export class Profile implements OnInit, OnDestroy {
   selectedAvatarPreview = signal('');
   selectedAvatar = signal<File | null>(null);
   removeCurrentAvatar = signal(false);
+  userSearchQuery = signal('');
+  userSearchResults = signal<Me[]>([]);
+  isSearchingUsers = signal(false);
+  hasSearchedUsers = signal(false);
+  userSearchError = signal('');
+  buyerAnalytics = signal<BuyerProfileAnalytics>({
+    totalSpent: 0,
+    totalOrders: 0,
+    totalItems: 0,
+    bestProducts: [],
+    mostBoughtProducts: [],
+  });
 
   constructor(
     private userService: UsersService,
+    private purchaseAnalyticsService: PurchaseAnalyticsService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: object
   ) { }
@@ -83,6 +97,7 @@ export class Profile implements OnInit, OnDestroy {
         this.editFormEmail.set(res.email);
         this.editFormAvatarUrl.set(res.avatarUrl || '');
         this.removeCurrentAvatar.set(false);
+        this.buyerAnalytics.set(this.purchaseAnalyticsService.getBuyerAnalytics(res.id));
 
         this.loadProfileImg(res.avatarUrl);
         this.isLoading.set(false);
@@ -161,6 +176,51 @@ export class Profile implements OnInit, OnDestroy {
     }
 
     return `${file.name} · ${this.formatFileSize(file.size)}`;
+  }
+
+  formatMoney(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2,
+    }).format(value || 0);
+  }
+
+  productImage(image: string): string {
+    return image ? `/api/media/products/${image}` : '';
+  }
+
+  searchUsers(): void {
+    const query = this.userSearchQuery().trim();
+    this.hasSearchedUsers.set(true);
+    this.userSearchError.set('');
+
+    if (query.length < 2) {
+      this.userSearchResults.set([]);
+      this.userSearchError.set('Search with at least 2 characters.');
+      return;
+    }
+
+    this.isSearchingUsers.set(true);
+    this.userService.searchUsers(query).subscribe({
+      next: (res) => {
+        this.userSearchResults.set(res.items ?? []);
+        this.isSearchingUsers.set(false);
+      },
+      error: (err) => {
+        this.userSearchResults.set([]);
+        this.userSearchError.set('Failed to search users. Please try again.');
+        this.isSearchingUsers.set(false);
+        console.error(err);
+      }
+    });
+  }
+
+  clearUserSearch(): void {
+    this.userSearchQuery.set('');
+    this.userSearchResults.set([]);
+    this.userSearchError.set('');
+    this.hasSearchedUsers.set(false);
   }
 
   onSubmit(form: NgForm): void {

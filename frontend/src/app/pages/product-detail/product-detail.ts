@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Product } from '../../core/models/Product';
 import { ProductRatingStats, ProductsService } from '../../core/services/products-service';
 import { ToasterService } from '../../core/services/toaster-service';
+import { PurchaseAnalyticsService } from '../../core/services/purchase-analytics-service';
+import { StateService } from '../../core/services/state-service';
 
 @Component({
   selector: 'app-product-detail',
@@ -30,7 +32,10 @@ export class ProductDetail {
   constructor(
     private route: ActivatedRoute,
     private productsService: ProductsService,
-    private toaster: ToasterService
+    private toaster: ToasterService,
+    private purchaseAnalyticsService: PurchaseAnalyticsService,
+    private stateService: StateService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -145,6 +150,34 @@ export class ProductDetail {
         this.toaster.error(message);
       }
     });
+  }
+
+  buyProduct(): void {
+    const product = this.product();
+    const buyer = this.stateService.currentUserSubject.value;
+
+    if (!product) return;
+
+    if (!buyer) {
+      this.toaster.info('Please log in to buy this product.');
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
+    if (buyer.id === product.userId) {
+      this.toaster.warning('You cannot buy your own product.');
+      return;
+    }
+
+    this.purchaseAnalyticsService.recordPurchase(
+      {
+        ...product,
+        averageRating: this.ratingStats().average,
+        ratingCount: this.ratingStats().count,
+      },
+      buyer
+    );
+    this.toaster.success('Purchase saved to your profile.');
   }
 
   private emptyRatingStats(): ProductRatingStats {

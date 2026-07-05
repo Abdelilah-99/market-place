@@ -25,6 +25,7 @@ import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Exceptions.UserExistException;
 import com.buy01.users.Repository.UserRepository;
+import com.buy01.users.Search.UserSearchService;
 import com.buy01.users.Utils.JwtUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,11 +43,14 @@ class AuthServiceTest {
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Mock
+    private UserSearchService userSearchService;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtUtils, kafkaTemplate);
+        authService = new AuthService(userRepository, passwordEncoder, jwtUtils, kafkaTemplate, userSearchService);
     }
 
     @Test
@@ -74,6 +78,7 @@ class AuthServiceTest {
                 org.mockito.ArgumentMatchers.isNull(), any());
         verify(kafkaTemplate).send(org.mockito.ArgumentMatchers.eq("create-user-events"),
                 org.mockito.ArgumentMatchers.isNull(), any());
+        verify(userSearchService).indexUser(any(User.class));
     }
 
     @Test

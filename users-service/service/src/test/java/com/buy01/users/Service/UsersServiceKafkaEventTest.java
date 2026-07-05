@@ -26,6 +26,7 @@ import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
 import com.buy01.users.DTOs.RegisterReqDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
+import com.buy01.users.Search.UserSearchService;
 import com.buy01.users.Utils.JwtUtils;
 import com.example.shared.common.kafka.dtos.media.KafkaConfirmAvatarEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserCreatedEvent;
@@ -45,6 +46,9 @@ class UsersServiceKafkaEventTest {
 
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Mock
+    private UserSearchService userSearchService;
 
     @InjectMocks
     private AuthService authService;
@@ -85,6 +89,7 @@ class UsersServiceKafkaEventTest {
     authService.register(registerDto);
 
     verify(userRepository).save(any(User.class));
+    verify(userSearchService).indexUser(newUser);
     verify(kafkaTemplate).send(
         eq("create-user-events"),
         isNull(),
@@ -107,6 +112,7 @@ class UsersServiceKafkaEventTest {
     profileService.updateCurrentProfile(updateDto);
 
     verify(userRepository).save(any(User.class));
+    verify(userSearchService).indexUser(any(User.class));
     verify(kafkaTemplate).send(
         eq("confirm-avatar-events"),
         isNull(),
@@ -130,6 +136,7 @@ class UsersServiceKafkaEventTest {
     profileService.deleteCurrentUser();
 
     verify(userRepository).deleteById(userId);
+    verify(userSearchService).deleteUser(userId);
     verify(kafkaTemplate).send(
         eq("remove-user-events"),
         isNull(),
@@ -169,5 +176,6 @@ class UsersServiceKafkaEventTest {
             && avatarId.equals(created.avatar())));
 
     verify(userRepository).save(any(User.class));
+    verify(userSearchService).indexUser(newUser);
     }
 }

@@ -18,16 +18,22 @@ import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
+import com.buy01.users.Search.UserSearchService;
 import com.example.shared.common.kafka.dtos.users.KafkaUserRemovedEvent;
 
 @Service
 public class AdminUserService {
     private final UserRepository userRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final UserSearchService userSearchService;
 
-    public AdminUserService(UserRepository userRepository, KafkaTemplate<String, Object> kafkaTemplate) {
+    public AdminUserService(
+            UserRepository userRepository,
+            KafkaTemplate<String, Object> kafkaTemplate,
+            UserSearchService userSearchService) {
         this.userRepository = userRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.userSearchService = userSearchService;
     }
 
     public PageResponseDTOs<ProfileResDTOs> getUsers(int page, int size) {
@@ -47,7 +53,9 @@ public class AdminUserService {
         User user = getUser(id);
         String normalizedRole = req.role().trim().toUpperCase();
         User updated = new User(user.id(), user.name(), user.email(), user.password(), normalizedRole, user.avatarUrl());
-        return toProfile(userRepository.save(updated));
+        User saved = userRepository.save(updated);
+        userSearchService.indexUser(saved);
+        return toProfile(saved);
     }
 
     public RegisterResDTOs deleteUser(String id) {
@@ -57,8 +65,13 @@ public class AdminUserService {
         }
         User user = getUser(id);
         userRepository.deleteById(user.id());
+        userSearchService.deleteUser(user.id());
         kafkaTemplate.send("remove-user-events", null, new KafkaUserRemovedEvent(user.id()));
         return new RegisterResDTOs("user deleted successfully");
+    }
+
+    public long reindexUserSearch() {
+        return userSearchService.reindexAllUsers();
     }
 
     private User getUser(String id) {

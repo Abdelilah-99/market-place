@@ -7,6 +7,8 @@ import { ProductsService } from '../../core/services/products-service';
 import { FormsModule } from '@angular/forms';
 import { MediaSevice } from '../../core/services/media-sevice';
 import { ToasterService } from '../../core/services/toaster-service';
+import { PurchaseAnalyticsService } from '../../core/services/purchase-analytics-service';
+import { StateService } from '../../core/services/state-service';
 
 @Component({
   selector: 'app-product',
@@ -38,7 +40,9 @@ export class ProductItem {
     private router: Router,
     private producteService: ProductsService,
     private mediaSevice: MediaSevice,
-    private toaster: ToasterService
+    private toaster: ToasterService,
+    private purchaseAnalyticsService: PurchaseAnalyticsService,
+    private stateService: StateService
   ) { }
 
   ngOnInit() {
@@ -55,6 +59,23 @@ export class ProductItem {
   conditionLabel(condition?: string): string {
     if (!condition) return 'Used';
     return condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
+  }
+
+  buyProduct(): void {
+    const buyer = this.stateService.currentUserSubject.value;
+    if (!buyer) {
+      this.toaster.info('Please log in to buy this product.');
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
+    if (buyer.id === this.product.userId) {
+      this.toaster.warning('You cannot buy your own product.');
+      return;
+    }
+
+    this.purchaseAnalyticsService.recordPurchase(this.product, buyer);
+    this.toaster.success('Purchase saved to your profile.');
   }
 
   onImageSelected(event: Event) {

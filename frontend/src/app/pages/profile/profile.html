@@ -147,6 +147,125 @@
             </form>
             }
         </div>
+
+        <section class="user-search-panel" aria-label="Search users">
+            <div class="analytics-heading">
+                <div>
+                    <span class="section-kicker">People</span>
+                    <h2>Find other users</h2>
+                </div>
+            </div>
+
+            <form class="user-search-form" (ngSubmit)="searchUsers()">
+                <label for="user-search">Search by username or email</label>
+                <div>
+                    <input id="user-search" name="userSearch" type="search" [ngModel]="userSearchQuery()"
+                        (ngModelChange)="userSearchQuery.set($event)" placeholder="Type at least 2 characters" />
+                    @if (userSearchQuery()) {
+                    <button type="button" class="clear-search-btn" (click)="clearUserSearch()" aria-label="Clear user search">
+                        <i class="fa fa-xmark"></i>
+                    </button>
+                    }
+                    <button type="submit" class="search-users-btn" [disabled]="isSearchingUsers()">
+                        <i [class]="isSearchingUsers() ? 'fa fa-circle-notch fa-spin' : 'fa fa-magnifying-glass'"></i>
+                        {{ isSearchingUsers() ? 'Searching' : 'Search' }}
+                    </button>
+                </div>
+            </form>
+
+            @if (userSearchError()) {
+            <p class="feedback error">{{ userSearchError() }}</p>
+            }
+
+            @if (userSearchResults().length) {
+            <div class="user-results">
+                <article class="user-result" *ngFor="let user of userSearchResults()">
+                    @if (user.avatarUrl) {
+                    <img [src]="'/api/media/users/' + user.avatarUrl" [alt]="user.username" />
+                    } @else {
+                    <div class="user-result-avatar">{{ user.username.charAt(0).toUpperCase() }}</div>
+                    }
+                    <div>
+                        <strong>{{ user.username }}</strong>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    <em>{{ user.role }}</em>
+                </article>
+            </div>
+            } @else if (hasSearchedUsers() && !isSearchingUsers() && !userSearchError()) {
+            <p class="analytics-empty">No users matched your search.</p>
+            }
+        </section>
+
+        <section class="analytics-panel" aria-label="Buyer profile analytics">
+            <div class="analytics-heading">
+                <div>
+                    <span class="section-kicker">Buying profile</span>
+                    <h2>Your marketplace activity</h2>
+                </div>
+            </div>
+
+            <div class="analytics-stats">
+                <div class="analytics-stat">
+                    <span>Money spent</span>
+                    <strong>{{ formatMoney(buyerAnalytics().totalSpent) }}</strong>
+                </div>
+                <div class="analytics-stat">
+                    <span>Orders</span>
+                    <strong>{{ buyerAnalytics().totalOrders }}</strong>
+                </div>
+                <div class="analytics-stat">
+                    <span>Items bought</span>
+                    <strong>{{ buyerAnalytics().totalItems }}</strong>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="analytics-list">
+                    <h3>Best products</h3>
+                    @if (buyerAnalytics().bestProducts.length) {
+                    <div class="analytics-product" *ngFor="let product of buyerAnalytics().bestProducts">
+                        @if (productImage(product.image)) {
+                        <img [src]="productImage(product.image)" [alt]="product.name" />
+                        } @else {
+                        <div class="analytics-product-placeholder">
+                            <i class="fa fa-box"></i>
+                        </div>
+                        }
+                        <div>
+                            <strong>{{ product.name }}</strong>
+                            <span>{{ product.averageRating || 'New' }} rating · {{ product.ratingCount }} review{{ product.ratingCount === 1 ? '' : 's' }}</span>
+                        </div>
+                        <em>{{ formatMoney(product.total) }}</em>
+                    </div>
+                    } @else {
+                    <p class="analytics-empty">Products you buy will appear here ranked by buyer rating.</p>
+                    }
+                </div>
+
+                <div class="analytics-list">
+                    <h3>Most buying products</h3>
+                    @if (buyerAnalytics().mostBoughtProducts.length) {
+                    <div class="analytics-product" *ngFor="let product of buyerAnalytics().mostBoughtProducts">
+                        @if (productImage(product.image)) {
+                        <img [src]="productImage(product.image)" [alt]="product.name" />
+                        } @else {
+                        <div class="analytics-product-placeholder">
+                            <i class="fa fa-box"></i>
+                        </div>
+                        }
+                        <div>
+                            <strong>{{ product.name }}</strong>
+                            <span>{{ product.quantity }} bought · {{ formatMoney(product.total) }} spent</span>
+                        </div>
+                        <em>{{ product.quantity }}</em>
+                    </div>
+                    } @else {
+                    <p class="analytics-empty">Your repeated purchases will be summarized here.</p>
+                    }
+                </div>
+            </div>
+        </section>
         }
     </div>
 </section>

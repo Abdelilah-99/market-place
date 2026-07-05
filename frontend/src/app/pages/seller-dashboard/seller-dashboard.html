@@ -18,13 +18,47 @@
             <strong>{{ total() }}</strong>
         </div>
         <div class="stat-card">
-            <span>Status</span>
-            <strong>Active</strong>
+            <span>Money gained</span>
+            <strong>{{ formatMoney(sellerAnalytics().totalGained) }}</strong>
         </div>
         <div class="stat-card">
-            <span>Catalog health</span>
-            <strong>Good</strong>
+            <span>Items sold</span>
+            <strong>{{ sellerAnalytics().totalItemsSold }}</strong>
         </div>
+    </section>
+
+    <section class="seller-analytics" aria-label="Seller profile analytics">
+        <div class="analytics-summary">
+            <div>
+                <span class="section-kicker">Seller profile</span>
+                <h2>Best-selling products</h2>
+            </div>
+            <strong>{{ sellerAnalytics().totalOrders }} order{{ sellerAnalytics().totalOrders === 1 ? '' : 's' }}</strong>
+        </div>
+
+        @if (sellerAnalytics().bestSellingProducts.length) {
+        <div class="best-sellers">
+            <article class="best-seller" *ngFor="let product of sellerAnalytics().bestSellingProducts">
+                @if (productImage(product.image)) {
+                <img [src]="productImage(product.image)" [alt]="product.name" />
+                } @else {
+                <div class="seller-product-placeholder">
+                    <i class="fa fa-box"></i>
+                </div>
+                }
+                <div>
+                    <h3>{{ product.name }}</h3>
+                    <p>{{ product.quantity }} sold · {{ formatMoney(product.total) }} gained</p>
+                </div>
+                <strong>{{ product.quantity }}</strong>
+            </article>
+        </div>
+        } @else {
+        <div class="seller-analytics-empty">
+            <i class="fa fa-chart-line"></i>
+            <p>Your best-selling products and earnings will appear after customers buy your listings.</p>
+        </div>
+        }
     </section>
 
     <section class="seller-grid">

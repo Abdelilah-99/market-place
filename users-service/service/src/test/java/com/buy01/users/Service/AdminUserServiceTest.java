@@ -32,6 +32,7 @@ import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
+import com.buy01.users.Search.UserSearchService;
 
 @ExtendWith(MockitoExtension.class)
 class AdminUserServiceTest {
@@ -42,11 +43,14 @@ class AdminUserServiceTest {
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Mock
+    private UserSearchService userSearchService;
+
     private AdminUserService adminUserService;
 
     @BeforeEach
     void setUp() {
-        adminUserService = new AdminUserService(userRepository, kafkaTemplate);
+        adminUserService = new AdminUserService(userRepository, kafkaTemplate, userSearchService);
         SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken("admin-1", "password"));
     }
 
@@ -93,6 +97,7 @@ class AdminUserServiceTest {
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         assertEquals("SELLER", userCaptor.getValue().role());
+        verify(userSearchService).indexUser(any(User.class));
     }
 
     @Test
@@ -117,6 +122,7 @@ class AdminUserServiceTest {
 
         assertEquals("user deleted successfully", result.msg());
         verify(userRepository).deleteById("u-1");
+        verify(userSearchService).deleteUser("u-1");
         verify(kafkaTemplate).send(org.mockito.ArgumentMatchers.eq("remove-user-events"),
                 org.mockito.ArgumentMatchers.isNull(), any());
     }

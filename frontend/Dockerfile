@@ -43,5 +43,5 @@ EXPOSE 443
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD wget --no-verbose --no-check-certificate --tries=1 --spider https://localhost/ || exit 1
 
-# Start Caddy
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+# Start Caddy after writing runtime frontend config from container env.
+CMD ["sh", "-c", "printf '{\"apiBaseUrl\":\"%s\"}\\n' \"${API_BASE_URL:-}\" > /usr/share/caddy/app-config.json && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]

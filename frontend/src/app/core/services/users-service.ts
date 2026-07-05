@@ -142,6 +142,12 @@ export class UsersService {
     });
   }
 
+  searchUsers(query: string, page = 0, size = 8): Observable<PageResponse<Me>> {
+    return this.http.get<PageResponse<Me>>('/api/users/search', {
+      params: { q: query, page, size },
+    });
+  }
+
   updateAdminUserRole(id: string, role: string): Observable<Me> {
     return this.http.patch<Me>(`/api/admin/users/${id}/role`, { role });
   }

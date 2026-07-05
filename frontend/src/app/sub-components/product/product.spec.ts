@@ -13,6 +13,8 @@ describe('ProductItem Component', () => {
   let mockMediaService: any;
   let mockRouter: any;
   let mockToaster: any;
+  let mockPurchaseAnalyticsService: any;
+  let mockStateService: any;
 
   const mockProduct: Product = {
     id: '1',
@@ -45,11 +47,29 @@ describe('ProductItem Component', () => {
       info: vi.fn()
     };
 
+    mockPurchaseAnalyticsService = {
+      recordPurchase: vi.fn()
+    };
+
+    mockStateService = {
+      currentUserSubject: {
+        value: {
+          id: 'buyer1',
+          username: 'Buyer',
+          email: 'buyer@example.com',
+          role: 'BUYER',
+          avatarUrl: null
+        }
+      }
+    };
+
     component = new ProductItem(
       mockRouter,
       mockProductsService,
       mockMediaService,
-      mockToaster as ToasterService
+      mockToaster as ToasterService,
+      mockPurchaseAnalyticsService,
+      mockStateService
     );
 
     component.product = mockProduct;
@@ -98,6 +118,22 @@ describe('ProductItem Component', () => {
     component.ngOnInit();
 
     expect(component.isMyProduct).toBe(false);
+  });
+
+  it('should record a purchase for a logged-in buyer', () => {
+    component.buyProduct();
+
+    expect(mockPurchaseAnalyticsService.recordPurchase).toHaveBeenCalledWith(mockProduct, mockStateService.currentUserSubject.value);
+    expect(mockToaster.success).toHaveBeenCalledWith('Purchase saved to your profile.');
+  });
+
+  it('should send anonymous buyers to login', () => {
+    mockStateService.currentUserSubject.value = null;
+
+    component.buyProduct();
+
+    expect(mockPurchaseAnalyticsService.recordPurchase).not.toHaveBeenCalled();
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   // ============================================

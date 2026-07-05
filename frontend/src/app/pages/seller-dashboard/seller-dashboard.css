@@ -63,6 +63,122 @@
   font-weight: 950;
 }
 
+.seller-analytics {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.analytics-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.analytics-summary h2 {
+  margin: 0.25rem 0 0;
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 950;
+}
+
+.analytics-summary > strong {
+  color: var(--brand-dark);
+  font-size: 1rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.best-sellers {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 0.85rem;
+}
+
+.best-seller {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 76px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fbfcfe;
+  padding: 0.75rem;
+}
+
+.best-seller img,
+.seller-product-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+}
+
+.best-seller img {
+  object-fit: cover;
+}
+
+.seller-product-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+.best-seller h3,
+.best-seller p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.best-seller h3 {
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.best-seller p {
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.best-seller > strong {
+  color: var(--brand-dark);
+  font-size: 1.25rem;
+  font-weight: 950;
+}
+
+.seller-analytics-empty {
+  margin-top: 1rem;
+  min-height: 110px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.5rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+.seller-analytics-empty i {
+  color: var(--brand);
+  font-size: 1.35rem;
+}
+
+.seller-analytics-empty p {
+  margin: 0;
+  font-weight: 800;
+}
+
 .seller-grid {
   margin-top: 1rem;
   display: grid;
@@ -128,6 +244,11 @@
 
   .stats-row {
     grid-template-columns: 1fr;
+  }
+
+  .analytics-summary {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

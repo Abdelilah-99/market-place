@@ -25,6 +25,7 @@ import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
 import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
+import com.buy01.users.Search.UserSearchService;
 
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceTest {
@@ -35,11 +36,14 @@ class ProfileServiceTest {
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Mock
+    private UserSearchService userSearchService;
+
     private ProfileService profileService;
 
     @BeforeEach
     void setUp() {
-        profileService = new ProfileService(userRepository, kafkaTemplate);
+        profileService = new ProfileService(userRepository, kafkaTemplate, userSearchService);
         SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken("u-1", "password"));
     }
 
@@ -77,6 +81,7 @@ class ProfileServiceTest {
                 org.mockito.ArgumentMatchers.isNull(), any());
         verify(kafkaTemplate).send(org.mockito.ArgumentMatchers.eq("update-user-events"),
                 org.mockito.ArgumentMatchers.isNull(), any());
+        verify(userSearchService).indexUser(any(User.class));
     }
 
     @Test
@@ -88,6 +93,7 @@ class ProfileServiceTest {
 
         assertEquals("user deleted successfully", result.msg());
         verify(userRepository).deleteById("u-1");
+        verify(userSearchService).deleteUser("u-1");
         verify(kafkaTemplate).send(org.mockito.ArgumentMatchers.eq("remove-user-events"),
                 org.mockito.ArgumentMatchers.isNull(), any());
     }

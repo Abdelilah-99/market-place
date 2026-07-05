@@ -4,6 +4,20 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${ROOT_DIR}"
 
+docker_cleanup() {
+  if [[ "${CI_DOCKER_CLEANUP:-true}" != "true" ]]; then
+    echo "[CD] Docker cleanup disabled."
+    return
+  fi
+
+  local prune_until="${CI_DOCKER_PRUNE_UNTIL:-24h}"
+
+  echo "[CD] Pruning unused Docker containers, dangling images, and builder cache older than ${prune_until}."
+  docker container prune -f >/dev/null || true
+  docker image prune -f >/dev/null || true
+  docker builder prune -f --filter "until=${prune_until}" >/dev/null || true
+}
+
 compose_up() {
   local dir="$1"
   if [[ "$dir" == "kafka" ]]; then
@@ -41,6 +55,8 @@ ensure_volume "gateway-certs"
 
 echo "[CD] Skipping certificate volume sync; cert volumes are managed on the host."
 
+docker_cleanup
+
 compose_up "eureka-server"
 compose_up "redis"
 compose_up "opensearch"
@@ -50,5 +66,7 @@ compose_up "media-service"
 compose_up "users-service"
 compose_up "gateway"
 compose_up "frontend"
+
+docker_cleanup
 
 echo "[CD] Deployment completed successfully."

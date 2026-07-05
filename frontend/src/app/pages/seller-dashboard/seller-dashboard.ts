@@ -4,6 +4,8 @@ import { ProductItem } from '../../sub-components/product/product';
 import { CreateProductPopPup } from '../../sub-components/create-product-pop-pup/create-product-pop-pup';
 import { Product } from '../../core/models/Product';
 import { ProductsService } from '../../core/services/products-service';
+import { PurchaseAnalyticsService, SellerProfileAnalytics } from '../../core/services/purchase-analytics-service';
+import { StateService } from '../../core/services/state-service';
 @Component({
   selector: 'app-seller-dashboard',
   imports: [ProductItem, CreateProductPopPup, CommonModule],
@@ -18,9 +20,19 @@ export class SellerDashboard {
   public page = signal(0);
   public hasNext = signal(false);
   public loading = signal(false);
+  public sellerAnalytics = signal<SellerProfileAnalytics>({
+    totalGained: 0,
+    totalOrders: 0,
+    totalItemsSold: 0,
+    bestSellingProducts: [],
+  });
   private readonly pageSize = 12;
 
-  constructor(private productsService: ProductsService) { }
+  constructor(
+    private productsService: ProductsService,
+    private purchaseAnalyticsService: PurchaseAnalyticsService,
+    private stateService: StateService
+  ) { }
 
   ngOnInit() {
     this.loadProducts();
@@ -37,6 +49,7 @@ export class SellerDashboard {
         this.total.set(data?.total ?? products.length);
         this.page.set(data?.page ?? page);
         this.hasNext.set(data?.hasNext ?? false);
+        this.refreshSellerAnalytics();
         this.loading.set(false);
       },
       error: (err) => {
@@ -54,6 +67,7 @@ export class SellerDashboard {
   onProductCreated(product: Product) {
     this.products.update(current => [product, ...current]);
     this.total.update(current => current + 1);
+    this.refreshSellerAnalytics();
     this.isPopPupOpen = false;
   }
 
@@ -62,10 +76,34 @@ export class SellerDashboard {
       this.products().filter(product => product.id !== id)
     );
     this.total.update(current => Math.max(current - 1, 0));
+    this.refreshSellerAnalytics();
+  }
+
+  formatMoney(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2,
+    }).format(value || 0);
+  }
+
+  productImage(image: string): string {
+    return image ? `/api/media/products/${image}` : '';
   }
 
 
   public togglePopUp() {
     this.isPopPupOpen = !this.isPopPupOpen;
+  }
+
+  private refreshSellerAnalytics(): void {
+    const seller = this.stateService.currentUserSubject.value;
+    if (!seller) {
+      return;
+    }
+
+    this.sellerAnalytics.set(
+      this.purchaseAnalyticsService.getSellerAnalytics(seller.id, this.products())
+    );
   }
 }

@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import com.buy01.users.DTOs.PageResponseDTOs;
 import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
 import com.buy01.users.DTOs.RegisterResDTOs;
@@ -25,6 +27,14 @@ public class ProfileController {
     @GetMapping("/me")
     public ResponseEntity<ProfileResDTOs> getMe() {
         return ResponseEntity.ok(profileService.getCurrentProfile());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<PageResponseDTOs<ProfileResDTOs>> searchUsers(
+            @RequestParam(name = "q", defaultValue = "") String query,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
+        return ResponseEntity.ok(profileService.searchUsers(query, page, size));
     }
 
     @PutMapping("/me")

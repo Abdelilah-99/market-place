@@ -7,11 +7,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.buy01.users.DTOs.PageResponseDTOs;
 import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
 import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
+import com.buy01.users.Search.UserSearchService;
 import com.example.shared.common.kafka.dtos.media.KafkaConfirmAvatarEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserRemovedEvent;
 import com.example.shared.common.kafka.dtos.users.KafkaUserUpdatedEvent;
@@ -20,16 +22,26 @@ import com.example.shared.common.kafka.dtos.users.KafkaUserUpdatedEvent;
 public class ProfileService {
     private final UserRepository userRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final UserSearchService userSearchService;
 
-    public ProfileService(UserRepository userRepository, KafkaTemplate<String, Object> kafkaTemplate) {
+    public ProfileService(
+            UserRepository userRepository,
+            KafkaTemplate<String, Object> kafkaTemplate,
+            UserSearchService userSearchService) {
         this.userRepository = userRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.userSearchService = userSearchService;
     }
 
     public ProfileResDTOs getCurrentProfile() {
         User user = getAuthenticatedUser();
         System.out.println("name ============ " + user.name());
-        return new ProfileResDTOs(user.id(), user.name(), user.email(), user.role(), user.avatarUrl());
+        return toProfile(user);
+    }
+
+    public PageResponseDTOs<ProfileResDTOs> searchUsers(String query, int page, int size) {
+        User currentUser = getAuthenticatedUser();
+        return userSearchService.search(query, currentUser.id(), page, size);
     }
 
     public ProfileResDTOs updateCurrentProfile(ProfileUpdateReqDTOs req) {
@@ -53,6 +65,7 @@ public class ProfileService {
 
         System.out.println("avatar ==================== " + req.uuid());
         User newUser = userRepository.save(updated);
+        userSearchService.indexUser(newUser);
         if (updatedAvatarUrl != null) {
             KafkaConfirmAvatarEvent event = new KafkaConfirmAvatarEvent(updatedAvatarUrl);
             kafkaTemplate.send("confirm-avatar-events", null, event);
@@ -64,7 +77,7 @@ public class ProfileService {
                 oldAvatarUrl,
                 updatedAvatarUrl);
         kafkaTemplate.send("update-user-events", null, event);
-        return new ProfileResDTOs(newUser.id(), newUser.name(), newUser.email(), newUser.role(), newUser.avatarUrl());
+        return toProfile(newUser);
     }
 
     private User getAuthenticatedUser() {
@@ -77,8 +90,13 @@ public class ProfileService {
     public RegisterResDTOs deleteCurrentUser() {
         User user = getAuthenticatedUser();
         userRepository.deleteById(user.id());
+        userSearchService.deleteUser(user.id());
         KafkaUserRemovedEvent event = new KafkaUserRemovedEvent(user.id());
         kafkaTemplate.send("remove-user-events", null, event);
         return new RegisterResDTOs("user deleted successfully");
+    }
+
+    private ProfileResDTOs toProfile(User user) {
+        return new ProfileResDTOs(user.id(), user.name(), user.email(), user.role(), user.avatarUrl());
     }
 }
