@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Buy01 Marketplace microservices architecture</title>
+  <desc id="desc">Architecture diagram for Angular frontend, Caddy, Spring Cloud Gateway, Eureka, Redis, users, products and media services, MongoDB, Kafka, OpenSearch, Prometheus, Grafana, Jenkins and CI scripts.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#344054"/>
+    </marker>
+    <marker id="eventArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#7A4E00"/>
+    </marker>
+    <marker id="metricArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#6941C6"/>
+    </marker>
+    <style>
+      .bg { fill: #F6F8FB; }
+      .title { font: 800 34px Arial, sans-serif; fill: #101828; }
+      .subtitle { font: 400 17px Arial, sans-serif; fill: #475467; }
+      .label { font: 700 18px Arial, sans-serif; fill: #101828; }
+      .small { font: 400 14px Arial, sans-serif; fill: #475467; }
+      .tiny { font: 400 12px Arial, sans-serif; fill: #667085; }
+      .clusterTitle { font: 800 18px Arial, sans-serif; fill: #1D2939; }
+      .box { stroke: #98A2B3; stroke-width: 1.5; rx: 8; ry: 8; }
+      .edge { stroke: #344054; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .mutual { stroke: #344054; stroke-width: 2; fill: none; marker-end: url(#arrow); stroke-dasharray: 7 5; }
+      .event { stroke: #7A4E00; stroke-width: 2.2; fill: none; marker-end: url(#eventArrow); stroke-dasharray: 8 6; }
+      .metric { stroke: #6941C6; stroke-width: 2; fill: none; marker-end: url(#metricArrow); stroke-dasharray: 4 5; }
+      .note { fill: #FFFFFF; stroke: #D0D5DD; stroke-width: 1.2; rx: 8; ry: 8; }
+      .legendLine { stroke-width: 2.4; fill: none; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1200"/>
+
+  <text class="title" x="60" y="64">Buy01 Marketplace Architecture</text>
+  <text class="subtitle" x="60" y="94">Angular + Caddy edge, Spring Cloud Gateway, Eureka discovery, Redis rate limiting, Kafka events,</text>
+  <text class="subtitle" x="60" y="118">MongoDB per service, OpenSearch, observability, and CI/CD automation.</text>
+
+  <rect class="note" x="1160" y="36" width="350" height="86"/>
+  <text class="label" x="1184" y="66">Runtime network</text>
+  <text class="small" x="1184" y="91">All containers attach to external Docker network</text>
+  <text class="small" x="1184" y="111">shared-net</text>
+
+  <rect class="box" x="50" y="150" width="1450" height="190" fill="#EEF4FF"/>
+  <text class="clusterTitle" x="72" y="180">Client and edge layer</text>
+
+  <rect class="box" x="90" y="214" width="190" height="88" fill="#FFFFFF"/>
+  <text class="label" x="118" y="248">Browser</text>
+  <text class="small" x="118" y="273">User requests</text>
+  <text class="tiny" x="118" y="293">HTTPS / app routes</text>
+
+  <rect class="box" x="360" y="205" width="245" height="108" fill="#E0F2FE"/>
+  <text class="label" x="386" y="239">Angular frontend</text>
+  <text class="small" x="386" y="264">Home, product detail, profile</text>
+  <text class="small" x="386" y="285">seller/admin dashboards</text>
+  <text class="tiny" x="386" y="305">Runtime app-config.json</text>
+
+  <rect class="box" x="690" y="205" width="255" height="108" fill="#ECFDF3"/>
+  <text class="label" x="716" y="239">Caddy</text>
+  <text class="small" x="716" y="264">Serves SPA on 80/443</text>
+  <text class="small" x="716" y="285">Reverse proxies /api/*</text>
+  <text class="tiny" x="716" y="305">gateway:10000 over HTTPS</text>
+
+  <rect class="box" x="1070" y="189" width="330" height="140" fill="#FFF6ED"/>
+  <text class="label" x="1096" y="224">Spring Cloud Gateway</text>
+  <text class="small" x="1096" y="249">JWT verification and identity headers</text>
+  <text class="small" x="1096" y="270">Redis rate limit: 5 rps, burst 10</text>
+  <text class="small" x="1096" y="291">Routes by Eureka service name</text>
+  <text class="tiny" x="1096" y="313">/api/products, /api/users, /api/media</text>
+
+  <path class="edge" d="M280 258 H350"/>
+  <path class="edge" d="M605 258 H680"/>
+  <path class="edge" d="M945 258 H1060"/>
+
+  <rect class="box" x="50" y="380" width="1450" height="390" fill="#FFFFFF"/>
+  <text class="clusterTitle" x="72" y="410">Backend service layer</text>
+
+  <rect class="box" x="90" y="448" width="250" height="128" fill="#F9FAFB"/>
+  <text class="label" x="116" y="482">Eureka Server</text>
+  <text class="small" x="116" y="507">Service registry</text>
+  <text class="small" x="116" y="528">eureka-server:8761</text>
+  <text class="tiny" x="116" y="550">Gateway resolves lb:// services</text>
+
+  <rect class="box" x="400" y="440" width="270" height="152" fill="#F0F9FF"/>
+  <text class="label" x="426" y="474">users-service</text>
+  <text class="small" x="426" y="499">Auth, profile, admin users</text>
+  <text class="small" x="426" y="520">Issues RSA-signed JWTs</text>
+  <text class="small" x="426" y="541">Search users in OpenSearch</text>
+  <text class="tiny" x="426" y="565">Spring Boot Gradle, port 8080</text>
+
+  <rect class="box" x="725" y="440" width="270" height="152" fill="#F0FDF4"/>
+  <text class="label" x="751" y="474">products-service</text>
+  <text class="small" x="751" y="499">Catalog, seller CRUD, ratings</text>
+  <text class="small" x="751" y="520">Admin product moderation</text>
+  <text class="small" x="751" y="541">Search products in OpenSearch</text>
+  <text class="tiny" x="751" y="565">Spring Boot Maven, port 8000</text>
+
+  <rect class="box" x="1050" y="440" width="270" height="152" fill="#FFFAEB"/>
+  <text class="label" x="1076" y="474">media-service</text>
+  <text class="small" x="1076" y="499">Product images and avatars</text>
+  <text class="small" x="1076" y="520">Spring Content filesystem</text>
+  <text class="small" x="1076" y="541">Status and cleanup workflows</text>
+  <text class="tiny" x="1076" y="565">Spring Boot Maven, port 8888</text>
+
+  <rect class="box" x="400" y="632" width="270" height="82" fill="#F8FAFC"/>
+  <text class="label" x="426" y="666">user-mongodb</text>
+  <text class="small" x="426" y="691">Users, roles, profile state</text>
+
+  <rect class="box" x="725" y="632" width="270" height="82" fill="#F8FAFC"/>
+  <text class="label" x="751" y="666">products MongoDB</text>
+  <text class="small" x="751" y="691">Products, ratings, user refs</text>
+
+  <rect class="box" x="1050" y="632" width="270" height="82" fill="#F8FAFC"/>
+  <text class="label" x="1076" y="666">media MongoDB</text>
+  <text class="small" x="1076" y="691">Image and avatar metadata</text>
+
+  <rect class="box" x="1365" y="632" width="105" height="82" fill="#F8FAFC"/>
+  <text class="label" x="1384" y="666">/storage</text>
+  <text class="small" x="1384" y="691">Binaries</text>
+
+  <path class="mutual" d="M1190 329 C1190 360 1190 382 1190 430"/>
+  <path class="mutual" d="M1190 329 C1080 370 930 394 860 430"/>
+  <path class="mutual" d="M1190 329 C1000 365 635 388 535 430"/>
+  <path class="edge" d="M1070 258 C760 300 370 390 235 440"/>
+  <path class="edge" d="M340 512 H390"/>
+  <path class="edge" d="M535 592 V622"/>
+  <path class="edge" d="M860 592 V622"/>
+  <path class="edge" d="M1185 592 V622"/>
+  <path class="edge" d="M1320 674 H1355"/>
+
+  <rect class="box" x="50" y="810" width="1450" height="290" fill="#FFFBEB"/>
+  <text class="clusterTitle" x="72" y="840">Platform services, events, search, and monitoring</text>
+
+  <rect class="box" x="90" y="885" width="210" height="92" fill="#FEF3C7"/>
+  <text class="label" x="116" y="919">Kafka</text>
+  <text class="small" x="116" y="944">Domain event bus</text>
+  <text class="tiny" x="116" y="964">Internal listener kafka:29092</text>
+
+  <rect class="box" x="330" y="885" width="180" height="92" fill="#FEF3C7"/>
+  <text class="label" x="356" y="919">Zookeeper</text>
+  <text class="small" x="356" y="944">Kafka coordination</text>
+
+  <rect class="box" x="565" y="885" width="210" height="92" fill="#ECFDF3"/>
+  <text class="label" x="591" y="919">Redis</text>
+  <text class="small" x="591" y="944">Gateway token buckets</text>
+  <text class="tiny" x="591" y="964">Per-client-IP counters</text>
+
+  <rect class="box" x="830" y="885" width="230" height="92" fill="#F0F9FF"/>
+  <text class="label" x="856" y="919">OpenSearch</text>
+  <text class="small" x="856" y="944">products-search index</text>
+  <text class="small" x="856" y="964">users-search index</text>
+
+  <rect class="box" x="1110" y="870" width="230" height="122" fill="#F4F3FF"/>
+  <text class="label" x="1136" y="904">Prometheus</text>
+  <text class="small" x="1136" y="929">Scrapes /actuator/prometheus</text>
+  <text class="small" x="1136" y="950">Gateway and services over HTTPS</text>
+  <text class="tiny" x="1136" y="972">plus node, cAdvisor, Kafka exporter</text>
+
+  <rect class="box" x="1370" y="870" width="100" height="122" fill="#F4F3FF"/>
+  <text class="label" x="1390" y="904">Grafana</text>
+  <text class="small" x="1390" y="929">Dashboards</text>
+
+  <rect class="box" x="1110" y="1014" width="360" height="66" fill="#F9FAFB"/>
+  <text class="label" x="1136" y="1043">CI/CD</text>
+  <text class="small" x="1136" y="1067">Jenkinsfile, ci/jenkins, scripts/ci</text>
+
+  <path class="event" d="M535 592 C500 710 260 770 200 875"/>
+  <path class="event" d="M860 592 C740 720 320 762 210 875"/>
+  <path class="event" d="M1185 592 C990 730 405 760 220 875"/>
+  <path class="event" d="M300 930 C460 790 650 730 760 600"/>
+  <path class="event" d="M300 944 C620 835 960 760 1135 600"/>
+  <path class="event" d="M300 958 C535 835 780 760 900 600"/>
+
+  <path class="edge" d="M1160 258 C930 615 735 812 680 875"/>
+  <path class="edge" d="M670 516 C790 640 865 750 930 875"/>
+  <path class="edge" d="M995 516 C970 650 955 760 945 875"/>
+
+  <path class="metric" d="M1110 930 C1000 840 920 740 860 592"/>
+  <path class="metric" d="M1160 870 C1120 720 1120 445 1210 329"/>
+  <path class="metric" d="M1160 870 C1050 760 840 690 535 592"/>
+  <path class="metric" d="M1210 870 C1230 750 1225 670 1190 592"/>
+  <path class="edge" d="M1340 930 H1360"/>
+
+  <rect class="note" x="60" y="1126" width="500" height="48"/>
+  <line class="legendLine" x1="82" y1="1148" x2="132" y2="1148" stroke="#344054" marker-end="url(#arrow)"/>
+  <text class="tiny" x="146" y="1152">Synchronous HTTP/HTTPS and discovery-routed API traffic</text>
+
+  <rect class="note" x="585" y="1126" width="500" height="48"/>
+  <line class="legendLine" x1="607" y1="1148" x2="657" y2="1148" stroke="#7A4E00" stroke-dasharray="8 6" marker-end="url(#eventArrow)"/>
+  <text class="tiny" x="671" y="1152">Asynchronous Kafka events for user, product, media, and search sync</text>
+
+  <rect class="note" x="1110" y="1126" width="390" height="48"/>
+  <line class="legendLine" x1="1132" y1="1148" x2="1182" y2="1148" stroke="#6941C6" stroke-dasharray="4 5" marker-end="url(#metricArrow)"/>
+  <text class="tiny" x="1196" y="1152">Metrics collection and dashboards</text>
+</svg>
