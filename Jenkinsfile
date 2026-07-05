@@ -111,6 +111,10 @@ def getCredentialsList() {
     file(credentialsId: 'prod-cert',   variable: 'PROD_CERT'),
     file(credentialsId: 'media-cert',  variable: 'MEDIA_CERT'),
     file(credentialsId: 'usr-cert',    variable: 'USR_CERT'),
+    file(credentialsId: 'eureka-cert', variable: 'EUREKA_CERT'),
+    file(credentialsId: 'prometheus-cert', variable: 'PROMETHEUS_CERT'),
+    file(credentialsId: 'prometheus-key',  variable: 'PROMETHEUS_KEY'),
+    file(credentialsId: 'ca-cert',     variable: 'CA_CERT'),
     file(credentialsId: 'jwt-private-key', variable: 'JWT_PRIVATE_KEY'),
     file(credentialsId: 'jwt-public-key',  variable: 'JWT_PUBLIC_KEY')
   ]

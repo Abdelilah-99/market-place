@@ -54,7 +54,12 @@ ensure_volume "users-service-certs"
 ensure_volume "gateway-certs"
 ensure_volume "prometheus-certs"
 
-echo "[CD] Skipping certificate volume sync; cert volumes are managed on the host."
+echo "[CD] Syncing certificate and key Docker volumes."
+bash scripts/setup-cert-volumes.sh \
+  --cert-dir certs \
+  --jwt-private users-service/certs/jwt-private.pem \
+  --jwt-public gateway/certs/jwt-public.pem \
+  --clean
 
 docker_cleanup
 

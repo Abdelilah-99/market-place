@@ -36,19 +36,28 @@ chmod 600 \
   ./users-service/certs/jwt-private.pem \
   ./gateway/certs/jwt-public.pem
 
-declare -A certs=(
-  ["$TRUSTSTORE"]="certs/truststore.p12"
-  ["$GATE_CERT"]="gateway/certs/gateway.p12"
-  ["$PROD_CERT"]="products-service/certs/products-service.p12"
-  ["$MEDIA_CERT"]="media-service/certs/media-service.p12"
-  ["$USR_CERT"]="users-service/certs/users-service.p12"
-)
+copy_secret_file() {
+  local src="$1"
+  local dest="$2"
 
-for src in "${!certs[@]}"; do
-  dest="${certs[$src]}"
+  mkdir -p "$(dirname "$dest")"
   cp "$src" "$dest"
   chmod 600 "$dest"
-done
+}
+
+copy_secret_file "$TRUSTSTORE" "certs/truststore.p12"
+copy_secret_file "$CA_CERT" "certs/ca.crt"
+copy_secret_file "$GATE_CERT" "certs/gateway.p12"
+copy_secret_file "$PROD_CERT" "certs/products-service.p12"
+copy_secret_file "$MEDIA_CERT" "certs/media-service.p12"
+copy_secret_file "$USR_CERT" "certs/users-service.p12"
+copy_secret_file "$EUREKA_CERT" "certs/eureka-server.p12"
+copy_secret_file "$PROMETHEUS_CERT" "certs/prometheus.crt"
+copy_secret_file "$PROMETHEUS_KEY" "certs/prometheus.key"
+copy_secret_file "$GATE_CERT" "gateway/certs/gateway.p12"
+copy_secret_file "$PROD_CERT" "products-service/certs/products-service.p12"
+copy_secret_file "$MEDIA_CERT" "media-service/certs/media-service.p12"
+copy_secret_file "$USR_CERT" "users-service/certs/users-service.p12"
 
 for service_cert_dir in gateway/certs products-service/certs media-service/certs users-service/certs; do
   cp "$TRUSTSTORE" "${service_cert_dir}/truststore.p12"

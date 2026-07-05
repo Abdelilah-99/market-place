@@ -122,7 +122,16 @@ ensure_volume "users-service-certs"
 ensure_volume "gateway-certs"
 ensure_volume "prometheus-certs"
 
-echo "[CD] Skipping certificate volume sync; cert volumes are managed on the host."
+if [[ -f "${TEMP_DIR}/scripts/setup-cert-volumes.sh" ]]; then
+    echo "[CD] Syncing rollback certificate and key Docker volumes."
+    bash "${TEMP_DIR}/scripts/setup-cert-volumes.sh" \
+        --cert-dir "${TEMP_DIR}/certs" \
+        --jwt-private "${TEMP_DIR}/users-service/certs/jwt-private.pem" \
+        --jwt-public "${TEMP_DIR}/gateway/certs/jwt-public.pem" \
+        --clean
+else
+    echo "[WARN] Rollback commit does not include scripts/setup-cert-volumes.sh; certificate volumes were not synced."
+fi
 
 compose_up() {
     local service="$1"

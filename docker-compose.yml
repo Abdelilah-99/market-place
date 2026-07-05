@@ -10,7 +10,7 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
-      - /home/ubuntu/prometheus-certs:/prometheus/certs:ro
+      - prometheus-certs:/prometheus/certs:ro
 
   grafana:
     image: grafana/grafana
@@ -54,6 +54,8 @@ services:
 volumes:
   prometheus_data:
   grafana_data:
+  prometheus-certs:
+    external: true
 
 networks:
   shared-net:
