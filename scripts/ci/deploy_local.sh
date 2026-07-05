@@ -52,6 +52,7 @@ ensure_volume "products-service-certs"
 ensure_volume "media-service-certs"
 ensure_volume "users-service-certs"
 ensure_volume "gateway-certs"
+ensure_volume "prometheus-certs"
 
 echo "[CD] Skipping certificate volume sync; cert volumes are managed on the host."
 
