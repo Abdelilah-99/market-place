@@ -23,7 +23,7 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout scm
-        sh 'mkdir -p "${CI_STATE_DIR}"'
+        sh 'mkdir -p "${CI_STATE_DIR}/logs"'
       }
     }
 
@@ -31,8 +31,10 @@ pipeline {
       steps {
         // Wrap blocks to prevent plain-text files on disk
         withCredentials(getCredentialsList()) {
-          sh 'bash scripts/ci/setup_env.sh'
-          sh 'bash scripts/ci/build_and_test.sh'
+          script {
+            runLogged('build-setup-env', 'bash scripts/ci/setup_env.sh')
+            runLogged('build-and-test', 'bash scripts/ci/build_and_test.sh')
+          }
         }
       }
     }
@@ -40,7 +42,9 @@ pipeline {
     stage('SonarCloud Analysis') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-          sh 'bash scripts/ci/sonarqube_analysis.sh'
+          script {
+            runLogged('sonarqube-analysis', 'bash scripts/ci/sonarqube_analysis.sh')
+          }
         }
       }
     }
@@ -54,8 +58,8 @@ pipeline {
 
           try {
             withCredentials(getCredentialsList()) {
-              sh 'bash scripts/ci/setup_env.sh'
-              sh 'bash scripts/ci/deploy_local.sh'
+              runLogged('deploy-setup-env', 'bash scripts/ci/setup_env.sh')
+              runLogged('deploy-local', 'bash scripts/ci/deploy_local.sh')
             }
           } catch (err) {
             attemptRollback('Deployment failed', previousCommit)
@@ -76,13 +80,14 @@ pipeline {
     }
     failure {
       script {
+        summarizeFailureLogs()
         sendEmail('FAILED', "Build failed. Logs: ${env.BUILD_URL}console")
       }
     }
     always {
       script {
         try {
-          archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**', allowEmptyArchive: true
+          archiveArtifacts artifacts: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml,frontend/coverage/**,.jenkins-state/logs/*.log', allowEmptyArchive: true
           junit testResults: '**/target/surefire-reports/*.xml,**/build/test-results/test/*.xml', allowEmptyResults: true
         } catch (err) {
           echo "Archive skipped: ${err.getMessage()}"
@@ -111,6 +116,53 @@ def getCredentialsList() {
   ]
 }
 
+def runLogged(String logName, String command) {
+  sh(
+    label: logName,
+    script: """
+      mkdir -p "\${CI_STATE_DIR}/logs"
+      bash -lc 'set -o pipefail; ${command} 2>&1 | tee "\${CI_STATE_DIR}/logs/${logName}.log"; exit \${PIPESTATUS[0]}'
+    """
+  )
+}
+
+def summarizeFailureLogs() {
+  sh(
+    label: 'failure-summary',
+    script: '''
+      set +e
+
+      pattern='error|exception|failed|failure|caused by|could not|cannot|denied|timeout|no space left|BUILD FAILED|BUILD FAILURE|Compilation failed|returned non-zero|script returned exit code'
+      log_dir="${CI_STATE_DIR:-.jenkins-state}/logs"
+
+      echo "========== JENKINS ERROR SUMMARY =========="
+      if [ -d "$log_dir" ]; then
+        found_logs=false
+        for file in "$log_dir"/*.log; do
+          [ -f "$file" ] || continue
+          found_logs=true
+          echo "--- $(basename "$file") ---"
+          grep -iE "$pattern" "$file" | tail -n 120 || true
+        done
+        [ "$found_logs" = true ] || echo "No step log files found."
+      else
+        echo "No Jenkins step log directory found: $log_dir"
+      fi
+
+      echo "========== RECENT DOCKER ERRORS =========="
+      if command -v docker >/dev/null 2>&1; then
+        docker ps --format "{{.Names}}" 2>/dev/null | while read -r container; do
+          [ -n "$container" ] || continue
+          echo "--- $container ---"
+          docker logs "$container" --tail 300 2>&1 | grep -iE "$pattern|500|502|503|504|warn" | tail -n 80 || true
+        done
+      else
+        echo "Docker CLI not available on this Jenkins agent."
+      fi
+    '''
+  )
+}
+
 def sendEmail(String status, String message) {
   try {
     emailext(
@@ -132,8 +184,8 @@ def attemptRollback(String prefix, String previousCommit) {
 
     try {
         withCredentials(getCredentialsList()) {
-            sh 'bash scripts/ci/setup_env.sh'
-            sh "bash scripts/ci/rollback_local.sh ${previousCommit}"
+            runLogged('rollback-setup-env', 'bash scripts/ci/setup_env.sh')
+            runLogged('rollback-local', "bash scripts/ci/rollback_local.sh ${previousCommit}")
         }
     } catch (err) {
         echo "Rollback failed: ${err.getMessage()}"
