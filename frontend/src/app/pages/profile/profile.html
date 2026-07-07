@@ -160,7 +160,7 @@
                 <label for="user-search">Search by username or email</label>
                 <div>
                     <input id="user-search" name="userSearch" type="search" [ngModel]="userSearchQuery()"
-                        (ngModelChange)="userSearchQuery.set($event)" placeholder="Type at least 2 characters" />
+                        (ngModelChange)="onUserSearchChange($event)" placeholder="Type at least 2 characters" />
                     @if (userSearchQuery()) {
                     <button type="button" class="clear-search-btn" (click)="clearUserSearch()" aria-label="Clear user search">
                         <i class="fa fa-xmark"></i>

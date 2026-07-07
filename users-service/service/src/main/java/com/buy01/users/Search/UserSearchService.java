@@ -132,16 +132,20 @@ public class UserSearchService {
     }
 
     private Map<String, Object> buildQuery(String query, String currentUserId) {
-        List<Object> must = List.of(Map.of("multi_match", Map.of(
-                "query", query,
-                "fields", List.of("username^3", "email^2", "role"),
-                "fuzziness", "AUTO")));
+        List<Object> should = List.of(
+                Map.of("match_bool_prefix", Map.of("username", Map.of(
+                        "query", query,
+                        "boost", 3))),
+                Map.of("match_bool_prefix", Map.of("email", Map.of(
+                        "query", query,
+                        "boost", 2))));
         List<Object> mustNot = currentUserId == null || currentUserId.isBlank()
                 ? List.of()
                 : List.of(Map.of("term", Map.of("id", currentUserId)));
 
         Map<String, Object> bool = new LinkedHashMap<>();
-        bool.put("must", must);
+        bool.put("should", should);
+        bool.put("minimum_should_match", 1);
         bool.put("must_not", mustNot);
         return Map.of("bool", bool);
     }

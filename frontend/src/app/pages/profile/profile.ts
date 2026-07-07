@@ -4,7 +4,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PLATFORM_ID, Inject } from '@angular/core';
-import { switchMap } from 'rxjs';
+import { EMPTY, Subject, Subscription, catchError, debounceTime, distinctUntilChanged, finalize, switchMap, tap } from 'rxjs';
 import { BuyerProfileAnalytics, PurchaseAnalyticsService } from '../../core/services/purchase-analytics-service';
 
 @Component({
@@ -32,6 +32,8 @@ export class Profile implements OnInit, OnDestroy {
   isSearchingUsers = signal(false);
   hasSearchedUsers = signal(false);
   userSearchError = signal('');
+  private readonly userSearchInput$ = new Subject<string>();
+  private userSearchSubscription?: Subscription;
   buyerAnalytics = signal<BuyerProfileAnalytics>({
     totalSpent: 0,
     totalOrders: 0,
@@ -48,10 +50,12 @@ export class Profile implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.setupUserSearch();
     this.loadProfile();
   }
 
   ngOnDestroy(): void {
+    this.userSearchSubscription?.unsubscribe();
     this.revokeObjectUrl(this.profileAvatarSrc());
     this.revokeObjectUrl(this.selectedAvatarPreview());
   }
@@ -190,30 +194,54 @@ export class Profile implements OnInit, OnDestroy {
     return image ? `/api/media/products/${image}` : '';
   }
 
+  onUserSearchChange(value: string): void {
+    this.userSearchQuery.set(value);
+    this.userSearchInput$.next(value);
+  }
+
   searchUsers(): void {
-    const query = this.userSearchQuery().trim();
+    this.runUserSearch(this.userSearchQuery()).subscribe();
+  }
+
+  private setupUserSearch(): void {
+    this.userSearchSubscription = this.userSearchInput$.pipe(
+      debounceTime(350),
+      distinctUntilChanged(),
+      switchMap((query) => this.runUserSearch(query))
+    ).subscribe();
+  }
+
+  private runUserSearch(rawQuery: string) {
+    const query = rawQuery.trim();
     this.hasSearchedUsers.set(true);
     this.userSearchError.set('');
+
+    if (query.length === 0) {
+      this.userSearchResults.set([]);
+      this.hasSearchedUsers.set(false);
+      this.isSearchingUsers.set(false);
+      return EMPTY;
+    }
 
     if (query.length < 2) {
       this.userSearchResults.set([]);
       this.userSearchError.set('Search with at least 2 characters.');
-      return;
+      return EMPTY;
     }
 
     this.isSearchingUsers.set(true);
-    this.userService.searchUsers(query).subscribe({
-      next: (res) => {
+    return this.userService.searchUsers(query).pipe(
+      tap((res) => {
         this.userSearchResults.set(res.items ?? []);
-        this.isSearchingUsers.set(false);
-      },
-      error: (err) => {
+      }),
+      catchError((err) => {
         this.userSearchResults.set([]);
         this.userSearchError.set('Failed to search users. Please try again.');
-        this.isSearchingUsers.set(false);
         console.error(err);
-      }
-    });
+        return EMPTY;
+      }),
+      finalize(() => this.isSearchingUsers.set(false))
+    );
   }
 
   clearUserSearch(): void {
