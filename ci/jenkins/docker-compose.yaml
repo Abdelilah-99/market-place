@@ -3,7 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DOCKER_GID: ${DOCKER_GID:-989}
     container_name: buy01-jenkins
+    group_add:
+      - "${DOCKER_GID:-989}"
     networks:
       - shared-net
     restart: unless-stopped
