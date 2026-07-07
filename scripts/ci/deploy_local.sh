@@ -54,12 +54,17 @@ ensure_volume "users-service-certs"
 ensure_volume "gateway-certs"
 ensure_volume "prometheus-certs"
 
-echo "[CD] Syncing certificate and key Docker volumes."
-bash scripts/setup-cert-volumes.sh \
-  --cert-dir certs \
-  --jwt-private users-service/certs/jwt-private.pem \
-  --jwt-public gateway/certs/jwt-public.pem \
-  --clean
+if [[ -f "certs/truststore.p12" ]]; then
+  echo "[CD] Syncing certificate and key Docker volumes."
+  bash scripts/setup-cert-volumes.sh \
+    --cert-dir certs \
+    --jwt-private users-service/certs/jwt-private.pem \
+    --jwt-public gateway/certs/jwt-public.pem \
+    --clean
+else
+  echo "[CD] Skipping certificate volume sync; no local cert bundle found."
+  echo "[CD] Expected cert volumes to be prepared on the Docker host before deploy."
+fi
 
 docker_cleanup
 

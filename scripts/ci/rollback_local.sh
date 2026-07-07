@@ -122,7 +122,7 @@ ensure_volume "users-service-certs"
 ensure_volume "gateway-certs"
 ensure_volume "prometheus-certs"
 
-if [[ -f "${TEMP_DIR}/scripts/setup-cert-volumes.sh" ]]; then
+if [[ -f "${TEMP_DIR}/scripts/setup-cert-volumes.sh" && -f "${TEMP_DIR}/certs/truststore.p12" ]]; then
     echo "[CD] Syncing rollback certificate and key Docker volumes."
     bash "${TEMP_DIR}/scripts/setup-cert-volumes.sh" \
         --cert-dir "${TEMP_DIR}/certs" \
@@ -130,7 +130,7 @@ if [[ -f "${TEMP_DIR}/scripts/setup-cert-volumes.sh" ]]; then
         --jwt-public "${TEMP_DIR}/gateway/certs/jwt-public.pem" \
         --clean
 else
-    echo "[WARN] Rollback commit does not include scripts/setup-cert-volumes.sh; certificate volumes were not synced."
+    echo "[CD] Skipping rollback certificate volume sync; no rollback cert bundle found."
 fi
 
 compose_up() {
