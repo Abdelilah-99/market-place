@@ -106,9 +106,6 @@ def getCredentialsList() {
     file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
     file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
     file(credentialsId: 'env-opensearch', variable: 'OPENSEARCH_ENV'),
-    file(credentialsId: 'prometheus-cert', variable: 'PROMETHEUS_CERT'),
-    file(credentialsId: 'prometheus-key',  variable: 'PROMETHEUS_KEY'),
-    file(credentialsId: 'ca-cert',     variable: 'CA_CERT'),
     file(credentialsId: 'jwt-private-key', variable: 'JWT_PRIVATE_KEY'),
     file(credentialsId: 'jwt-public-key',  variable: 'JWT_PUBLIC_KEY')
   ]
