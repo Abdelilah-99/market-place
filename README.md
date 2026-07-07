@@ -332,6 +332,12 @@ Copy the generated certificates into Docker volumes. This also prepares the JWT 
 ./scripts/setup-cert-volumes.sh
 ```
 
+To prepare those same Docker volumes on the Oracle server:
+
+```bash
+./scripts/sync-cert-volumes-to-server.sh
+```
+
 Start the platform:
 
 ```bash
