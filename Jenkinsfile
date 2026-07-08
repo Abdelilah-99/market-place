@@ -151,10 +151,17 @@ def summarizeFailureLogs() {
 
       echo "========== RECENT DOCKER ERRORS =========="
       if command -v docker >/dev/null 2>&1; then
+        echo "--- docker disk usage ---"
+        docker system df || true
+        echo "--- host disk usage ---"
+        df -h || true
         docker ps --format "{{.Names}}" 2>/dev/null | while read -r container; do
           [ -n "$container" ] || continue
           echo "--- $container ---"
-          docker logs "$container" --tail 300 2>&1 | grep -iE "$pattern|500|502|503|504|warn" | tail -n 80 || true
+          docker logs "$container" --tail 300 2>&1 \
+            | grep -iE "$pattern|500|502|503|504|warn|DiskThresholdMonitor|flood stage|watermark" \
+            | grep -viE 'WiredTiger message|WT_SESSION.checkpoint|checkpoint snapshot' \
+            | tail -n 80 || true
         done
       else
         echo "Docker CLI not available on this Jenkins agent."

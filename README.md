@@ -214,6 +214,12 @@ Admin reindex endpoints are available for rebuilding search indexes when needed:
 - `POST /api/admin/products/reindex-search`
 - `POST /api/admin/users/reindex-search`
 
+If OpenSearch logs show `flood stage disk watermark exceeded`, the Docker host is almost full and OpenSearch marks indices read-only. Deployment runs `scripts/ci/opensearch_maintenance.sh` after Docker cleanup to clear those read-only blocks once enough disk space is available. You can run it manually after freeing space:
+
+```bash
+bash scripts/ci/opensearch_maintenance.sh
+```
+
 ## Security Model
 
 The platform uses layered security:

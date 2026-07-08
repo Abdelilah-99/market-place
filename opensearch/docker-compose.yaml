@@ -18,6 +18,11 @@ services:
       interval: 20s
       timeout: 10s
       retries: 10
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
     restart: unless-stopped
 
 volumes:

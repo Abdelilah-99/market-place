@@ -14,8 +14,14 @@ docker_cleanup() {
 
   echo "[CD] Pruning unused Docker containers, dangling images, and builder cache older than ${prune_until}."
   docker container prune -f >/dev/null || true
-  docker image prune -f >/dev/null || true
+  if [[ "${CI_DOCKER_PRUNE_ALL_IMAGES:-true}" == "true" ]]; then
+    docker image prune -a -f --filter "until=${prune_until}" >/dev/null || true
+  else
+    docker image prune -f >/dev/null || true
+  fi
+  docker network prune -f >/dev/null || true
   docker builder prune -f --filter "until=${prune_until}" >/dev/null || true
+  docker system df || true
 }
 
 compose_up() {
@@ -71,6 +77,7 @@ docker_cleanup
 compose_up "eureka-server"
 compose_up "redis"
 compose_up "opensearch"
+bash scripts/ci/opensearch_maintenance.sh
 compose_up "kafka"
 compose_up "products-service"
 compose_up "media-service"
