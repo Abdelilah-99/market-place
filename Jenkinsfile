@@ -132,7 +132,7 @@ def summarizeFailureLogs() {
     script: '''
       set +e
 
-      pattern='error|exception|failed|failure|caused by|could not|cannot|denied|timeout|no space left|BUILD FAILED|BUILD FAILURE|Compilation failed|returned non-zero|script returned exit code'
+      pattern='error|exception|failed|failure|fatal|caused by|could not|cannot|denied|timeout|no space left|BUILD FAILED|BUILD FAILURE|Compilation failed|returned non-zero|script returned exit code'
       log_dir="${CI_STATE_DIR:-.jenkins-state}/logs"
 
       echo "========== JENKINS ERROR SUMMARY =========="

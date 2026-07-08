@@ -88,9 +88,17 @@ any_changed() {
 # ---------------------------------------------------------------------------
 
 base_commit=""
+force_full_build=false
 if [[ -n "${CI_STATE_DIR:-}" && -f "${CI_STATE_DIR}/last_successful_commit" ]]; then
   base_commit="$(tr -d '[:space:]' < "${CI_STATE_DIR}/last_successful_commit")"
-elif git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+  if [[ -n "${base_commit}" ]] && ! git cat-file -e "${base_commit}^{commit}" 2>/dev/null; then
+    log "Stored last successful commit is not available locally: ${base_commit}. Running full build."
+    base_commit=""
+    force_full_build=true
+  fi
+fi
+
+if [[ "${force_full_build}" != true && -z "${base_commit}" ]] && git rev-parse --verify HEAD^ >/dev/null 2>&1; then
   base_commit="$(git rev-parse HEAD^)"
 fi
 
@@ -100,16 +108,27 @@ fi
 
 run_shared=false run_eureka=false run_gateway=false run_payments=false
 run_products=false run_media=false run_users=false run_frontend=false
-mapfile -t changed_files < <(
-  git diff --name-only --diff-filter=ACMRT "${base_commit}"...HEAD
-  git diff --name-only --diff-filter=ACMRT HEAD
-)
+changed_files=()
+if [[ -n "${base_commit}" ]]; then
+  log "Detecting changes since ${base_commit}."
+  mapfile -t changed_files < <(
+    git diff --name-only --diff-filter=ACMRT "${base_commit}"...HEAD
+    git diff --name-only --diff-filter=ACMRT HEAD
+  )
+else
+  log "No valid base commit found."
+fi
 
 if [[ ${#changed_files[@]} -eq 0 ]]; then
   log "No changes detected — running full build."
   run_shared=true run_eureka=true run_gateway=true run_payments=true
   run_products=true run_media=true run_users=true run_frontend=true
 else
+  if any_changed "scripts/ci/build_and_test.sh"; then
+    log "CI build script changed — running full build."
+    run_shared=true run_eureka=true run_gateway=true run_payments=true
+    run_products=true run_media=true run_users=true run_frontend=true
+  fi
   any_changed "shared/*"           && run_shared=true run_eureka=true run_gateway=true run_products=true run_media=true run_users=true
   any_changed "eureka-server/*"    && run_eureka=true  run_shared=true
   any_changed "gateway/*"          && run_gateway=true run_shared=true
