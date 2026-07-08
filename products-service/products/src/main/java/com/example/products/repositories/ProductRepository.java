@@ -1,6 +1,5 @@
 package com.example.products.repositories;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -12,15 +11,9 @@ import com.example.products.models.Product;
 
 @Repository
 public interface ProductRepository extends MongoRepository<Product, UUID> {
-    List<Product> findAllByUserIdOrderByCreatedAtDesc(String userId);
-
     Page<Product> findAllByUserId(String userId, Pageable pageable);
 
-    List<Product> findAllByCategoryIgnoreCaseOrderByCreatedAtDesc(String category);
-
-    List<Product> findAllByOrderByCreatedAtDesc();
-
-    List<Product> findByUserId(String userId);
+    Page<Product> findAllByCategoryIgnoreCase(String category, Pageable pageable);
 
     void deleteByUserId(String userId);
 }

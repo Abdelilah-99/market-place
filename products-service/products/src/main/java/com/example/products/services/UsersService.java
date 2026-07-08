@@ -1,7 +1,7 @@
 package com.example.products.services;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.example.products.kafka.MediaEvents;
@@ -15,6 +15,7 @@ import com.example.products.repositories.UserRepository;
 
 @Service
 public class UsersService {
+    private static final int DELETE_PRODUCT_BATCH_SIZE = 100;
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
@@ -39,10 +40,15 @@ public class UsersService {
     }
 
     public void deleteUser(KafkaUserRemovedEvent obj) {
-        List<Product> products = this.productRepository.findByUserId(obj.userId());
-        for (Product p : products) {
-            this.mediaEvents.deleteImageEvent(p.getImage());
-        }
+        int page = 0;
+        Page<Product> products;
+
+        do {
+            products = this.productRepository.findAllByUserId(obj.userId(),
+                    PageRequest.of(page, DELETE_PRODUCT_BATCH_SIZE));
+            products.forEach(p -> this.mediaEvents.deleteImageEvent(p.getImage()));
+            page++;
+        } while (products.hasNext());
 
         this.productRepository.deleteByUserId(obj.userId());
         this.userRepository.deleteById(obj.userId());

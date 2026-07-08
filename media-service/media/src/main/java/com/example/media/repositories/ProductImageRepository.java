@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,5 @@ public interface ProductImageRepository extends MongoRepository<ProductImage, UU
 
     List<ProductImage> findByProductId(UUID id);
 
-    List<ProductImage> findByStatusAndCreatedAtBefore(ImageStatus status, LocalDateTime cutoff);
+    List<ProductImage> findByStatusAndCreatedAtBefore(ImageStatus status, LocalDateTime cutoff, Pageable pageable);
 }

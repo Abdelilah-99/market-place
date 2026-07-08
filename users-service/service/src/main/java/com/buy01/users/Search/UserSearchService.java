@@ -6,11 +6,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
@@ -27,6 +29,7 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class UserSearchService {
     private static final Logger log = LoggerFactory.getLogger(UserSearchService.class);
+    private static final int REINDEX_BATCH_SIZE = 100;
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
@@ -137,10 +140,19 @@ public class UserSearchService {
     }
 
     public long reindexAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .filter(this::indexUser)
-                .count();
+        long indexed = 0;
+        int page = 0;
+        Page<User> users;
+
+        do {
+            users = userRepository.findAll(PageRequest.of(page, REINDEX_BATCH_SIZE));
+            indexed += users.getContent().stream()
+                    .filter(this::indexUser)
+                    .count();
+            page++;
+        } while (users.hasNext());
+
+        return indexed;
     }
 
     private Map<String, Object> buildQuery(String query, String currentUserId) {

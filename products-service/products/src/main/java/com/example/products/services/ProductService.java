@@ -27,6 +27,7 @@ import com.example.products.search.dto.ProductSearchResponse;
 
 @Service
 public class ProductService {
+    private static final int LEGACY_LIST_LIMIT = 50;
 
     private final ProductRepository productRepository;
     private final ProductEvents productEvents;
@@ -47,7 +48,7 @@ public class ProductService {
     }
 
     public List<Product> getAllProducts() {
-        return productRepository.findAllByOrderByCreatedAtDesc();
+        return getProductsPage(0, LEGACY_LIST_LIMIT).items();
     }
 
     public PageResponseDto<Product> getProductsPage(int page, int size) {
@@ -56,7 +57,7 @@ public class ProductService {
     }
 
     public List<Product> getMyProducts(String userId) {
-        return productRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+        return getMyProductsPage(userId, 0, LEGACY_LIST_LIMIT).items();
     }
 
     public PageResponseDto<Product> getMyProductsPage(String userId, int page, int size) {
@@ -69,7 +70,8 @@ public class ProductService {
         if (normalizedCategory == null) {
             return List.of();
         }
-        return productRepository.findAllByCategoryIgnoreCaseOrderByCreatedAtDesc(normalizedCategory);
+        return productRepository.findAllByCategoryIgnoreCase(normalizedCategory, pageRequest(0, LEGACY_LIST_LIMIT))
+                .getContent();
     }
 
     public ProductSearchResponse searchProducts(

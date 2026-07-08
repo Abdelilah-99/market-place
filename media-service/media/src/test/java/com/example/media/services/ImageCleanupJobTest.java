@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import com.example.media.models.ProductImage;
 import com.example.media.models.UserAvatar;
@@ -50,9 +51,9 @@ class ImageCleanupJobTest {
         UserAvatar avatar = new UserAvatar();
 
         when(imageRepository.findByStatusAndCreatedAtBefore(org.mockito.ArgumentMatchers.eq(ImageStatus.TEMPORARY),
-            any(LocalDateTime.class))).thenReturn(List.of(image));
+            any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of(image));
         when(avatarRepository.findByStatusAndCreatedAtBefore(org.mockito.ArgumentMatchers.eq(ImageStatus.TEMPORARY),
-            any(LocalDateTime.class))).thenReturn(List.of(avatar));
+            any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of(avatar));
 
         imageCleanupJob.deleteExpiredTemporaryImages();
 

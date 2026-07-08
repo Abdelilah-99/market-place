@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import com.example.products.kafka.MediaEvents;
 import com.example.products.models.Product;
@@ -70,7 +72,8 @@ class UsersServiceTest {
         p1.setImage(UUID.randomUUID());
         p2.setImage(UUID.randomUUID());
 
-        when(productRepository.findByUserId(userId)).thenReturn(List.of(p1, p2));
+        when(productRepository.findAllByUserId(org.mockito.ArgumentMatchers.eq(userId), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(p1, p2)));
 
         usersService.deleteUser(new KafkaUserRemovedEvent(userId));
 

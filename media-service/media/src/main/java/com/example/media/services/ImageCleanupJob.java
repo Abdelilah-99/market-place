@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import com.example.shared.common.types.ImageStatus;
 
 @Service
 public class ImageCleanupJob {
+    private static final int CLEANUP_BATCH_SIZE = 100;
 
     private final ProductImageRepository imageRepository;
     private final ProductimageContentStore imageContentStore;
@@ -40,11 +42,11 @@ public class ImageCleanupJob {
     @Scheduled(fixedRate = 1 * 60 * 1000) // every 1 minutes
     @Transactional
     public void deleteExpiredTemporaryImages() {
-        System.out.println("====> Deleteing Temporary images");
         LocalDateTime cutoff = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(1);
+        PageRequest cleanupBatch = PageRequest.of(0, CLEANUP_BATCH_SIZE);
 
         List<ProductImage> expiredImages = imageRepository.findByStatusAndCreatedAtBefore(ImageStatus.TEMPORARY,
-                cutoff);
+                cutoff, cleanupBatch);
 
         for (ProductImage image : expiredImages) {
             imageContentStore.unsetContent(image);
@@ -52,7 +54,7 @@ public class ImageCleanupJob {
         }
 
         List<UserAvatar> expiredAvatars = avatarRepository.findByStatusAndCreatedAtBefore(ImageStatus.TEMPORARY,
-                cutoff);
+                cutoff, cleanupBatch);
 
         for (UserAvatar avatar : expiredAvatars) {
             avatarContentStore.unsetContent(avatar);

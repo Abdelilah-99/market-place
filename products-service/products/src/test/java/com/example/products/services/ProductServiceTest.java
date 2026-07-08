@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -91,14 +93,15 @@ class ProductServiceTest {
     void getProductsByCategoryNormalizesCategoryBeforeQueryingRepository() {
         Product product = new Product();
         product.setCategory("electronics");
-        when(productRepository.findAllByCategoryIgnoreCaseOrderByCreatedAtDesc("electronics"))
-                .thenReturn(List.of(product));
+        when(productRepository.findAllByCategoryIgnoreCase(org.mockito.ArgumentMatchers.eq("electronics"),
+                any(Pageable.class))).thenReturn(new PageImpl<>(List.of(product)));
 
         List<Product> result = productService.getProductsByCategory(" Electronics ");
 
         assertEquals(1, result.size());
         assertEquals("electronics", result.get(0).getCategory());
-        verify(productRepository).findAllByCategoryIgnoreCaseOrderByCreatedAtDesc("electronics");
+        verify(productRepository).findAllByCategoryIgnoreCase(org.mockito.ArgumentMatchers.eq("electronics"),
+                any(Pageable.class));
     }
 
     @Test

@@ -10,6 +10,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class ProductSearchService {
     private static final Logger log = LoggerFactory.getLogger(ProductSearchService.class);
+    private static final int REINDEX_BATCH_SIZE = 100;
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
@@ -180,9 +183,18 @@ public class ProductSearchService {
     }
 
     public long reindexAllProducts() {
-        List<Product> products = productRepository.findAll();
-        products.forEach(this::indexProduct);
-        return products.size();
+        long indexed = 0;
+        int page = 0;
+        Page<Product> products;
+
+        do {
+            products = productRepository.findAll(PageRequest.of(page, REINDEX_BATCH_SIZE));
+            products.forEach(this::indexProduct);
+            indexed += products.getNumberOfElements();
+            page++;
+        } while (products.hasNext());
+
+        return indexed;
     }
 
     private Map<String, Object> buildQuery(String q, String category, Double minPrice, Double maxPrice) {
