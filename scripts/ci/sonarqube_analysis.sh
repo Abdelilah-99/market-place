@@ -104,6 +104,7 @@ ensure_java_21
 run_analysis "Buy01 Shared" run_maven_sonar "shared" "buy01-shared" "Buy01 Shared" "install"
 run_analysis "Buy01 Eureka Server" run_maven_sonar "eureka-server/eureka" "buy01-eureka-server" "Buy01 Eureka Server"
 run_analysis "Buy01 Gateway" run_maven_sonar "gateway/gateway" "buy01-gateway" "Buy01 Gateway"
+run_analysis "Buy01 Payments Service" run_maven_sonar "payments-service" "buy01-payments-service" "Buy01 Payments Service" "verify"
 run_analysis "Buy01 Products Service" run_maven_sonar "products-service/products" "buy01-products-service" "Buy01 Products Service" "verify"
 run_analysis "Buy01 Media Service" run_maven_sonar "media-service/media" "buy01-media-service" "Buy01 Media Service" "verify"
 run_analysis "Buy01 Users Service" run_gradle_sonar "users-service/service" "buy01-users-service" "Buy01 Users Service"

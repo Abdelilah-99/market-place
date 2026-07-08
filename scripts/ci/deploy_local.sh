@@ -75,6 +75,7 @@ compose_up "kafka"
 compose_up "products-service"
 compose_up "media-service"
 compose_up "users-service"
+compose_up "payments-service"
 compose_up "gateway"
 compose_up "frontend"
 

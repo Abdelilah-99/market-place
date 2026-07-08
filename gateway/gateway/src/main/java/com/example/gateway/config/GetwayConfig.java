@@ -57,6 +57,15 @@ public class GetwayConfig {
                                 })
                         )
                         .uri("lb://users"))
+                .route("payments", r -> r
+                        .path("/api/payments/**")
+                        .filters(f -> f
+                                .requestRateLimiter(c -> {
+                                    c.setRateLimiter(redisRateLimiter);
+                                    c.setKeyResolver(keyResolver);
+                                })
+                        )
+                        .uri("lb://payments"))
                 .route("media", r -> r
                         .path("/api/media/**")
                         .filters(f -> f

@@ -69,7 +69,8 @@ run_frontend() {
     if [[ ! -f "node_modules/lightningcss-linux-x64-gnu/lightningcss.linux-x64-gnu.node" ]]; then
       npm install --no-save --include=optional lightningcss-linux-x64-gnu@1.30.2
     fi
-    npm run test -- --watch=false --browsers=ChromeHeadless
+    npx playwright install chromium
+    npm run test -- --watch=false --browsers=chromium
     npm run build -- --optimization --aot --stats-json
   )
 }
@@ -97,7 +98,7 @@ fi
 # Determine what to build
 # ---------------------------------------------------------------------------
 
-run_shared=false run_eureka=false run_gateway=false
+run_shared=false run_eureka=false run_gateway=false run_payments=false
 run_products=false run_media=false run_users=false run_frontend=false
 mapfile -t changed_files < <(
   git diff --name-only --diff-filter=ACMRT "${base_commit}"...HEAD
@@ -106,12 +107,13 @@ mapfile -t changed_files < <(
 
 if [[ ${#changed_files[@]} -eq 0 ]]; then
   log "No changes detected — running full build."
-  run_shared=true run_eureka=true run_gateway=true
+  run_shared=true run_eureka=true run_gateway=true run_payments=true
   run_products=true run_media=true run_users=true run_frontend=true
 else
   any_changed "shared/*"           && run_shared=true run_eureka=true run_gateway=true run_products=true run_media=true run_users=true
   any_changed "eureka-server/*"    && run_eureka=true  run_shared=true
   any_changed "gateway/*"          && run_gateway=true run_shared=true
+  any_changed "payments-service/*" && run_payments=true
   any_changed "products-service/*" && run_products=true run_shared=true
   any_changed "media-service/*"    && run_media=true   run_shared=true
   any_changed "users-service/*"    && run_users=true   run_shared=true
@@ -122,7 +124,7 @@ fi
 # Build
 # ---------------------------------------------------------------------------
 
-if [[ "${run_shared}${run_eureka}${run_gateway}${run_products}${run_media}${run_users}" == *true* ]]; then
+if [[ "${run_shared}${run_eureka}${run_gateway}${run_payments}${run_products}${run_media}${run_users}" == *true* ]]; then
   ensure_java_21
   rm -rf ~/.m2/repository/com/example/shared 2>/dev/null || true
 fi
@@ -130,6 +132,7 @@ fi
 [[ "${run_shared}"   == true ]] && run_maven "shared" "install"         || log "Skipping shared"
 [[ "${run_eureka}"   == true ]] && run_maven "eureka-server/eureka"      || log "Skipping eureka-server"
 [[ "${run_gateway}"  == true ]] && run_maven "gateway/gateway"           || log "Skipping gateway"
+[[ "${run_payments}" == true ]] && run_maven "payments-service"          || log "Skipping payments-service"
 [[ "${run_products}" == true ]] && run_maven "products-service/products" || log "Skipping products-service"
 [[ "${run_media}"    == true ]] && run_maven "media-service/media"       || log "Skipping media-service"
 [[ "${run_users}"    == true ]] && run_gradle "users-service/service"    || log "Skipping users-service"

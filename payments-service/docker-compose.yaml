@@ -1,0 +1,17 @@
+services:
+  payments-service:
+    build:
+      context: ..
+      dockerfile: payments-service/Dockerfile
+    container_name: payments-service
+    restart: on-failure
+    environment:
+      DISCOVERY: ${DISCOVERY:-http://eureka-server:8761/eureka}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-https://marketplace.bouchikhi.com}
+    networks:
+      - shared-net
+
+networks:
+  shared-net:
+    external: true

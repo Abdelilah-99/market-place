@@ -7,6 +7,7 @@ describe('Login Component - Simple Tests', () => {
     let component: Login;
     let mockUsersService: any;
     let mockStateService: any;
+    let mockToaster: any;
     let mockRouter: any;
 
     beforeEach(() => {
@@ -23,13 +24,19 @@ describe('Login Component - Simple Tests', () => {
             navigateByUrl: vi.fn()
         };
 
+        mockToaster = {
+            success: vi.fn(),
+            error: vi.fn()
+        };
+
         // Create the component with mocked dependencies
 
         component = new Login(
             mockUsersService,
             mockStateService,
+            mockToaster,
             mockRouter,
-            { useValue: 'browser' }
+            'browser' as unknown as object
         );
     });
 
@@ -42,7 +49,7 @@ describe('Login Component - Simple Tests', () => {
     });
 
     it('should have empty error message on init', () => {
-        expect(component.errorMessage()).toBe('re');
+        expect(component.errorMessage()).toBe('');
     });
 
     it('should not be submitting on init', () => {

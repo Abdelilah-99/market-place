@@ -40,7 +40,7 @@ describe('MediaService', () => {
 
   it('should upload product image with correct endpoint', () => {
     const mockFile = new File(['image-data'], 'product.jpg', { type: 'image/jpeg' });
-    const mockResponse = { id: 'image123', url: 'path/to/image.jpg' };
+    const mockResponse = 'image123';
 
     service.uploadProductImage(mockFile).subscribe((response) => {
       expect(response).toEqual(mockResponse);
@@ -60,7 +60,7 @@ describe('MediaService', () => {
 
     const req = httpMock.expectOne(`${apiUrl}/products/`);
     expect(req.request.headers.get('Content-Type')).toBe('image/png');
-    req.flush({ url: 'path/to/image.png' });
+    req.flush('image123');
   });
 
   it('should handle image upload with webp format', () => {
@@ -70,7 +70,7 @@ describe('MediaService', () => {
 
     const req = httpMock.expectOne(`${apiUrl}/products/`);
     expect(req.request.headers.get('Content-Type')).toBe('image/webp');
-    req.flush({ url: 'path/to/image.webp' });
+    req.flush('image123');
   });
 
   it('should handle image upload with gif format', () => {
@@ -80,7 +80,7 @@ describe('MediaService', () => {
 
     const req = httpMock.expectOne(`${apiUrl}/products/`);
     expect(req.request.headers.get('Content-Type')).toBe('image/gif');
-    req.flush({ url: 'path/to/image.gif' });
+    req.flush('image123');
   });
 
   it('should handle upload error', () => {
@@ -191,7 +191,7 @@ describe('MediaService', () => {
 
     const req = httpMock.expectOne(`${apiUrl}/products/`);
     expect(req.request.headers.get('Content-Type')).toBe('image/jpeg');
-    req.flush({ url: 'path/to/image.jpg' });
+    req.flush('image123');
   });
 
   it('should handle large image file', () => {
@@ -202,6 +202,6 @@ describe('MediaService', () => {
 
     const req = httpMock.expectOne(`${apiUrl}/products/`);
     expect(req.request.body).toBe(largeFile);
-    req.flush({ url: 'path/to/large-image.jpg' });
+    req.flush('image123');
   });
 });

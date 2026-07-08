@@ -4,8 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Product } from '../../core/models/Product';
 import { ProductRatingStats, ProductsService } from '../../core/services/products-service';
 import { ToasterService } from '../../core/services/toaster-service';
-import { PurchaseAnalyticsService } from '../../core/services/purchase-analytics-service';
 import { StateService } from '../../core/services/state-service';
+import { PaymentsService } from '../../core/services/payments-service';
 
 @Component({
   selector: 'app-product-detail',
@@ -33,9 +33,9 @@ export class ProductDetail {
     private route: ActivatedRoute,
     private productsService: ProductsService,
     private toaster: ToasterService,
-    private purchaseAnalyticsService: PurchaseAnalyticsService,
     private stateService: StateService,
-    private router: Router
+    private router: Router,
+    private paymentsService: PaymentsService
   ) {}
 
   ngOnInit() {
@@ -169,15 +169,19 @@ export class ProductDetail {
       return;
     }
 
-    this.purchaseAnalyticsService.recordPurchase(
-      {
-        ...product,
-        averageRating: this.ratingStats().average,
-        ratingCount: this.ratingStats().count,
+    this.paymentsService.createCheckoutSession(product).subscribe({
+      next: (session) => {
+        if (!session.checkoutUrl) {
+          this.toaster.error('Checkout session was not created.');
+          return;
+        }
+        window.location.href = session.checkoutUrl;
       },
-      buyer
-    );
-    this.toaster.success('Purchase saved to your profile.');
+      error: (err) => {
+        console.error('Stripe checkout failed', err);
+        this.toaster.error(err?.error?.message || 'Payment checkout is not available right now.');
+      },
+    });
   }
 
   private emptyRatingStats(): ProductRatingStats {

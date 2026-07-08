@@ -7,8 +7,8 @@ import { ProductsService } from '../../core/services/products-service';
 import { FormsModule } from '@angular/forms';
 import { MediaSevice } from '../../core/services/media-sevice';
 import { ToasterService } from '../../core/services/toaster-service';
-import { PurchaseAnalyticsService } from '../../core/services/purchase-analytics-service';
 import { StateService } from '../../core/services/state-service';
+import { PaymentsService } from '../../core/services/payments-service';
 
 @Component({
   selector: 'app-product',
@@ -41,8 +41,8 @@ export class ProductItem {
     private producteService: ProductsService,
     private mediaSevice: MediaSevice,
     private toaster: ToasterService,
-    private purchaseAnalyticsService: PurchaseAnalyticsService,
-    private stateService: StateService
+    private stateService: StateService,
+    private paymentsService: PaymentsService
   ) { }
 
   ngOnInit() {
@@ -74,8 +74,19 @@ export class ProductItem {
       return;
     }
 
-    this.purchaseAnalyticsService.recordPurchase(this.product, buyer);
-    this.toaster.success('Purchase saved to your profile.');
+    this.paymentsService.createCheckoutSession(this.product).subscribe({
+      next: (session) => {
+        if (!session.checkoutUrl) {
+          this.toaster.error('Checkout session was not created.');
+          return;
+        }
+        window.location.href = session.checkoutUrl;
+      },
+      error: (err) => {
+        console.error('Stripe checkout failed', err);
+        this.toaster.error(err?.error?.message || 'Payment checkout is not available right now.');
+      },
+    });
   }
 
   onImageSelected(event: Event) {

@@ -23,3 +23,11 @@ gateway/gateway/src/main/resources/keys/
 .env.gateway
 .env.media
 .env.opensearch
+
+# Build outputs and local dependency caches
+**/target/
+**/build/
+**/.gradle/
+**/node_modules/
+**/coverage/
+**/dist/

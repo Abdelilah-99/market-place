@@ -9,6 +9,7 @@ describe('CreateProductPopPup Component', () => {
   let component: CreateProductPopPup;
   let mockProductsService: any;
   let mockMediaService: any;
+  let mockToaster: any;
 
   beforeEach(() => {
     mockProductsService = {
@@ -20,7 +21,12 @@ describe('CreateProductPopPup Component', () => {
       uploadProductImage: vi.fn()
     };
 
-    component = new CreateProductPopPup(mockMediaService, mockProductsService);
+    mockToaster = {
+      success: vi.fn(),
+      error: vi.fn()
+    };
+
+    component = new CreateProductPopPup(mockMediaService, mockProductsService, mockToaster);
   });
 
   // ============================================
@@ -76,13 +82,11 @@ describe('CreateProductPopPup Component', () => {
       }
     } as any;
 
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
     component.onImageSelected(mockEvent);
 
-    expect(alertSpy).toHaveBeenCalledWith('Please select a valid image file!');
+    expect(mockToaster.error).toHaveBeenCalledWith('Please select a valid image file.');
     expect(component.selectedImage()).toBeNull();
     expect(component.imagePreview()).toBeNull();
-    alertSpy.mockRestore();
   });
 
   it('should call isImage service method with selected file', () => {

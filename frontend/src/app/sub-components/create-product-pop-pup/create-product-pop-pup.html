@@ -6,6 +6,10 @@
         <h2>Create a polished product post</h2>
         <p>Give buyers the essentials: clear title, category, price, and a small image gallery.</p>
       </div>
+      <div class="listing-score" [class.strong]="listingScore() >= 85">
+        <strong>{{ listingScore() }}%</strong>
+        <span>{{ listingScoreLabel() }}</span>
+      </div>
       <button type="button" class="icon-close" (click)="close()" aria-label="Close modal">
         <i class="fa fa-xmark"></i>
       </button>
@@ -17,13 +21,15 @@
           <label class="form-field">
             <span>Product name</span>
             <input type="text" name="name" [(ngModel)]="product.name" required
-              placeholder="Example: Sony WH-1000XM5 headphones" />
+              maxlength="90" placeholder="Example: Sony WH-1000XM5 headphones" />
+            <small>{{ (product.name || '').length }}/90 characters</small>
           </label>
 
           <label class="form-field">
             <span>Description</span>
             <textarea name="description" [(ngModel)]="product.description" required rows="5"
               placeholder="Mention condition, included accessories, delivery details, and why it is worth buying."></textarea>
+            <small>{{ (product.description || '').length }} characters</small>
           </label>
 
           <div class="form-grid">
@@ -81,9 +87,36 @@
             </button>
           </div>
           <p class="file-meta">{{ selectedImageLabel() }}</p>
+          @if (canAddImages()) {
+          <label class="add-more-images">
+            <i class="fa fa-plus"></i>
+            <span>Add more photos</span>
+            <input type="file" accept="image/*" multiple (change)="onImageSelected($event)" class="hidden" />
+          </label>
+          }
           }
         </aside>
       </div>
+
+      <section class="listing-preview" aria-label="Listing preview">
+        <div class="preview-media">
+          @if (hasImages()) {
+          <img [src]="imagePreviews()[0]" alt="" />
+          } @else {
+          <i class="fa fa-image"></i>
+          }
+        </div>
+        <div>
+          <span class="section-kicker">Preview</span>
+          <h3>{{ product.name || 'Product title' }}</h3>
+          <p>{{ product.description || 'Your product description will appear here.' }}</p>
+          <div class="preview-meta">
+            <strong>{{ formatPrice() }}</strong>
+            <span>{{ product.category || 'category' }}</span>
+            <span>{{ product.condition || 'condition' }}</span>
+          </div>
+        </div>
+      </section>
 
       @if (formError()) {
       <p class="feedback error">{{ formError() }}</p>

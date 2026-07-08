@@ -11,6 +11,7 @@ describe('Navbar Component', () => {
   let mockUsersService: any;
   let mockStateService: any;
   let mockRouter: any;
+  let mockToaster: any;
   let userSubject: BehaviorSubject<Me | null>;
 
   const mockUser: Me = {
@@ -47,6 +48,12 @@ describe('Navbar Component', () => {
       navigateByUrl: vi.fn()
     };
 
+    mockToaster = {
+      success: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn()
+    };
+
     // Mock localStorage
     const localStorageMock = (() => {
       let store: Record<string, string> = {};
@@ -77,7 +84,8 @@ describe('Navbar Component', () => {
       mockUsersService,
       mockRouter,
       mockStateService,
-      { useValue: 'browser' } as any
+      mockToaster,
+      'browser' as unknown as object
     );
   });
 
