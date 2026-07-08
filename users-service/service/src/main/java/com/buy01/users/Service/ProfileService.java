@@ -35,7 +35,6 @@ public class ProfileService {
 
     public ProfileResDTOs getCurrentProfile() {
         User user = getAuthenticatedUser();
-        System.out.println("name ============ " + user.name());
         return toProfile(user);
     }
 
@@ -63,7 +62,6 @@ public class ProfileService {
                 user.role(),
                 AvatarUrlSTr);
 
-        System.out.println("avatar ==================== " + req.uuid());
         User newUser = userRepository.save(updated);
         userSearchService.indexUser(newUser);
         if (updatedAvatarUrl != null) {
@@ -82,7 +80,6 @@ public class ProfileService {
 
     private User getAuthenticatedUser() {
         String authName = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("====================== " + authName);
         return userRepository.findById(authName)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid user session"));
     }

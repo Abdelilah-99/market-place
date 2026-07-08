@@ -9,6 +9,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
@@ -24,6 +26,8 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class UserSearchService {
+    private static final Logger log = LoggerFactory.getLogger(UserSearchService.class);
+
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
@@ -54,9 +58,9 @@ public class UserSearchService {
         }
     }
 
-    public void indexUser(User user) {
+    public boolean indexUser(User user) {
         if (user == null || user.id() == null) {
-            return;
+            return false;
         }
 
         try {
@@ -68,21 +72,28 @@ public class UserSearchService {
                     .body(document)
                     .retrieve()
                     .toBodilessEntity();
+            return true;
         } catch (RuntimeException | IOException e) {
-            throw new IllegalStateException("Failed to index user " + user.id(), e);
+            indexReady = false;
+            log.warn("Failed to index user {}. Profile data was saved, but search may be stale until reindex runs.",
+                    user.id(), e);
+            return false;
         }
     }
 
-    public void deleteUser(String userId) {
+    public boolean deleteUser(String userId) {
         try {
             restClient.delete()
                     .uri("/{index}/_doc/{id}?refresh=wait_for", indexName, userId)
                     .retrieve()
                     .toBodilessEntity();
+            return true;
         } catch (HttpClientErrorException.NotFound ignored) {
             // Deleting an already-missing document is idempotent.
+            return true;
         } catch (RuntimeException e) {
-            throw new IllegalStateException("Failed to delete user from search index " + userId, e);
+            log.warn("Failed to delete user {} from search index. The database delete still completed.", userId, e);
+            return false;
         }
     }
 
@@ -127,8 +138,9 @@ public class UserSearchService {
 
     public long reindexAllUsers() {
         List<User> users = userRepository.findAll();
-        users.forEach(this::indexUser);
-        return users.size();
+        return users.stream()
+                .filter(this::indexUser)
+                .count();
     }
 
     private Map<String, Object> buildQuery(String query, String currentUserId) {
