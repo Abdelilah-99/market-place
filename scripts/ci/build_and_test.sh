@@ -84,8 +84,7 @@ run_frontend() {
     if [[ ! -f "node_modules/lightningcss-linux-x64-gnu/lightningcss.linux-x64-gnu.node" ]]; then
       npm install --no-save --include=optional lightningcss-linux-x64-gnu@1.30.2
     fi
-    npx playwright install chromium
-    npm run test -- --watch=false --browsers=chromium
+    npm run test -- --watch=false
     npm run build -- --optimization --aot --stats-json
   )
 }
