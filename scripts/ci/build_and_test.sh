@@ -6,6 +6,11 @@ cd "${ROOT_DIR}"
 
 export MAVEN_OPTS="${MAVEN_OPTS:--Xmx1g -Xms256m}"
 export GRADLE_OPTS="${GRADLE_OPTS:--Xmx1g -Xms256m -Dorg.gradle.parallel=false -Dorg.gradle.workers.max=1}"
+CI_CACHE_DIR="${CI_STATE_DIR:-${ROOT_DIR}/.jenkins-state}"
+CI_MAVEN_REPO="${CI_MAVEN_REPO:-${CI_CACHE_DIR}/m2/repository}"
+CI_GRADLE_USER_HOME="${CI_GRADLE_USER_HOME:-${CI_CACHE_DIR}/gradle}"
+
+mkdir -p "${CI_MAVEN_REPO}" "${CI_GRADLE_USER_HOME}"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -14,11 +19,14 @@ export GRADLE_OPTS="${GRADLE_OPTS:--Xmx1g -Xms256m -Dorg.gradle.parallel=false -
 log() { echo "[CI] $*"; }
 
 ensure_java_21() {
-  local java_major
-  java_major="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}')"
+  local java_major="unavailable"
+  if command -v java >/dev/null 2>&1; then
+    java_major="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}' || true)"
+  fi
   [[ "${java_major}" == "21" ]] && return
 
   local candidates=(
+    /opt/java/openjdk
     /usr/lib/jvm/java-21-openjdk-amd64
     /usr/lib/jvm/java-1.21.0-openjdk-amd64
     /usr/lib/jvm/openjdk-21
@@ -42,10 +50,12 @@ run_maven() {
   log "Maven ${goal}: ${dir}"
   (
     cd "${dir}"
-    timeout 600 ${mvn_cmd} -B -Dmaven.compile.fork=false clean "${goal}" || {
-      [[ $? -eq 124 ]] && { log "ERROR: Maven timed out"; exit 1; }
-      exit $?
-    }
+    set +e
+    timeout 600 ${mvn_cmd} -B -Dmaven.repo.local="${CI_MAVEN_REPO}" -Dmaven.compile.fork=false clean "${goal}"
+    local status=$?
+    set -e
+    [[ ${status} -eq 124 ]] && log "ERROR: Maven timed out"
+    exit "${status}"
   )
 }
 
@@ -54,10 +64,15 @@ run_gradle() {
   (
     cd "$1"
     chmod +x ./gradlew
-    timeout 600 ./gradlew clean build -Dorg.gradle.workers.max=1 || {
-      [[ $? -eq 124 ]] && { log "ERROR: Gradle timed out"; exit 1; }
-      exit $?
-    }
+    set +e
+    timeout 600 ./gradlew clean build \
+      -Dorg.gradle.workers.max=1 \
+      -Dmaven.repo.local="${CI_MAVEN_REPO}" \
+      --gradle-user-home "${CI_GRADLE_USER_HOME}"
+    local status=$?
+    set -e
+    [[ ${status} -eq 124 ]] && log "ERROR: Gradle timed out"
+    exit "${status}"
   )
 }
 
@@ -145,16 +160,16 @@ fi
 
 if [[ "${run_shared}${run_eureka}${run_gateway}${run_payments}${run_products}${run_media}${run_users}" == *true* ]]; then
   ensure_java_21
-  rm -rf ~/.m2/repository/com/example/shared 2>/dev/null || true
+  rm -rf "${CI_MAVEN_REPO}/com/example/shared" 2>/dev/null || true
 fi
 
-[[ "${run_shared}"   == true ]] && run_maven "shared" "install"         || log "Skipping shared"
-[[ "${run_eureka}"   == true ]] && run_maven "eureka-server/eureka"      || log "Skipping eureka-server"
-[[ "${run_gateway}"  == true ]] && run_maven "gateway/gateway"           || log "Skipping gateway"
-[[ "${run_payments}" == true ]] && run_maven "payments-service"          || log "Skipping payments-service"
-[[ "${run_products}" == true ]] && run_maven "products-service/products" || log "Skipping products-service"
-[[ "${run_media}"    == true ]] && run_maven "media-service/media"       || log "Skipping media-service"
-[[ "${run_users}"    == true ]] && run_gradle "users-service/service"    || log "Skipping users-service"
-[[ "${run_frontend}" == true ]] && run_frontend                          || log "Skipping frontend"
+if [[ "${run_shared}" == true ]]; then run_maven "shared" "install"; else log "Skipping shared"; fi
+if [[ "${run_eureka}" == true ]]; then run_maven "eureka-server/eureka"; else log "Skipping eureka-server"; fi
+if [[ "${run_gateway}" == true ]]; then run_maven "gateway/gateway"; else log "Skipping gateway"; fi
+if [[ "${run_payments}" == true ]]; then run_maven "payments-service"; else log "Skipping payments-service"; fi
+if [[ "${run_products}" == true ]]; then run_maven "products-service/products"; else log "Skipping products-service"; fi
+if [[ "${run_media}" == true ]]; then run_maven "media-service/media"; else log "Skipping media-service"; fi
+if [[ "${run_users}" == true ]]; then run_gradle "users-service/service"; else log "Skipping users-service"; fi
+if [[ "${run_frontend}" == true ]]; then run_frontend; else log "Skipping frontend"; fi
 
 log "Build completed successfully."
