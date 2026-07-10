@@ -16,24 +16,30 @@ import com.stripe.param.checkout.SessionCreateParams;
 
 @Service
 public class StripeCheckoutService {
-    private final String stripeSecretKey;
+    private final CheckoutSessionCreator sessionCreator;
     private final String appPublicUrl;
 
     public StripeCheckoutService(
             @Value("${stripe.secret-key:}") String stripeSecretKey,
             @Value("${app.public-url:http://localhost:4200}") String appPublicUrl) {
-        this.stripeSecretKey = stripeSecretKey == null ? "" : stripeSecretKey.trim();
+        String normalizedKey = stripeSecretKey == null ? "" : stripeSecretKey.trim();
+        this.sessionCreator = normalizedKey.isBlank()
+                ? null
+                : new StripeClient(normalizedKey).checkout().sessions()::create;
+        this.appPublicUrl = stripTrailingSlash(appPublicUrl);
+    }
+
+    StripeCheckoutService(CheckoutSessionCreator sessionCreator, String appPublicUrl) {
+        this.sessionCreator = sessionCreator;
         this.appPublicUrl = stripTrailingSlash(appPublicUrl);
     }
 
     public CheckoutSessionResponse createCheckoutSession(
             CreateCheckoutSessionRequest request,
             String userId) throws StripeException {
-        if (stripeSecretKey.isBlank()) {
+        if (sessionCreator == null) {
             throw new IllegalStateException("Stripe secret key is not configured");
         }
-
-        StripeClient stripeClient = new StripeClient(stripeSecretKey);
         String currency = normalizeCurrency(request.currency());
 
         SessionCreateParams.LineItem.PriceData.ProductData.Builder productData =
@@ -63,8 +69,13 @@ public class StripeCheckoutService {
             params.putMetadata("buyer_id", userId);
         }
 
-        Session session = stripeClient.checkout().sessions().create(params.build());
+        Session session = sessionCreator.create(params.build());
         return new CheckoutSessionResponse(session.getId(), session.getUrl());
+    }
+
+    @FunctionalInterface
+    interface CheckoutSessionCreator {
+        Session create(SessionCreateParams params) throws StripeException;
     }
 
     private long toMinorUnits(BigDecimal amount) {
