@@ -45,7 +45,7 @@ ensure_java_21() {
 
 run_maven() {
   local dir="$1" goal="${2:-verify}"
-  local mvn_cmd="mvn"
+  local mvn_cmd="${ROOT_DIR}/shared/mvnw"
   [[ -x "${dir}/mvnw" ]] && mvn_cmd="./mvnw"
   log "Maven ${goal}: ${dir}"
   (

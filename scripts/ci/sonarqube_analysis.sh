@@ -16,11 +16,14 @@ log() { echo "[CI][SonarCloud] $*"; }
 failed_analyses=()
 
 ensure_java_21() {
-  local java_major
-  java_major="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}')"
+  local java_major="unavailable"
+  if command -v java >/dev/null 2>&1; then
+    java_major="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}' || true)"
+  fi
   [[ "${java_major}" == "21" ]] && return
 
   local candidates=(
+    /opt/java/openjdk
     /usr/lib/jvm/java-21-openjdk-amd64
     /usr/lib/jvm/java-1.21.0-openjdk-amd64
     /usr/lib/jvm/openjdk-21
@@ -42,7 +45,7 @@ run_maven_sonar() {
   local project_key="$2"
   local project_name="$3"
   local build_goal="${4:-compile}"
-  local mvn_cmd="mvn"
+  local mvn_cmd="${ROOT_DIR}/shared/mvnw"
 
   [[ -x "${dir}/mvnw" ]] && mvn_cmd="./mvnw"
 
