@@ -40,6 +40,7 @@ Remote Docker volumes prepared:
   users-service-certs
   products-service-certs
   media-service-certs
+  payments-service-certs
   eureka-server-certs
   prometheus-certs
 EOF
@@ -200,6 +201,12 @@ MEDIA_CERT_SRC="$(find_first_file "media-service.p12" \
   "${ROOT_DIR}/scripts/certs/media-service.p12" \
   "${ROOT_DIR}/certs/media-service.p12")"
 
+PAYMENTS_CERT_SRC="$(find_first_file "payments-service.p12" \
+  "${CERT_DIR}/payments-service.p12" \
+  "${ROOT_DIR}/payments-service/certs/payments-service.p12" \
+  "${ROOT_DIR}/scripts/certs/payments-service.p12" \
+  "${ROOT_DIR}/certs/payments-service.p12")"
+
 EUREKA_CERT_SRC="$(find_first_file "eureka-server.p12" \
   "${CERT_DIR}/eureka-server.p12" \
   "${ROOT_DIR}/eureka-server/certs/eureka-server.p12" \
@@ -252,6 +259,7 @@ install -m 600 "${GATEWAY_CERT_SRC}" "${STAGE_DIR}/certs/gateway.p12"
 install -m 600 "${USERS_CERT_SRC}" "${STAGE_DIR}/certs/users-service.p12"
 install -m 600 "${PRODUCTS_CERT_SRC}" "${STAGE_DIR}/certs/products-service.p12"
 install -m 600 "${MEDIA_CERT_SRC}" "${STAGE_DIR}/certs/media-service.p12"
+install -m 600 "${PAYMENTS_CERT_SRC}" "${STAGE_DIR}/certs/payments-service.p12"
 install -m 600 "${EUREKA_CERT_SRC}" "${STAGE_DIR}/certs/eureka-server.p12"
 
 if [[ -n "${PROMETHEUS_CERT_SRC}" && -n "${PROMETHEUS_KEY_SRC}" ]]; then

@@ -33,6 +33,7 @@ Expected mTLS files:
   users-service.p12
   products-service.p12
   media-service.p12
+  payments-service.p12
   eureka-server.p12
   prometheus.crt
   prometheus.key
@@ -100,6 +101,7 @@ require_file "${CERT_DIR}/gateway.p12"
 require_file "${CERT_DIR}/users-service.p12"
 require_file "${CERT_DIR}/products-service.p12"
 require_file "${CERT_DIR}/media-service.p12"
+require_file "${CERT_DIR}/payments-service.p12"
 require_file "${CERT_DIR}/eureka-server.p12"
 require_file "${CERT_DIR}/prometheus.crt"
 require_file "${CERT_DIR}/prometheus.key"
@@ -282,6 +284,7 @@ copy_into_volume "gateway-certs" "gateway" "${JWT_PUBLIC_SRC}:jwt-public.pem"
 copy_into_volume "users-service-certs" "users-service" "${JWT_PRIVATE_SRC}:jwt-private.pem"
 copy_into_volume "products-service-certs" "products-service"
 copy_into_volume "media-service-certs" "media-service"
+copy_into_volume "payments-service-certs" "payments-service"
 copy_into_volume "eureka-server-certs" "eureka-server"
 copy_prometheus_volume
 
