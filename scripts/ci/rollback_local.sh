@@ -165,6 +165,8 @@ compose_up() {
             -f "${compose_file}" \
             up -d --build
     fi
+
+    docker_build_cleanup
 }
 
 compose_up "eureka-server"

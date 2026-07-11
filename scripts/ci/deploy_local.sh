@@ -19,6 +19,8 @@ compose_up() {
     echo "[CD] Deploying ${dir}"
     (cd "${dir}" && docker compose up -d --build --force-recreate)
   fi
+
+  docker_build_cleanup
 }
 
 if ! docker network inspect shared-net >/dev/null 2>&1; then

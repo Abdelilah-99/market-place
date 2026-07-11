@@ -27,3 +27,16 @@ docker_cleanup() {
   echo "[CD] Docker disk usage after cleanup:"
   docker system df || true
 }
+
+# Release transient layers immediately after each Compose build. The normal
+# cleanup keeps recent cache for speed, but small hosts cannot retain every
+# service's build layers until the full deployment finishes.
+docker_build_cleanup() {
+  if [[ "${CI_DOCKER_CLEANUP:-true}" != "true" ]]; then
+    return
+  fi
+
+  echo "[CD] Releasing transient Docker build data."
+  docker image prune -f >/dev/null || true
+  docker builder prune -a -f >/dev/null || true
+}
