@@ -15,6 +15,13 @@ log() { echo "[CI][SonarCloud] $*"; }
 
 failed_analyses=()
 
+# SonarCloud's "previous version" new-code definition only advances when the
+# analyzed project version changes. Maven services otherwise keep publishing
+# their static POM version (for example 0.0.1-SNAPSHOT), causing the quality
+# gate to compare against the wrong baseline.
+SONAR_PROJECT_VERSION="${SONAR_PROJECT_VERSION:-$(git rev-parse --short=12 HEAD)}"
+log "Using project version ${SONAR_PROJECT_VERSION}"
+
 ensure_java_21() {
   local java_major="unavailable"
   if command -v java >/dev/null 2>&1; then
@@ -58,6 +65,7 @@ run_maven_sonar() {
       -Dsonar.organization="${SONAR_ORGANIZATION}" \
       -Dsonar.projectKey="${project_key}" \
       -Dsonar.projectName="${project_name}" \
+      -Dsonar.projectVersion="${SONAR_PROJECT_VERSION}" \
       -Dsonar.qualitygate.wait=true \
       -Dsonar.qualitygate.timeout=300 || {
         [[ $? -eq 124 ]] && { log "ERROR: SonarCloud analysis timed out for ${dir}"; exit 1; }
@@ -81,6 +89,7 @@ run_gradle_sonar() {
       -Dsonar.organization="${SONAR_ORGANIZATION}" \
       -Dsonar.projectKey="${project_key}" \
       -Dsonar.projectName="${project_name}" \
+      -Dsonar.projectVersion="${SONAR_PROJECT_VERSION}" \
       -Dsonar.qualitygate.wait=true \
       -Dsonar.qualitygate.timeout=300 || {
         [[ $? -eq 124 ]] && { log "ERROR: SonarCloud analysis timed out for ${dir}"; exit 1; }
