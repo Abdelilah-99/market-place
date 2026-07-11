@@ -16,6 +16,9 @@ git cat-file -e "${TARGET_COMMIT}^{commit}" || {
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TEMP_DIR="$(mktemp -d)"
 
+# shellcheck source=scripts/ci/docker_cleanup.sh
+source "${ROOT_DIR}/scripts/ci/docker_cleanup.sh"
+
 cleanup() {
     rm -rf "${TEMP_DIR}"
 }
@@ -118,6 +121,7 @@ ensure_volume "media-service_media_storage"
 ensure_volume "eureka-server-certs"
 ensure_volume "products-service-certs"
 ensure_volume "media-service-certs"
+ensure_volume "payments-service-certs"
 ensure_volume "users-service-certs"
 ensure_volume "gateway-certs"
 ensure_volume "prometheus-certs"
@@ -132,6 +136,8 @@ if [[ -f "${TEMP_DIR}/scripts/setup-cert-volumes.sh" && -f "${TEMP_DIR}/certs/tr
 else
     echo "[CD] Skipping rollback certificate volume sync; no rollback cert bundle found."
 fi
+
+docker_cleanup
 
 compose_up() {
     local service="$1"
@@ -168,6 +174,9 @@ compose_up "kafka"
 compose_up "products-service"
 compose_up "media-service"
 compose_up "users-service"
+compose_up "payments-service" "false"
 compose_up "gateway"
+
+docker_cleanup
 
 echo "[CD] Rollback completed successfully."
