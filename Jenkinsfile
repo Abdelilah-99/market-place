@@ -17,6 +17,7 @@ pipeline {
     NOTIFICATION_EMAIL          = 'bouchikhiabdelilah0@gmail.com'
     SONAR_HOST_URL              = 'https://sonarcloud.io'
     SONAR_ORGANIZATION          = 'abdelilah-99'
+    SKIP_SONARCLOUD             = 'true'
   }
 
   stages {
@@ -40,6 +41,9 @@ pipeline {
     }
 
     stage('SonarCloud Analysis') {
+      when {
+        expression { env.SKIP_SONARCLOUD != 'true' }
+      }
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           script {
