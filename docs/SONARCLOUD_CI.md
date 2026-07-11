@@ -1,70 +1,87 @@
-# SonarCloud CI Analysis
+# SonarQube and SonarCloud Guide
 
-This document explains how `scripts/ci/sonarqube_analysis.sh` works and how it is used by Jenkins.
+This guide explains what SonarQube does, how its main concepts fit together, and how static analysis is configured in the Buy01 repository. This project uses **SonarCloud**, the hosted SonarQube service, rather than a self-hosted SonarQube Server. The analysis concepts are the same, but SonarCloud is operated by SonarSource and requires an organization in addition to a project key.
 
-## Jenkins Entry Point
+## What SonarQube Does
 
-The `Jenkinsfile` runs SonarCloud after the normal build and test stage:
+SonarQube performs static analysis: it examines source code and generated analysis data without running the application in production. It helps detect:
+
+- **Bugs**: code likely to behave incorrectly.
+- **Vulnerabilities**: security weaknesses for which the analyzer can identify the unsafe flow with sufficient confidence.
+- **Security hotspots**: security-sensitive code that requires a human review. A hotspot is not automatically a vulnerability.
+- **Code smells**: maintainability problems that make code harder or more expensive to change.
+- **Duplications**: repeated code blocks that may increase maintenance cost.
+- **Coverage**: the proportion of executable code exercised by tests. Sonar does not generate coverage; it imports reports created by tools such as JaCoCo.
+
+Each issue has a rule, severity, location, explanation, and remediation guidance. Rules are grouped into a **Quality Profile** for each language. A **Quality Gate** evaluates project-level conditions and decides whether an analysis passes.
+
+Sonar analysis complements compilation, unit tests, integration tests, dependency scanning, dynamic security testing, and code review. It does not replace them.
+
+## Important Terminology
+
+| Term | Meaning |
+| --- | --- |
+| Scanner | The Maven or Gradle integration that analyzes files and uploads a report. |
+| Project | A separately analyzed codebase in SonarCloud, identified by a unique project key. |
+| Organization | The SonarCloud container that owns projects, members, profiles, and gates. |
+| Analysis | One uploaded snapshot of source, metrics, issues, and test/coverage metadata. |
+| Main branch | The long-lived baseline branch used for overall project history. |
+| New code | Code added or changed during the configured comparison period. |
+| Quality Profile | The set of static-analysis rules enabled for a language. |
+| Quality Gate | Pass/fail conditions applied after analysis. |
+| Measure | A numeric value such as coverage, duplicated-line density, or issue count. |
+| Issue | A rule violation found at a particular location. |
+| False positive | An issue that is technically incorrect and is marked as such after review. |
+| Won't fix / accepted | A valid issue whose risk is consciously accepted according to team policy. |
+
+Sonar's recommended **Clean as You Code** approach focuses the gate on new code. This prevents newly changed code from introducing debt while older issues can be handled separately. The actual new-code definition and gate thresholds are configured in the SonarCloud UI, not in this repository.
+
+## Repository Architecture
+
+Buy01 treats every backend module as a separate SonarCloud project. This gives every service its own dashboard, history, Quality Gate, and permissions.
+
+| Source directory | Build tool | Project key | Display name | Analysis goal |
+| --- | --- | --- | --- | --- |
+| `shared` | Maven | `buy01-shared` | Buy01 Shared | `install` |
+| `eureka-server/eureka` | Maven | `buy01-eureka-server` | Buy01 Eureka Server | `compile` |
+| `gateway/gateway` | Maven | `buy01-gateway` | Buy01 Gateway | `compile` |
+| `payments-service` | Maven | `buy01-payments-service` | Buy01 Payments Service | `verify` |
+| `products-service/products` | Maven | `buy01-products-service` | Buy01 Products Service | `verify` |
+| `media-service/media` | Maven | `buy01-media-service` | Buy01 Media Service | `verify` |
+| `users-service/service` | Gradle | `buy01-users-service` | Buy01 Users Service | `test jacocoTestReport sonar` |
+
+The source of truth for this list is `scripts/ci/sonarqube_analysis.sh`. A project can be created on its first analysis when the token has permission; otherwise it must be created in SonarCloud first.
+
+## CI Flow
+
+The relevant Jenkins order is:
+
+```text
+Checkout -> Build and Test -> SonarCloud Analysis -> Deploy
+```
+
+The `Jenkinsfile` defines:
 
 ```groovy
-stage('SonarCloud Analysis') {
-  steps {
-    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-      sh 'bash scripts/ci/sonarqube_analysis.sh'
-    }
-  }
-}
+SONAR_HOST_URL     = 'https://sonarcloud.io'
+SONAR_ORGANIZATION = 'abdelilah-99'
 ```
 
-Jenkins provides:
-
-- `SONAR_HOST_URL`: `https://sonarcloud.io`
-- `SONAR_ORGANIZATION`: `abdelilah-99`
-- `SONAR_TOKEN`: loaded from the Jenkins secret text credential `sonarqube-token`
-
-The token is not stored in Git. Jenkins injects it only while the SonarCloud stage is running.
-
-## Script Safety Settings
-
-The script starts with:
+During the analysis stage Jenkins injects the secret-text credential named `sonarqube-token` as `SONAR_TOKEN`, then runs:
 
 ```bash
-set -euo pipefail
+bash scripts/ci/sonarqube_analysis.sh
 ```
 
-This means:
+The token must never be committed, written to a log, or placed in a checked-in configuration file. Jenkins limits its exposure to the credential block.
 
-- `-e`: stop immediately when a command fails
-- `-u`: fail when an unset variable is used
-- `-o pipefail`: fail a pipeline if any command inside it fails
+The analysis script waits for every project's Quality Gate. If any scan or gate fails, the script ultimately returns a non-zero status, Jenkins marks the stage as failed, and deployment is skipped. Since deployment has not begun, the deployment rollback block is not involved.
 
-This is important because a failed SonarCloud scan or failed Quality Gate must eventually stop Jenkins before deployment.
+## Analysis Script in Detail
 
-## Working Directory
+### Shell safety and paths
 
-The script calculates the repository root from its own location:
-
-```bash
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-cd "${ROOT_DIR}"
-```
-
-This allows Jenkins to call the script from anywhere and still scan the correct service directories.
-
-## Memory Defaults
-
-The script sets default memory options for Maven and Gradle:
-
-```bash
-export MAVEN_OPTS="${MAVEN_OPTS:--Xmx1g -Xms256m}"
-export GRADLE_OPTS="${GRADLE_OPTS:--Xmx1g -Xms256m -Dorg.gradle.parallel=false -Dorg.gradle.workers.max=1}"
-```
-
-If Jenkins already defines `MAVEN_OPTS` or `GRADLE_OPTS`, those values are kept. Otherwise, these defaults reduce memory pressure on the EC2/Jenkins host.
-
-## Required Environment Variables
-
-The script requires these values:
+The script starts with `set -euo pipefail`, resolves the repository root relative to its own location, and validates all required environment variables:
 
 ```bash
 : "${SONAR_HOST_URL:?Missing SONAR_HOST_URL}"
@@ -72,171 +89,184 @@ The script requires these values:
 : "${SONAR_TOKEN:?Missing SONAR_TOKEN}"
 ```
 
-If any value is missing, the script fails immediately with a clear error.
+It supplies conservative Maven and Gradle heap defaults for the Jenkins host. Existing `MAVEN_OPTS` and `GRADLE_OPTS` values take precedence.
 
-## Java 21 Check
+### Java requirement
 
-All backend services are Java 21, so the script verifies Java before scanning:
+The script requires Java 21. It first checks the active `java`; if necessary, it searches common JDK 21 locations and updates `JAVA_HOME` and `PATH`. Analysis stops if no Java 21 installation is available.
 
-```bash
-ensure_java_21
-```
+### Maven analysis
 
-If the current `java` is not Java 21, it searches common Java 21 install paths and updates `JAVA_HOME`/`PATH`. If Java 21 cannot be found, the script exits.
-
-## Maven Services
-
-Maven services are scanned through `run_maven_sonar`:
+Maven modules are analyzed with this effective command:
 
 ```bash
-run_maven_sonar "gateway/gateway" "buy01-gateway" "Buy01 Gateway"
+./mvnw -B -DskipTests -Dmaven.compile.fork=false <goal> sonar:sonar \
+  -Dsonar.host.url="$SONAR_HOST_URL" \
+  -Dsonar.token="$SONAR_TOKEN" \
+  -Dsonar.organization="$SONAR_ORGANIZATION" \
+  -Dsonar.projectKey="<project-key>" \
+  -Dsonar.projectName="<project-name>" \
+  -Dsonar.projectVersion="$SONAR_PROJECT_VERSION" \
+  -Dsonar.qualitygate.wait=true \
+  -Dsonar.qualitygate.timeout=300
 ```
 
-Arguments are:
+- `-B` enables non-interactive batch output.
+- `-DskipTests` avoids unnecessarily rerunning tests in the Maven invocation. Depending on the selected goal, test compilation and JaCoCo report generation can still occur.
+- `-Dmaven.compile.fork=false` reduces extra JVM processes and memory usage.
+- `compile` produces bytecode required for accurate Java analysis.
+- `verify` runs the Maven lifecycle through verification and creates JaCoCo XML where that plugin is configured.
+- `install` also places the shared artifact in the local Maven repository for modules that depend on it.
+- `sonar:sonar` invokes the SonarScanner for Maven and uploads the analysis.
+- `sonar.projectVersion` defaults to the current Git commit and advances the baseline used by SonarCloud's **previous version** new-code definition. It can be overridden with `SONAR_PROJECT_VERSION` when required.
 
-1. Service directory
-2. SonarCloud project key
-3. SonarCloud project display name
-4. Optional Maven build goal, defaulting to `compile`
+The service's own wrapper is used when it is executable; otherwise the script falls back to `shared/mvnw`.
 
-The Maven command runs:
+### Gradle analysis
+
+The users service runs:
 
 ```bash
-./mvnw -B -DskipTests -Dmaven.compile.fork=false <goal> sonar:sonar
+./gradlew test jacocoTestReport sonar -Dorg.gradle.workers.max=1 <Sonar properties>
 ```
 
-Important flags:
-
-- `-B`: batch mode for CI
-- `-DskipTests`: do not rerun tests during analysis, because `build_and_test.sh` already ran them
-- `-Dmaven.compile.fork=false`: avoids extra compiler JVMs and lowers memory usage
-- `<goal>`: compiles/builds enough bytecode for SonarCloud analysis
-- `sonar:sonar`: sends the analysis to SonarCloud
-
-## Gradle Users Service
-
-The users service uses Gradle, so it is scanned through `run_gradle_sonar`:
-
-```bash
-run_gradle_sonar "users-service/service" "buy01-users-service" "Buy01 Users Service"
-```
-
-This runs:
-
-```bash
-./gradlew sonar -Dorg.gradle.workers.max=1
-```
-
-The `users-service/service/build.gradle` file includes the Sonar plugin:
+Its `build.gradle` applies `org.sonarqube` version `6.2.0.5505`, enables the JaCoCo XML report, and tells Sonar where to find it:
 
 ```gradle
-id 'org.sonarqube' version '6.2.0.5505'
+sonar {
+    properties {
+        property 'sonar.coverage.jacoco.xmlReportPaths',
+                 'build/reports/jacoco/test/jacocoTestReport.xml'
+        property 'sonar.coverage.exclusions', '**/Search/**'
+    }
+}
 ```
 
-Without this plugin, Gradle would not have the `sonar` task.
+`test` executes the tests, `jacocoTestReport` writes the coverage XML, and `sonar` imports that XML and uploads the analysis. The worker limit reduces memory pressure.
 
-## Services Scanned
+### Failure collection and timeouts
 
-The script currently scans:
+Each project command has two timing controls:
 
-| Path | Project Key | Project Name |
-| --- | --- | --- |
-| `shared` | `buy01-shared` | `Buy01 Shared` |
-| `eureka-server/eureka` | `buy01-eureka-server` | `Buy01 Eureka Server` |
-| `gateway/gateway` | `buy01-gateway` | `Buy01 Gateway` |
-| `products-service/products` | `buy01-products-service` | `Buy01 Products Service` |
-| `media-service/media` | `buy01-media-service` | `Buy01 Media Service` |
-| `users-service/service` | `buy01-users-service` | `Buy01 Users Service` |
+- `timeout 900` limits the complete service command to 15 minutes.
+- `sonar.qualitygate.timeout=300` gives the scanner up to five minutes to receive the server-side gate result.
 
-SonarCloud creates these projects on first analysis if the token has permission, or updates them if they already exist.
+The script records a failed project and continues analyzing the remaining projects. After all projects have been attempted, it prints every failure and exits with status `1`. This produces more useful feedback than stopping after the first project.
 
-## Quality Gate Behavior
+## Test Coverage
 
-Every service scan includes:
-
-```bash
--Dsonar.qualitygate.wait=true
--Dsonar.qualitygate.timeout=300
-```
-
-This makes Maven/Gradle wait for SonarCloud's Quality Gate result.
-
-If a service Quality Gate fails, that service command exits with an error. The script records the failed service and continues scanning the remaining services.
-
-At the end, if any service failed analysis or failed its Quality Gate, the script prints a summary and exits with status `1`. Jenkins then stops before deployment.
-
-The timeout is 300 seconds. If SonarCloud does not return the Quality Gate result in time, the command fails.
-
-## Failure Handling
-
-The script intentionally does not stop at the first failed Quality Gate. This allows one Jenkins run to update SonarCloud results for all backend services:
+SonarCloud does not execute tests and does not calculate Java coverage itself. The flow is:
 
 ```text
-Buy01 Shared
-Buy01 Eureka Server
-Buy01 Gateway
-Buy01 Products Service
-Buy01 Media Service
-Buy01 Users Service
+Tests run -> JaCoCo records executed bytecode -> JaCoCo writes XML -> Scanner imports XML -> SonarCloud displays coverage
 ```
 
-If one or more services fail, the script exits only after all scans have been attempted.
+JaCoCo is configured in the payments, products, and media Maven projects and in the users Gradle project. Maven XML reports are normally produced during the `verify` phase under `target/site/jacoco/jacoco.xml`; the Gradle report is under `build/reports/jacoco/test/jacocoTestReport.xml`.
 
-The `Deploy` stage is skipped when SonarCloud fails. Jenkins does not run rollback for a SonarCloud failure, because no new deployment happened. Rollback is handled only inside the `Deploy` stage if deployment itself fails.
+A successful scan with `0%` or missing coverage usually means that no XML report existed when the scanner ran, the report path was wrong, tests were skipped before coverage data was recorded, or the analyzed classes did not match those in the report. Coverage exclusions remove matching files only from coverage calculations; source exclusions would remove files from analysis entirely.
 
-## Command Timeouts
+Coverage is evidence that code executed during tests, not proof that assertions are correct or that all behavior is tested. Branch coverage is especially useful for condition-heavy code.
 
-Each service scan is wrapped with:
+## Quality Profiles, Gates, and Issue Review
+
+Quality Profiles determine which rules the analyzers apply. Prefer inheriting Sonar's maintained profiles and adding a small, documented set of project-specific changes. Disabling a rule globally should be rare; first decide whether the issue is genuinely incorrect, whether a narrow exclusion is appropriate, or whether the code should change.
+
+Quality Gates operate on measures after analysis. Typical gates enforce reliability, security, maintainability, coverage, and duplication on new code. Exact Buy01 conditions must be checked in **SonarCloud -> Organization -> Quality Gates**, because they are server-side configuration and can change without a Git commit.
+
+When reviewing an issue:
+
+1. Read the rule description and the highlighted data/control flow.
+2. Confirm whether the behavior is reachable and whether framework behavior changes the result.
+3. Fix the root cause and add or improve a test when useful.
+4. Mark an issue false positive only when the rule is factually wrong in this context.
+5. Accept an issue only with a documented risk decision and the appropriate permissions.
+
+Security hotspots require explicit review. Mark them safe only after verifying the relevant authentication, authorization, validation, encryption, or configuration controls.
+
+## Initial SonarCloud and Jenkins Setup
+
+An administrator performs these steps once:
+
+1. Create or select the SonarCloud organization `abdelilah-99`.
+2. Create the seven projects listed above, or allow provisioning during the first scan.
+3. Generate a SonarCloud token for a dedicated CI identity with analysis permission for those projects.
+4. In Jenkins, add the token as a **Secret text** credential with ID `sonarqube-token`.
+5. Assign the intended Quality Gate and Quality Profiles in SonarCloud.
+6. Run the pipeline and verify that every project dashboard receives an analysis.
+
+Use the least privilege needed for analysis. Rotate the token periodically and immediately after suspected disclosure. A rotated token needs to be updated only in Jenkins.
+
+## Running Analysis Locally
+
+Local analysis uploads real results and should use a personal token, never the Jenkins token:
 
 ```bash
-timeout 900 ...
+export SONAR_HOST_URL='https://sonarcloud.io'
+export SONAR_ORGANIZATION='abdelilah-99'
+read -rsp 'Sonar token: ' SONAR_TOKEN && export SONAR_TOKEN
+bash scripts/ci/sonarqube_analysis.sh
+unset SONAR_TOKEN
 ```
 
-That gives each service up to 15 minutes for analysis. If a scan hangs or takes too long, the script fails with a clear timeout message.
+This analyzes all seven projects and waits for all gates. Be aware that running from a local branch without CI branch/PR parameters may update the branch selected by the scanner and SonarCloud configuration. For routine development, use normal tests and leave authoritative analysis to Jenkins.
 
-## Adding a New Maven Service
-
-Add one line at the bottom of the script:
-
-```bash
-run_maven_sonar "path/to/service" "sonar-project-key" "Sonar Project Name"
-```
-
-If the service needs a different Maven goal:
-
-```bash
-run_maven_sonar "path/to/service" "sonar-project-key" "Sonar Project Name" "verify"
-```
-
-Use `install` only when another service depends on that artifact.
-
-## Adding a New Gradle Service
-
-Add the Sonar plugin to the service `build.gradle`:
-
-```gradle
-id 'org.sonarqube' version '6.2.0.5505'
-```
-
-Then add one line to the script:
-
-```bash
-run_gradle_sonar "path/to/service" "sonar-project-key" "Sonar Project Name"
-```
-
-## Local Verification
-
-You can verify script syntax without contacting SonarCloud:
+Safe checks that do not upload analysis are:
 
 ```bash
 bash -n scripts/ci/sonarqube_analysis.sh
+cd users-service/service && ./gradlew tasks --all
 ```
 
-You can verify the users service has the Gradle Sonar task:
+## Adding a Service
 
-```bash
-cd users-service/service
-./gradlew tasks --all
-```
+For a Maven service:
 
-The real analysis should run in Jenkins because Jenkins has the `sonarqube-token` credential.
+1. Ensure it builds with Java 21 and produces compiled classes.
+2. Configure JaCoCo XML if coverage is required.
+3. Add a unique project key and a `run_analysis ... run_maven_sonar ...` entry near the end of `scripts/ci/sonarqube_analysis.sh`.
+4. Choose `compile`, `verify`, or `install` based on lifecycle and dependency needs.
+5. Create/authorize the project in SonarCloud and assign its gate/profile.
+6. Update the service table in this document.
+
+For a Gradle service, also apply the `org.sonarqube` plugin, enable JaCoCo XML, configure its report path, and add a `run_gradle_sonar` entry.
+
+Project keys are stable identifiers. Avoid renaming one casually, because a new key can create a separate project and lose continuity with existing history.
+
+## Troubleshooting
+
+### Missing or invalid token
+
+Messages such as `Not authorized`, `Insufficient privileges`, or `Missing SONAR_TOKEN` indicate a missing, expired, revoked, or underprivileged credential. Verify the Jenkins credential ID, token ownership, organization membership, and project analysis permission. Do not print the token while debugging.
+
+### Java bytecode or Java version errors
+
+Java analysis needs compiled bytecode. Run the appropriate compile/verify goal and check `sonar.java.binaries` only for an unusual layout. If the scanner reports an unsupported runtime, confirm `java -version` and `JAVA_HOME` both point to JDK 21 in the Jenkins agent.
+
+### Coverage is absent
+
+Confirm the JaCoCo XML exists before the scanner starts, is non-empty, and uses the expected path. Review scanner output for `JaCoCo XML Report Importer` messages. HTML reports cannot substitute for XML imports.
+
+### Quality Gate failure
+
+Open the project's latest analysis in SonarCloud, inspect the failed gate condition, and filter issues/measures to **New Code**. Fix the code or tests; do not remove the wait flag merely to let deployment continue. If a condition is inappropriate, change it through an explicit team decision in the Quality Gate configuration.
+
+### Timeout
+
+A five-minute gate timeout can mean SonarCloud processing is delayed; a 15-minute command timeout can also indicate slow dependency resolution, compilation, tests, or networking. Check the timestamped Jenkins log to distinguish scanner upload, compute-engine waiting, and build work before increasing a limit.
+
+### Analysis succeeds locally but fails in Jenkins
+
+Compare Java, wrapper versions, environment variables, permissions, checked-out revision, available memory, and network/proxy access. Jenkins uses constrained Gradle workers and default 1 GiB heaps, which may expose resource problems not seen locally.
+
+## Files That Control Analysis
+
+| File | Responsibility |
+| --- | --- |
+| `Jenkinsfile` | Pipeline order, host URL, organization, and secure token injection. |
+| `scripts/ci/sonarqube_analysis.sh` | Project list, scanner commands, keys, names, timeouts, and gate waiting. |
+| `users-service/service/build.gradle` | Gradle Sonar plugin and users-service JaCoCo import/exclusion settings. |
+| `payments-service/pom.xml` | Payments JaCoCo generation. |
+| `products-service/products/pom.xml` | Products JaCoCo generation. |
+| `media-service/media/pom.xml` | Media JaCoCo generation. |
+
+Most rule activation, gate thresholds, new-code definitions, issue status, and permissions live in SonarCloud. If an investigation depends on one of those values, verify it in the SonarCloud UI rather than assuming it from this repository.
