@@ -84,7 +84,6 @@ pipeline {
     }
     failure {
       script {
-        summarizeFailureLogs()
         sendEmail('FAILED', "Build failed. Logs: ${env.BUILD_URL}console")
       }
     }
@@ -127,50 +126,6 @@ def runLogged(String logName, String command) {
       mkdir -p "\${CI_STATE_DIR}/logs"
       bash -lc 'set -o pipefail; ${command} 2>&1 | tee "\${CI_STATE_DIR}/logs/${logName}.log"; exit \${PIPESTATUS[0]}'
     """
-  )
-}
-
-def summarizeFailureLogs() {
-  sh(
-    label: 'failure-summary',
-    script: '''
-      set +e
-
-      pattern='error|exception|failed|failure|fatal|caused by|could not|cannot|denied|timeout|no space left|BUILD FAILED|BUILD FAILURE|Compilation failed|returned non-zero|script returned exit code'
-      log_dir="${CI_STATE_DIR:-.jenkins-state}/logs"
-
-      echo "========== JENKINS ERROR SUMMARY =========="
-      if [ -d "$log_dir" ]; then
-        found_logs=false
-        for file in "$log_dir"/*.log; do
-          [ -f "$file" ] || continue
-          found_logs=true
-          echo "--- $(basename "$file") ---"
-          grep -iE "$pattern" "$file" | tail -n 120 || true
-        done
-        [ "$found_logs" = true ] || echo "No step log files found."
-      else
-        echo "No Jenkins step log directory found: $log_dir"
-      fi
-
-      echo "========== RECENT DOCKER ERRORS =========="
-      if command -v docker >/dev/null 2>&1; then
-        echo "--- docker disk usage ---"
-        docker system df || true
-        echo "--- host disk usage ---"
-        df -h || true
-        docker ps --format "{{.Names}}" 2>/dev/null | while read -r container; do
-          [ -n "$container" ] || continue
-          echo "--- $container ---"
-          docker logs "$container" --tail 300 2>&1 \
-            | grep -iE "$pattern|500|502|503|504|warn|DiskThresholdMonitor|flood stage|watermark" \
-            | grep -viE 'WiredTiger message|WT_SESSION.checkpoint|checkpoint snapshot' \
-            | tail -n 80 || true
-        done
-      else
-        echo "Docker CLI not available on this Jenkins agent."
-      fi
-    '''
   )
 }
 
