@@ -97,7 +97,7 @@ pipeline {
         }
       }
       sh '''
-        rm -rf ./users-service/.env.users ./gateway/.env.gateway ./products-service/.env.product ./media-service/.env.media ./opensearch/.env.opensearch ./certs **/certs
+        rm -rf ./users-service/.env.users ./gateway/.env.gateway ./products-service/.env.product ./media-service/.env.media ./payments-service/.env.payments ./opensearch/.env.opensearch ./certs **/certs
       '''
     }
   }
@@ -113,8 +113,10 @@ def getCredentialsList() {
     file(credentialsId: 'env-product', variable: 'PRDCT_ENV'),
     file(credentialsId: 'env-gateway', variable: 'GATEWAY_ENV'),
     file(credentialsId: 'env-media',   variable: 'MDA_ENV'),
+    file(credentialsId: 'env-payments', variable: 'PAYMENTS_ENV'),
     file(credentialsId: 'env-opensearch', variable: 'OPENSEARCH_ENV'),
     file(credentialsId: 'jwt-private-key', variable: 'JWT_PRIVATE_KEY'),
+    file(credentialsId: 'env-payments', variable: 'PAYMENTS_ENV'),
     file(credentialsId: 'jwt-public-key',  variable: 'JWT_PUBLIC_KEY')
   ]
 }

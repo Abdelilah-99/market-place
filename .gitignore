@@ -22,6 +22,7 @@ gateway/gateway/src/main/resources/keys/
 .env.product
 .env.gateway
 .env.media
+.env.payments
 .env.opensearch
 
 # Build outputs and local dependency caches

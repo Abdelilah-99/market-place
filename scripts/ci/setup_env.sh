@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-mkdir -p gateway/certs users-service/certs opensearch
+mkdir -p gateway/certs users-service/certs opensearch payments-service
 
 cp "$USR_ENV"     ./users-service/.env.users
 cp "$GATEWAY_ENV" ./gateway/.env.gateway
 cp "$PRDCT_ENV"   ./products-service/.env.product
 cp "$MDA_ENV"     ./media-service/.env.media
+cp "$PAYMENTS_ENV" ./payments-service/.env.payments
 cp "$OPENSEARCH_ENV" ./opensearch/.env.opensearch
 cp "$JWT_PRIVATE_KEY" ./users-service/certs/jwt-private.pem
 cp "$JWT_PUBLIC_KEY" ./gateway/certs/jwt-public.pem
@@ -32,6 +33,7 @@ chmod 600 \
   ./gateway/.env.gateway \
   ./products-service/.env.product \
   ./media-service/.env.media \
+  ./payments-service/.env.payments \
   ./opensearch/.env.opensearch \
   ./users-service/certs/jwt-private.pem \
   ./gateway/certs/jwt-public.pem

@@ -76,6 +76,10 @@ copy_if_exists \
     "${TEMP_DIR}/media-service/.env.media"
 
 copy_if_exists \
+    "${ROOT_DIR}/payments-service/.env.payments" \
+    "${TEMP_DIR}/payments-service/.env.payments"
+
+copy_if_exists \
     "${ROOT_DIR}/opensearch/.env.opensearch" \
     "${TEMP_DIR}/opensearch/.env.opensearch"
 
