@@ -7,6 +7,10 @@ services:
     restart: on-failure
     env_file:
       - .env.payments
+    environment:
+      # Keep Java's default public CA bundle for outbound HTTPS calls to Stripe.
+      # Inbound mTLS still uses the Spring server.ssl.* paths from .env.payments.
+      JAVA_TOOL_OPTIONS: ""
     volumes:
       - payments-service-certs:/app/resources/certs:ro
     networks:

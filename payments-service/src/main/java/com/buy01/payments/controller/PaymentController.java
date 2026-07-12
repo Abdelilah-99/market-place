@@ -1,5 +1,7 @@
 package com.buy01.payments.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +21,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
+    private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
     private final StripeCheckoutService stripeCheckoutService;
 
     public PaymentController(StripeCheckoutService stripeCheckoutService) {
@@ -34,6 +37,8 @@ public class PaymentController {
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage(), e);
         } catch (StripeException e) {
+            log.error("Stripe checkout failed: type={}, code={}, requestId={}",
+                    e.getClass().getSimpleName(), e.getCode(), e.getRequestId(), e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Stripe checkout session creation failed", e);
         }
     }
