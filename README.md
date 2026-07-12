@@ -1,10 +1,10 @@
 # Buy01 Marketplace
 
-Buy01 Marketplace is a distributed e-commerce platform built around Spring Boot microservices, an Angular frontend, Spring Cloud Gateway, Eureka service discovery, Kafka events, Redis-backed rate limiting, MongoDB per service, OpenSearch search indexes, and Prometheus/Grafana monitoring.
+Buy01 Marketplace is a full-stack, event-driven e-commerce platform deployed with Docker Compose on a cloud VM. It combines Spring Boot microservices, an Angular storefront, Stripe Checkout payments, Spring Cloud Gateway, Eureka discovery, Kafka events, Redis-backed rate limiting, domain-owned MongoDB databases, OpenSearch read models, and Prometheus/Grafana monitoring.
 
-The system is designed so the browser talks to one public edge, while the backend services stay behind the gateway and communicate through service discovery, mTLS, databases, and asynchronous events.
+The browser talks to a single HTTPS edge while users, catalog, media, and payment services remain private. The platform combines synchronous API calls through the gateway with asynchronous Kafka workflows, RSA-signed JWT authentication, role-based access control, per-service PKCS12 identities, mTLS between the gateway and domain services, and Jenkins-managed secrets and deployments.
 
-![Buy01 Marketplace architecture](docs/architecture.png)
+![Buy01 Marketplace architecture](docs/architecture.svg)
 
 The editable vector source for this diagram is available at `docs/architecture.svg`.
 
@@ -14,22 +14,23 @@ The editable vector source for this diagram is available at `docs/architecture.s
 | --- | --- | --- |
 | Web UI | `frontend` | Angular application served by Caddy. Calls `/api/**` and lets Caddy reverse proxy API traffic to the gateway. |
 | Edge | `gateway` | Spring Cloud Gateway entry point on port `10000`. Validates JWTs, injects user headers, applies Redis rate limiting, and routes to services through Eureka. |
-| Discovery | `eureka-server` | Netflix Eureka registry on port `8761`. Gateway resolves `lb://products`, `lb://users`, and `lb://media` from this registry. |
+| Discovery | `eureka-server` | Netflix Eureka registry on port `8761`. Gateway resolves `lb://products`, `lb://users`, `lb://media`, and `lb://payments` from this registry. |
 | Identity | `users-service` | Registration, login, JWT issuing, profile management, admin user management, and user search indexing. |
 | Catalog | `products-service` | Product CRUD, seller product management, product ratings, admin product moderation, and product search indexing. |
 | Media | `media-service` | Product image and user avatar upload, download, status checks, local filesystem storage, and cleanup workflows. |
+| Payments | `payments-service` | Creates server-side Stripe Checkout sessions, carries product/buyer metadata, and returns hosted checkout URLs. |
 | Shared code | `shared` | Common Kafka event names, DTOs, roles, image status, base entities, and API response helpers. |
 | Rate limit store | `redis` | Token bucket state for Spring Cloud Gateway rate limiting. |
 | Messaging | `kafka` + `zookeeper` | Event bus used to synchronize user, product, media, and search state across services. |
 | Search | `opensearch` | Search backend for products and users. Runs as a single-node OpenSearch container. |
 | Data stores | MongoDB containers | Each domain service owns its own MongoDB instance and schema. |
 | Observability | `prometheus`, `grafana`, `node-exporter`, `cadvisor`, `kafka-exporter` | Metrics scraping, dashboards, host/container metrics, and Kafka metrics. |
-| CI/CD | `Jenkinsfile`, `ci/jenkins`, `scripts/ci` | Build, test, deployment, rollback, secrets setup, and notification automation. |
+| CI/CD | `Jenkinsfile`, `ci/jenkins`, `scripts/ci` | Selective Maven/Gradle builds, tests, credentials injection, ordered deployment, Docker cleanup, rollback, reports, and notifications. |
 
 ## Request Flow
 
 1. A user opens the Angular application from Caddy.
-2. The Angular app calls API paths such as `/api/products`, `/api/users/login`, `/api/media/products/{image}`.
+2. The Angular app calls API paths such as `/api/products`, `/api/users/login`, `/api/media/products/{image}`, and `/api/payments/checkout-sessions`.
 3. Caddy serves static frontend files and reverse proxies `/api/*` to `https://gateway:10000`.
 4. Spring Cloud Gateway receives the request.
 5. The gateway allows public login/register paths through directly. For other paths, it checks the `Authorization: Bearer ...` JWT when present.
@@ -39,9 +40,11 @@ The editable vector source for this diagram is available at `docs/architecture.s
    - `/api/products/**` -> `lb://products`
    - `/api/admin/products/**` -> `lb://products`
    - `/api/users/**` -> `lb://users`
+   - `/api/payments/**` -> `lb://payments`
    - `/api/media/**` -> `lb://media` with `stripPrefix(2)`, so `/api/media/products/abc.jpg` becomes `/products/abc.jpg` inside media-service.
 9. Backend services authorize the request using trusted gateway headers or service-local security filters, then read/write their own MongoDB database.
 10. Domain changes publish Kafka events so other services can update local read models, confirm media usage, delete old media, or update search indexes.
+11. Checkout requests reach payments-service through the same gateway; payments-service creates a Stripe-hosted Checkout Session over public HTTPS and returns its URL to Angular.
 
 ## Service Details
 
@@ -87,6 +90,7 @@ Eureka runs as the service registry. The backend services register themselves wi
 - `users`
 - `products`
 - `media`
+- `payments`
 - `gateway`
 
 The gateway routes with `lb://...` URIs, so it does not need hard-coded backend host/port mappings for domain services.
@@ -141,6 +145,20 @@ Main API families:
 Public product reads are allowed for `GUEST`, `BUYER`, `SELLER`, and `ADMIN`. Rating requires an authenticated buyer/seller/admin role. Product creation and seller-owned mutations require seller/admin access. Admin product endpoints require `ADMIN`.
 
 The service owns `products-service-mongodb`, consumes user events to maintain product-side user references, publishes product events, publishes image confirmation/deletion events for media-service, and updates the product OpenSearch index.
+
+### Payments Service
+
+Location: `payments-service`
+
+The payments service is a Maven-based Spring Boot service that integrates Stripe Checkout without exposing the Stripe secret key to the browser. Its public gateway endpoint is:
+
+- `POST /api/payments/checkout-sessions`
+
+The service validates the checkout request, normalizes currency values, converts decimal prices to minor units, attaches product and optional buyer metadata, and creates success/cancel return URLs for the Angular product page. It returns only the Stripe Session ID and hosted checkout URL.
+
+Payments registers in Eureka as `payments`, serves HTTPS on port `8010`, requires a trusted mTLS client certificate for inbound traffic, and mounts `payments-service-certs` for its PKCS12 identity. Public Stripe HTTPS deliberately uses Java's standard public CA bundle rather than the private internal truststore. Stripe failures are logged with their exception type, API code, and Stripe request ID while the client receives a controlled `502 Bad Gateway` response.
+
+Runtime values—including `STRIPE_SECRET_KEY`, application URL, certificate passwords, and discovery URL—come from `.env.payments`. Jenkins injects that file from the Secret file credential `env-payments` and removes it after the pipeline.
 
 ### Media Service
 
@@ -236,6 +254,7 @@ Certificate generation is automated by `scripts/generate-certs.sh`. The script c
 
 - a local CA;
 - service certificates for gateway, users-service, media-service, products-service, eureka-server, and prometheus;
+- a dedicated payments-service certificate for inbound HTTPS and mTLS;
 - PKCS12 keystores for Spring Boot;
 - a shared truststore.
 
@@ -250,7 +269,7 @@ The gateway defines:
 - refill rate: `5` requests per second;
 - burst capacity: `10`;
 - key: remote client IP address;
-- limited routes: products, admin products, users, and media.
+- limited routes: products, admin products, users, payments, and media.
 
 Redis does not currently store sessions, product cache, media cache, queues, or pub/sub messages.
 
@@ -288,6 +307,7 @@ Main compose files:
 | `users-service/docker-compose.yaml` | users-service and user MongoDB |
 | `products-service/docker-compose.yaml` | products-service and product MongoDB |
 | `media-service/docker-compose.yaml` | media-service, media MongoDB, media storage volume |
+| `payments-service/docker-compose.yaml` | Stripe-integrated payments-service |
 | `redis/docker-compose.yaml` | Redis |
 | `kafka/docker-compose.yaml` | Zookeeper and Kafka |
 | `opensearch/docker-compose.yaml` | OpenSearch |
@@ -304,6 +324,7 @@ Useful ports:
 | users-service | `8080` |
 | products-service | `8000` |
 | media-service | `8888` |
+| payments-service | `8010` |
 | Redis | `6379` |
 | Kafka host listener | `9092` |
 | Kafka internal listener | `29092` |
@@ -374,6 +395,7 @@ Clean up containers and related resources:
 ├── users-service/            Authentication, profiles, admin users
 ├── products-service/         Catalog, ratings, seller/admin products
 ├── media-service/            Product images and user avatars
+├── payments-service/         Stripe Checkout session creation
 ├── shared/                   Shared Java DTOs, roles, Kafka names, utilities
 ├── kafka/                    Kafka and Zookeeper compose
 ├── redis/                    Redis compose
