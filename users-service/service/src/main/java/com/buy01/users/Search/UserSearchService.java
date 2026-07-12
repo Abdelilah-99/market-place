@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,6 +136,7 @@ public class UserSearchService {
             int totalPages = safeSize == 0 ? 0 : (int) Math.ceil((double) total / safeSize);
             return new PageResponseDTOs<>(items, total, safePage, safeSize, totalPages, safePage + 1 < totalPages);
         } catch (RuntimeException | IOException e) {
+            log.error("Failed to search OpenSearch index {} for query '{}'", indexName, safeQuery, e);
             throw new IllegalStateException("Failed to search users", e);
         }
     }
@@ -230,11 +232,19 @@ public class UserSearchService {
     }
 
     private ProfileResDTOs toProfile(UserSearchDocument document) {
+        UUID avatarUrl = null;
+        if (document.avatarUrl() != null && !document.avatarUrl().isBlank()) {
+            try {
+                avatarUrl = UUID.fromString(document.avatarUrl());
+            } catch (IllegalArgumentException e) {
+                log.warn("Ignoring invalid avatar URL in search document for user {}", document.id());
+            }
+        }
         return new ProfileResDTOs(
                 document.id(),
                 document.username(),
                 document.email(),
                 document.role(),
-                document.avatarUrl());
+                avatarUrl);
     }
 }
