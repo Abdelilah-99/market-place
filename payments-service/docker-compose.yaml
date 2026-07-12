@@ -7,9 +7,6 @@ services:
     restart: on-failure
     env_file:
       - .env.payments
-    environment:
-      CERTIFICATE_PATH: file:/app/resources/certs/payments-service.p12
-      TRUSTSTORE_PATH: file:/app/resources/certs/truststore.p12
     volumes:
       - payments-service-certs:/app/resources/certs:ro
     networks:
