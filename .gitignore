@@ -9,13 +9,14 @@ users-service/certs/
 users-service/service/src/main/resources/certs/
 eureka-server/certs/
 eureka-server/eureka/src/main/resources/certs/
-
+scripts/certs
+docs
 # JWT signing keys are injected by Jenkins/runtime credentials.
 users-service/service/src/main/resources/keys/
 gateway/gateway/src/main/resources/keys/
 **/jwt-private.pem
 **/jwt-public.pem
-
+*.pem
 # Environment files
 .env
 .env.users
@@ -24,6 +25,7 @@ gateway/gateway/src/main/resources/keys/
 .env.media
 .env.payments
 .env.opensearch
+.env.scripts
 
 # Build outputs and local dependency caches
 **/target/
@@ -32,3 +34,4 @@ gateway/gateway/src/main/resources/keys/
 **/node_modules/
 **/coverage/
 **/dist/
+*.json
