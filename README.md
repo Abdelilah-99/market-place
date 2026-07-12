@@ -408,7 +408,7 @@ Clean up containers and related resources:
 
 ## Supporting Documentation
 
-More focused documentation lives in `docs/`, including:
+More focused documentation lives at the repository root and in `docs/`, including:
 
 - `docs/TESTING_GUIDE.md`
 - `docs/FRONTEND_CONFIGURATION.md`
@@ -419,3 +419,4 @@ More focused documentation lives in `docs/`, including:
 - `docs/AWS_CDN_BUY01_GUIDE.md`
 - `docs/EMAIL_SETUP.md`
 - `docs/SONARCLOUD_CI.md`
+- `PAYMENTS_SERVICE.md`

@@ -52,7 +52,7 @@
   <rect x="60" y="735" width="380" height="110" class="box" fill="#1e293b" stroke="#64748b"/>
   <text x="85" y="770" class="h">Jenkins CI/CD</text><text x="85" y="799" class="t">Maven/Gradle tests • ordered deploy • rollback</text><text x="85" y="825" class="small">Credentials injection • Docker cleanup • reports</text>
   <rect x="510" y="735" width="380" height="110" class="box" fill="#1e293b" stroke="#64748b"/>
-  <text x="535" y="770" class="h">Security & Secrets</text><text x="535" y="799" class="t">JWT RSA • RBAC • per-service PKCS12 • mTLS</text><text x="535" y="825" class="small">External certificate volumes • ignored env files</text>
+  <text x="535" y="770" class="h">Security &amp; Secrets</text><text x="535" y="799" class="t">JWT RSA • RBAC • per-service PKCS12 • mTLS</text><text x="535" y="825" class="small">External certificate volumes • ignored env files</text>
   <rect x="960" y="735" width="380" height="110" class="box" fill="#1e293b" stroke="#64748b"/>
-  <text x="985" y="770" class="h">Observability & Runtime</text><text x="985" y="799" class="t">Prometheus • Grafana • Actuator • exporters</text><text x="985" y="825" class="small">Docker Compose • shared-net • cloud VM</text>
+  <text x="985" y="770" class="h">Observability &amp; Runtime</text><text x="985" y="799" class="t">Prometheus • Grafana • Actuator • exporters</text><text x="985" y="825" class="small">Docker Compose • shared-net • cloud VM</text>
 </svg>
