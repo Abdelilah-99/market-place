@@ -22,8 +22,8 @@ import com.buy01.users.DTOs.PageResponseDTOs;
 import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.annotation.PostConstruct;
 
