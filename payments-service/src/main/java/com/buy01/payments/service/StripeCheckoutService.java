@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Locale;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class StripeCheckoutService {
     private final CheckoutSessionCreator sessionCreator;
     private final String appPublicUrl;
 
+    @Autowired
     public StripeCheckoutService(
             @Value("${stripe.secret-key:}") String stripeSecretKey,
             @Value("${app.public-url:http://localhost:4200}") String appPublicUrl) {

@@ -7,7 +7,7 @@ HELPER_IMAGE="${HELPER_IMAGE:-alpine:3.20}"
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") [--cert-dir PATH] [--jwt-private PATH] [--jwt-public PATH] [--clean]
+Usage: $(basename "$0") [--cert-dir PATH] [--service NAME] [--jwt-private PATH] [--jwt-public PATH] [--clean]
 
 Copies generated certificates into the external Docker volumes used by the
 service docker-compose files. If JWT keys are not provided or found, the script
@@ -16,6 +16,9 @@ generates a matching RSA pair for users-service and gateway.
 Options:
   --cert-dir PATH     Directory containing *.p12, ca.crt, and service certs.
                       Default: ${ROOT_DIR}/scripts/certs
+  --service NAME      Sync only one service certificate volume. Supported names:
+                      gateway, users-service, products-service, media-service,
+                      payments-service, eureka-server, prometheus. Repeatable.
   --jwt-private PATH  JWT private key to copy into users-service-certs as jwt-private.pem.
                       Also read from JWT_PRIVATE_KEY_PATH or JWT_PRIVATE_KEY.
   --jwt-public PATH   JWT public key to copy into gateway-certs as jwt-public.pem.
@@ -43,6 +46,7 @@ EOF
 JWT_PRIVATE_SRC="${JWT_PRIVATE_KEY_PATH:-${JWT_PRIVATE_KEY:-}}"
 JWT_PUBLIC_SRC="${JWT_PUBLIC_KEY_PATH:-${JWT_PUBLIC_KEY:-}}"
 CLEAN=false
+SERVICES=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -52,6 +56,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --jwt-private)
       JWT_PRIVATE_SRC="$2"
+      shift 2
+      ;;
+    --service)
+      SERVICES+=("$2")
       shift 2
       ;;
     --jwt-public)
@@ -95,16 +103,37 @@ require_cmd() {
 require_cmd docker
 require_cmd openssl
 
-require_file "${CERT_DIR}/truststore.p12"
-require_file "${CERT_DIR}/ca.crt"
-require_file "${CERT_DIR}/gateway.p12"
-require_file "${CERT_DIR}/users-service.p12"
-require_file "${CERT_DIR}/products-service.p12"
-require_file "${CERT_DIR}/media-service.p12"
-require_file "${CERT_DIR}/payments-service.p12"
-require_file "${CERT_DIR}/eureka-server.p12"
-require_file "${CERT_DIR}/prometheus.crt"
-require_file "${CERT_DIR}/prometheus.key"
+if [[ ${#SERVICES[@]} -eq 0 ]]; then
+  SERVICES=(gateway users-service products-service media-service payments-service eureka-server prometheus)
+fi
+
+is_selected() {
+  local wanted="$1"
+  local service
+  for service in "${SERVICES[@]}"; do
+    [[ "${service}" == "${wanted}" ]] && return 0
+  done
+  return 1
+}
+
+for service in "${SERVICES[@]}"; do
+  case "${service}" in
+    gateway|users-service|products-service|media-service|payments-service|eureka-server)
+      require_file "${CERT_DIR}/truststore.p12"
+      require_file "${CERT_DIR}/ca.crt"
+      require_file "${CERT_DIR}/${service}.p12"
+      ;;
+    prometheus)
+      require_file "${CERT_DIR}/ca.crt"
+      require_file "${CERT_DIR}/prometheus.crt"
+      require_file "${CERT_DIR}/prometheus.key"
+      ;;
+    *)
+      echo "[cert-volumes] Unsupported service: ${service}" >&2
+      exit 2
+      ;;
+  esac
+done
 
 ensure_volume() {
   local volume="$1"
@@ -275,17 +304,18 @@ prepare_jwt_keys() {
   fi
 }
 
-prepare_jwt_keys
+if is_selected gateway || is_selected users-service; then
+  prepare_jwt_keys
+  echo "[cert-volumes] users-service JWT private key: ${JWT_PRIVATE_SRC}"
+  echo "[cert-volumes] gateway JWT public key: ${JWT_PUBLIC_SRC}"
+fi
 
-echo "[cert-volumes] users-service JWT private key: ${JWT_PRIVATE_SRC}"
-echo "[cert-volumes] gateway JWT public key: ${JWT_PUBLIC_SRC}"
-
-copy_into_volume "gateway-certs" "gateway" "${JWT_PUBLIC_SRC}:jwt-public.pem"
-copy_into_volume "users-service-certs" "users-service" "${JWT_PRIVATE_SRC}:jwt-private.pem"
-copy_into_volume "products-service-certs" "products-service"
-copy_into_volume "media-service-certs" "media-service"
-copy_into_volume "payments-service-certs" "payments-service"
-copy_into_volume "eureka-server-certs" "eureka-server"
-copy_prometheus_volume
+is_selected gateway && copy_into_volume "gateway-certs" "gateway" "${JWT_PUBLIC_SRC}:jwt-public.pem"
+is_selected users-service && copy_into_volume "users-service-certs" "users-service" "${JWT_PRIVATE_SRC}:jwt-private.pem"
+is_selected products-service && copy_into_volume "products-service-certs" "products-service"
+is_selected media-service && copy_into_volume "media-service-certs" "media-service"
+is_selected payments-service && copy_into_volume "payments-service-certs" "payments-service"
+is_selected eureka-server && copy_into_volume "eureka-server-certs" "eureka-server"
+is_selected prometheus && copy_prometheus_volume
 
 echo "[cert-volumes] Certificate volumes are ready."
