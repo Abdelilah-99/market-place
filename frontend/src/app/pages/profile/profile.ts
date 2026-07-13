@@ -2,14 +2,14 @@ import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { Me, UpdateProfile, UsersService } from '../../core/services/users-service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { EMPTY, Subject, Subscription, catchError, debounceTime, distinctUntilChanged, finalize, switchMap, tap } from 'rxjs';
 import { BuyerProfileAnalytics, PurchaseAnalyticsService } from '../../core/services/purchase-analytics-service';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })

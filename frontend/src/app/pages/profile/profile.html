@@ -179,7 +179,8 @@
 
             @if (userSearchResults().length) {
             <div class="user-results">
-                <article class="user-result" *ngFor="let user of userSearchResults()">
+                <a class="user-result" *ngFor="let user of userSearchResults()"
+                    [routerLink]="['/users', user.id]" [attr.aria-label]="'View ' + user.username + ' profile'">
                     @if (user.avatarUrl) {
                     <img [src]="'/api/media/users/' + user.avatarUrl" [alt]="user.username" />
                     } @else {
@@ -190,7 +191,8 @@
                         <span>{{ user.email }}</span>
                     </div>
                     <em>{{ user.role }}</em>
-                </article>
+                    <i class="fa fa-chevron-right user-result-arrow" aria-hidden="true"></i>
+                </a>
             </div>
             } @else if (hasSearchedUsers() && !isSearchingUsers() && !userSearchError()) {
             <p class="analytics-empty">No users matched your search.</p>
