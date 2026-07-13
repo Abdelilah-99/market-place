@@ -5,11 +5,12 @@ import { forkJoin } from 'rxjs';
 import { Product } from '../../core/models/Product';
 import { ProductsService } from '../../core/services/products-service';
 import { PublicProfile as PublicProfileModel, UsersService } from '../../core/services/users-service';
+import { ProductItem } from '../../sub-components/product/product';
 
 @Component({
   selector: 'app-public-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ProductItem],
   templateUrl: './public-profile.html',
   styleUrl: './public-profile.css',
 })
@@ -65,8 +66,4 @@ export class PublicProfile {
     return avatar ? `/api/media/users/${avatar}` : '';
   }
 
-  productImage(product: Product): string {
-    const image = product.image || product.images?.[0];
-    return image ? `/api/media/products/${image}` : '';
-  }
 }
