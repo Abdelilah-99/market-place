@@ -19,10 +19,7 @@ export class PaymentsService {
   createCheckoutSession(product: Product): Observable<CheckoutSessionResponse> {
     return this.http.post<CheckoutSessionResponse>(`${this.apiUrl}/checkout-sessions`, {
       productId: product.id,
-      productName: product.name,
-      amount: product.price,
-      currency: 'usd',
-      imageUrl: this.absoluteProductImage(product),
+      quantity: 1,
     });
   }
 
@@ -39,11 +36,4 @@ export class PaymentsService {
     });
   }
 
-  private absoluteProductImage(product: Product): string | null {
-    const image = product.image || product.images?.[0];
-    if (!image || typeof window === 'undefined') {
-      return null;
-    }
-    return new URL(`/api/media/products/${image}`, window.location.origin).toString();
-  }
 }

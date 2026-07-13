@@ -7,6 +7,7 @@ export interface Product {
   category?: string;
   condition?: 'new' | 'used' | string;
   price: number;
+  quantity?: number;
   averageRating?: number;
   ratingCount?: number;
   ratingBreakdown?: Record<string, number>;

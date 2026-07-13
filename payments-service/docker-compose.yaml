@@ -11,6 +11,8 @@ services:
       # Keep Java's default public CA bundle for outbound HTTPS calls to Stripe.
       # Inbound mTLS still uses the Spring server.ssl.* paths from .env.payments.
       JAVA_TOOL_OPTIONS: ""
+      PRODUCTS_BASE_URL: https://products-service:8000
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     volumes:
       - payments-service-certs:/app/resources/certs:ro
     networks:

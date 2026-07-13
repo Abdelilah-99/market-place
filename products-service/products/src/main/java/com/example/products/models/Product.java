@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Setter
 @Getter
@@ -41,6 +42,9 @@ public class Product extends BaseEntity {
 
     private long quantity;
 
+    @JsonIgnore
+    private List<String> processedSaleEventIds = new ArrayList<>();
+
     private UUID image;
 
     private List<UUID> images = new ArrayList<>();
@@ -60,6 +64,7 @@ public class Product extends BaseEntity {
         this.category = normalizeCategory(dto.getCategory());
         this.condition = normalizeCondition(dto.getCondition());
         this.price = dto.getPrice();
+        this.quantity = dto.getQuantity() == null ? 1L : dto.getQuantity();
         this.image = dto.getImage();
         this.images = normalizeImages(dto.getImage(), dto.getImages());
         this.userId = userId;

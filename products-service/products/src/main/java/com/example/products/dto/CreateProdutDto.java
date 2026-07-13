@@ -31,6 +31,10 @@ public class CreateProdutDto {
     @Positive(message = "Price must be greater than 0")
     private Double price;
 
+    @NotNull(message = "Quantity is required")
+    @Positive(message = "Quantity must be greater than 0")
+    private Long quantity;
+
 
     private UUID image;
 

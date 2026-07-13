@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import com.example.products.kafka.ItemSoldEvent;
 
 @EnableKafka
 @Configuration
@@ -53,6 +54,17 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ItemSoldEvent> itemSoldKafkaListenerContainerFactory() {
+        JsonDeserializer<ItemSoldEvent> deserializer = new JsonDeserializer<>(ItemSoldEvent.class, false);
+        ConsumerFactory<String, ItemSoldEvent> consumerFactory = new DefaultKafkaConsumerFactory<>(
+                consumerConfigs(), new StringDeserializer(), deserializer);
+        ConcurrentKafkaListenerContainerFactory<String, ItemSoldEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
         return factory;
     }
 

@@ -12,6 +12,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.products.dto.CreateProdutDto;
@@ -34,17 +40,30 @@ public class ProductService {
     private final MediaEvents mediaEvents;
     private final ProductSearchService productSearchService;
     private final ProductRatingRepository productRatingRepository;
+    private final MongoTemplate mongoTemplate;
+
+    @Autowired
+    public ProductService(ProductRepository productRepository,
+            ProductEvents productEvents,
+            MediaEvents mediaEvents,
+            ProductSearchService productSearchService,
+            ProductRatingRepository productRatingRepository,
+            MongoTemplate mongoTemplate) {
+        this.productRepository = productRepository;
+        this.productEvents = productEvents;
+        this.mediaEvents = mediaEvents;
+        this.productSearchService = productSearchService;
+        this.productRatingRepository = productRatingRepository;
+        this.mongoTemplate = mongoTemplate;
+    }
 
     public ProductService(ProductRepository productRepository,
             ProductEvents productEvents,
             MediaEvents mediaEvents,
             ProductSearchService productSearchService,
             ProductRatingRepository productRatingRepository) {
-        this.productRepository = productRepository;
-        this.productEvents = productEvents;
-        this.mediaEvents = mediaEvents;
-        this.productSearchService = productSearchService;
-        this.productRatingRepository = productRatingRepository;
+        this(productRepository, productEvents, mediaEvents, productSearchService,
+                productRatingRepository, null);
     }
 
     public List<Product> getAllProducts() {
@@ -160,6 +179,29 @@ public class ProductService {
         Product saved = productRepository.save(product);
         productEvents.sendUpdateEvent(saved);
         return saved;
+    }
+
+    public boolean decrementQuantity(String eventId, String productId, long quantity) {
+        if (eventId == null || eventId.isBlank() || quantity <= 0) {
+            return false;
+        }
+        UUID id;
+        try {
+            id = UUID.fromString(productId);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        Query query = Query.query(Criteria.where("_id").is(id)
+                .and("quantity").gte(quantity)
+                .and("processedSaleEventIds").ne(eventId));
+        Update update = new Update().inc("quantity", -quantity).push("processedSaleEventIds", eventId);
+        Product updated = mongoTemplate.findAndModify(query, update,
+                FindAndModifyOptions.options().returnNew(true), Product.class);
+        if (updated != null) {
+            productEvents.sendUpdateEvent(updated);
+            return true;
+        }
+        return false;
     }
 
     private List<UUID> normalizeImages(UUID primaryImage, List<UUID> images) {

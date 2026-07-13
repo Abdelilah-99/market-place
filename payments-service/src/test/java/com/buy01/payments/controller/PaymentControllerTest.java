@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.math.BigDecimal;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +18,7 @@ import com.stripe.exception.StripeException;
 class PaymentControllerTest {
 
     private final CreateCheckoutSessionRequest request = new CreateCheckoutSessionRequest(
-            "product-1", "Test product", BigDecimal.TEN, "usd", null);
+            "9f834ed8-c8a8-4e68-8647-a3e12bcb61f2", 1);
 
     @Test
     void returnsCreatedCheckoutSession() throws Exception {

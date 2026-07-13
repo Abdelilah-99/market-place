@@ -17,7 +17,7 @@ class StripeCheckoutServiceTest {
     @Test
     void rejectsCheckoutWhenStripeKeyIsMissing() {
         StripeCheckoutService service = new StripeCheckoutService("  ", null);
-        CreateCheckoutSessionRequest request = request(null, null);
+        CreateCheckoutSessionRequest request = request();
 
         IllegalStateException error = assertThrows(
                 IllegalStateException.class,
@@ -37,18 +37,18 @@ class StripeCheckoutServiceTest {
             return session;
         }, null);
 
-        CheckoutSessionResponse response = service.createCheckoutSession(request(null, null), null);
+        CheckoutSessionResponse response = service.createCheckoutSession(request(), null);
 
         assertEquals("cs_test", response.sessionId());
         assertEquals("https://checkout.stripe.test/session", response.checkoutUrl());
         SessionCreateParams params = captured.get();
-        assertEquals("http://localhost:4200/products/product-1?payment=success", params.getSuccessUrl());
+        assertEquals("http://localhost:4200/products/9f834ed8-c8a8-4e68-8647-a3e12bcb61f2?payment=success", params.getSuccessUrl());
         assertEquals("usd", params.getLineItems().getFirst().getPriceData().getCurrency());
         assertEquals(1051L, params.getLineItems().getFirst().getPriceData().getUnitAmount());
     }
 
     @Test
-    void includesBuyerImageAndNormalizedCurrency() throws Exception {
+    void includesBuyerMetadata() throws Exception {
         Session session = new Session();
         AtomicReference<SessionCreateParams> captured = new AtomicReference<>();
         StripeCheckoutService service = new StripeCheckoutService(params -> {
@@ -56,19 +56,15 @@ class StripeCheckoutServiceTest {
             return session;
         }, "https://buy01.test/");
 
-        service.createCheckoutSession(request(" MAD ", "https://images.test/product.jpg"), " user-7 ");
+        service.createCheckoutSession(request(), " user-7 ");
 
         SessionCreateParams params = captured.get();
-        assertEquals("mad", params.getLineItems().getFirst().getPriceData().getCurrency());
+        assertEquals("usd", params.getLineItems().getFirst().getPriceData().getCurrency());
         assertEquals(" user-7 ", params.getMetadata().get("buyer_id"));
-        assertEquals(
-                "https://images.test/product.jpg",
-                params.getLineItems().getFirst().getPriceData().getProductData().getImages().getFirst());
-        assertEquals("https://buy01.test/products/product-1?payment=cancelled", params.getCancelUrl());
+        assertEquals("https://buy01.test/products/9f834ed8-c8a8-4e68-8647-a3e12bcb61f2?payment=cancelled", params.getCancelUrl());
     }
 
-    private CreateCheckoutSessionRequest request(String currency, String imageUrl) {
-        return new CreateCheckoutSessionRequest(
-                "product-1", "Test product", new BigDecimal("10.505"), currency, imageUrl);
+    private CreateCheckoutSessionRequest request() {
+        return new CreateCheckoutSessionRequest("9f834ed8-c8a8-4e68-8647-a3e12bcb61f2", 1);
     }
 }

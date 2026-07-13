@@ -30,6 +30,7 @@ export class CreateProductPopPup {
     category: '',
     condition: '',
     price: 0,
+    quantity: 1,
     image: '',
   };
 
