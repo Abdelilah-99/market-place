@@ -22,6 +22,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.products.dto.CreateProdutDto;
+import com.example.products.dto.PageResponseDto;
 import com.example.products.dto.UpdateProcutDto;
 import com.example.products.kafka.MediaEvents;
 import com.example.products.kafka.ProductEvents;
@@ -109,6 +110,27 @@ class ProductServiceTest {
         List<Product> result = productService.getProductsByCategory(" ");
 
         assertEquals(0, result.size());
+    }
+
+    @Test
+    void getProductsByUserReturnsPaginatedSellerListings() {
+        Product product = new Product();
+        product.setUserId("seller-1");
+        when(productRepository.findAllByUserId(org.mockito.ArgumentMatchers.eq("seller-1"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(product)));
+
+        PageResponseDto<Product> result = productService.getProductsByUser("seller-1", 0, 12);
+
+        assertEquals(1, result.total());
+        assertEquals("seller-1", result.items().get(0).getUserId());
+    }
+
+    @Test
+    void getProductsByUserRejectsBlankUserId() {
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> productService.getProductsByUser(" ", 0, 12));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
     @Test

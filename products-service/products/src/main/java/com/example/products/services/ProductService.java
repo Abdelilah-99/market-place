@@ -65,6 +65,14 @@ public class ProductService {
         return toPageResponse(products);
     }
 
+    public PageResponseDto<Product> getProductsByUser(String userId, int page, int size) {
+        if (userId == null || userId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User id is required");
+        }
+        Page<Product> products = productRepository.findAllByUserId(userId, pageRequest(page, size));
+        return toPageResponse(products);
+    }
+
     public List<Product> getProductsByCategory(String category) {
         String normalizedCategory = normalizeCategory(category);
         if (normalizedCategory == null) {

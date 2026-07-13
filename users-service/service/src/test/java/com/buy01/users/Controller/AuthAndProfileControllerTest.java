@@ -27,6 +27,7 @@ import com.buy01.users.DTOs.RegisterReqDTOs;
 import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
+import com.buy01.users.DTOs.PublicProfileResDTO;
 import com.buy01.users.Config.UserDetailServices;
 import com.buy01.users.Service.AuthService;
 import com.buy01.users.Service.ProfileService;
@@ -202,6 +203,18 @@ class AuthAndProfileControllerTest {
         }
 
         // ===== ProfileController Tests =====
+
+        @Test
+        void testGetPublicProfileWithoutAuthentication() throws Exception {
+                when(profileService.getPublicProfile("seller-123"))
+                                .thenReturn(new PublicProfileResDTO("seller-123", "Public Seller", "SELLER", (UUID) null));
+
+                mockMvc.perform(get("/api/users/public/seller-123"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value("seller-123"))
+                                .andExpect(jsonPath("$.username").value("Public Seller"))
+                                .andExpect(jsonPath("$.email").doesNotExist());
+        }
 
         @Test
         @WithMockUser(username = "user-123")

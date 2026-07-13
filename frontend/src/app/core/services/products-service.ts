@@ -121,6 +121,13 @@ export class ProductsService {
     );
   }
 
+  getProductsByUser(userId: string, page = 0, size = 12) {
+    return this.http.get<ApiResponse<PageResponse<Product>>>(
+      `${this.apiUrl}/user/${encodeURIComponent(userId)}`,
+      { params: { page, size } }
+    );
+  }
+
   getAdminProducts(page = 0, size = 12) {
     return this.http.get<ApiResponse<PageResponse<Product>>>(
       `/api/admin/products`,

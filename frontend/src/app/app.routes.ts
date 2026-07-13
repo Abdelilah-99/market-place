@@ -9,6 +9,7 @@ import { ProductDetail } from './pages/product-detail/product-detail';
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { guestOnlyGuard, authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/role.guard';
+import { PublicProfile } from './pages/public-profile/public-profile';
 
 export const routes: Routes = [
     { path: '', component: Home },
@@ -18,6 +19,7 @@ export const routes: Routes = [
     { path: 'login', component: Login, canActivate: [guestOnlyGuard] },
     { path: 'register', component: Register, canActivate: [guestOnlyGuard] },
     { path: 'profile', component: Profile, canActivate: [authGuard] },
+    { path: 'users/:id', component: PublicProfile },
     { path: 'not-found', component: NotFound },
     { path: '**', redirectTo: 'not-found' }
 ];

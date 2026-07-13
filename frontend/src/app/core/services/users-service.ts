@@ -34,6 +34,13 @@ export interface Me {
   avatarUrl: string | null;
 }
 
+export interface PublicProfile {
+  id: string;
+  username: string;
+  role: string;
+  avatarUrl: string | null;
+}
+
 export interface UpdateProfile {
   name: string;
   email: string;
@@ -70,6 +77,10 @@ export class UsersService {
 
   meUser(): Observable<Me> {
     return this.http.get<Me>(`/api/users/me`);
+  }
+
+  getPublicProfile(userId: string): Observable<PublicProfile> {
+    return this.http.get<PublicProfile>(`/api/users/public/${encodeURIComponent(userId)}`);
   }
 
   registerUser(userData: RegisterPayload): Observable<ApiMessageResponse> {

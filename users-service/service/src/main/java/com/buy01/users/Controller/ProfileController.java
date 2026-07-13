@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.buy01.users.DTOs.PageResponseDTOs;
 import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
+import com.buy01.users.DTOs.PublicProfileResDTO;
 import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Service.ProfileService;
 
@@ -27,6 +29,11 @@ public class ProfileController {
     @GetMapping("/me")
     public ResponseEntity<ProfileResDTOs> getMe() {
         return ResponseEntity.ok(profileService.getCurrentProfile());
+    }
+
+    @GetMapping("/public/{userId}")
+    public ResponseEntity<PublicProfileResDTO> getPublicProfile(@PathVariable String userId) {
+        return ResponseEntity.ok(profileService.getPublicProfile(userId));
     }
 
     @GetMapping("/search")

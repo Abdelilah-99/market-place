@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .hasAnyRole("GUEST", "BUYER", "SELLER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/products/category/**")
                         .hasAnyRole("GUEST", "BUYER", "SELLER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/products/user/**")
+                        .hasAnyRole("GUEST", "BUYER", "SELLER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/products/*")
                         .hasAnyRole("GUEST", "BUYER", "SELLER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/products/*/ratings")

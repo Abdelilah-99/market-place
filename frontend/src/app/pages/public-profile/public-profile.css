@@ -1,0 +1,23 @@
+.public-profile { padding-block: 2rem 4rem; }
+.back-link { display: inline-flex; gap: .5rem; margin-bottom: 1.5rem; color: inherit; text-decoration: none; }
+.profile-header { display: flex; align-items: center; gap: 1.25rem; padding: 2rem; border-radius: 1.5rem; background: linear-gradient(135deg, #111827, #1e3a5f); color: white; }
+.profile-header img, .avatar-placeholder { width: 6rem; height: 6rem; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,.8); }
+.avatar-placeholder { display: grid; place-items: center; background: #2563eb; font-size: 2rem; font-weight: 800; }
+.profile-header h1 { margin: .25rem 0; font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.profile-header p, .profile-label { margin: 0; opacity: .78; text-transform: capitalize; }
+.listings-header { margin: 2.5rem 0 1rem; }
+.listings-header span { color: #2563eb; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.listings-header h2 { margin: .25rem 0; }
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.25rem; }
+.product-card { overflow: hidden; border: 1px solid #e5e7eb; border-radius: 1rem; background: white; color: inherit; text-decoration: none; box-shadow: 0 8px 24px rgba(15,23,42,.06); }
+.product-card img, .product-placeholder { width: 100%; height: 190px; object-fit: cover; }
+.product-placeholder { display: grid; place-items: center; background: #f1f5f9; font-size: 2rem; color: #94a3b8; }
+.product-card div { padding: 1rem; }
+.product-card h3 { margin: .3rem 0; }
+.product-card p { color: #64748b; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.product-card strong { color: #2563eb; font-size: 1.15rem; }
+.state-panel { padding: 4rem 1rem; text-align: center; color: #64748b; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; }
+.pagination button { padding: .65rem 1rem; border: 1px solid #cbd5e1; border-radius: .65rem; background: white; cursor: pointer; }
+.pagination button:disabled { opacity: .45; cursor: default; }
+@media (max-width: 560px) { .profile-header { align-items: flex-start; padding: 1.4rem; } .profile-header img, .avatar-placeholder { width: 4.5rem; height: 4.5rem; } }

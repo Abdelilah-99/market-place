@@ -310,3 +310,15 @@
     grid-template-columns: 1fr;
   }
 }
+.seller-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color, #2563eb);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.seller-profile-link:hover {
+  text-decoration: underline;
+}

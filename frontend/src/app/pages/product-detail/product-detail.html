@@ -62,6 +62,11 @@
       <h1>{{ item.name }}</h1>
       <p>{{ item.description }}</p>
 
+      <a class="seller-profile-link" [routerLink]="['/users', item.userId]">
+        <i class="fa fa-user"></i>
+        View seller profile
+      </a>
+
       <div class="rating-summary">
         <strong>{{ ratingStats().average || 'New' }}</strong>
         <span>

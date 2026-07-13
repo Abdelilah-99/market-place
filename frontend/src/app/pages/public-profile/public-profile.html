@@ -1,0 +1,39 @@
+<main class="public-profile page-shell">
+  <a routerLink="/" class="back-link"><i class="fa fa-arrow-left"></i> Back to marketplace</a>
+
+  @if (loading()) {
+  <section class="state-panel"><i class="fa fa-spinner fa-spin"></i><h1>Loading profile</h1></section>
+  } @else if (error()) {
+  <section class="state-panel"><i class="fa fa-user-slash"></i><h1>{{ error() }}</h1></section>
+  } @else if (profile(); as user) {
+  <header class="profile-header">
+    @if (avatarUrl()) {
+    <img [src]="avatarUrl()" [alt]="user.username" />
+    } @else {
+    <span class="avatar-placeholder">{{ user.username.charAt(0).toUpperCase() }}</span>
+    }
+    <div><span class="profile-label">Marketplace member</span><h1>{{ user.username }}</h1><p>{{ user.role }}</p></div>
+  </header>
+
+  <section class="listings-header"><div><span>Listings</span><h2>Products from {{ user.username }}</h2></div></section>
+  @if (products().length) {
+  <section class="product-grid">
+    <a class="product-card" *ngFor="let product of products()" [routerLink]="['/products', product.id]">
+      @if (productImage(product)) { <img [src]="productImage(product)" [alt]="product.name" /> }
+      @else { <span class="product-placeholder"><i class="fa fa-image"></i></span> }
+      <div><small>{{ product.category || 'Product' }}</small><h3>{{ product.name }}</h3><p>{{ product.description }}</p><strong>${{ product.price }}</strong></div>
+    </a>
+  </section>
+  } @else {
+  <section class="state-panel"><i class="fa fa-box-open"></i><h2>No products yet</h2></section>
+  }
+
+  @if (totalPages() > 1) {
+  <nav class="pagination" aria-label="Seller products pages">
+    <button (click)="loadProfile(page() - 1)" [disabled]="page() === 0">Previous</button>
+    <span>Page {{ page() + 1 }} of {{ totalPages() }}</span>
+    <button (click)="loadProfile(page() + 1)" [disabled]="page() + 1 >= totalPages()">Next</button>
+  </nav>
+  }
+  }
+</main>

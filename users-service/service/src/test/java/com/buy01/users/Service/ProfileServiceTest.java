@@ -19,9 +19,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
+import com.buy01.users.DTOs.PublicProfileResDTO;
 import com.buy01.users.DTOs.RegisterResDTOs;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
@@ -61,6 +63,27 @@ class ProfileServiceTest {
 
         assertEquals("u-1", profile.id());
         assertEquals("Alice", profile.username());
+    }
+
+    @Test
+    void getPublicProfileReturnsOnlyPublicUserData() {
+        when(userRepository.findById("seller-1"))
+                .thenReturn(Optional.of(new User("seller-1", "Alice", "private@example.com", "secret", "SELLER", null)));
+
+        PublicProfileResDTO profile = profileService.getPublicProfile("seller-1");
+
+        assertEquals("seller-1", profile.id());
+        assertEquals("Alice", profile.username());
+        assertEquals("SELLER", profile.role());
+    }
+
+    @Test
+    void getPublicProfileThrowsWhenUserDoesNotExist() {
+        when(userRepository.findById("missing")).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> profileService.getPublicProfile("missing"));
+        assertEquals(org.springframework.http.HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 
     @Test

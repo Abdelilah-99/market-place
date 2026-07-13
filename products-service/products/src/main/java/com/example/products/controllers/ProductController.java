@@ -99,6 +99,15 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(productService.getMyProductsPage(userId, page, size)));
     }
 
+    @GetMapping("/user/{userId}")
+    @PermitAll
+    public ResponseEntity<ApiResponse<PageResponseDto<Product>>> getProductsByUser(
+            @PathVariable String userId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getProductsByUser(userId, page, size)));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Product>> getProduct(@PathVariable("id") UUID id) {
         Product product = this.productService.getProductById(id);

@@ -6,11 +6,14 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.buy01.users.DTOs.PageResponseDTOs;
 import com.buy01.users.DTOs.ProfileResDTOs;
 import com.buy01.users.DTOs.ProfileUpdateReqDTOs;
 import com.buy01.users.DTOs.RegisterResDTOs;
+import com.buy01.users.DTOs.PublicProfileResDTO;
 import com.buy01.users.Entity.User;
 import com.buy01.users.Repository.UserRepository;
 import com.buy01.users.Search.UserSearchService;
@@ -36,6 +39,12 @@ public class ProfileService {
     public ProfileResDTOs getCurrentProfile() {
         User user = getAuthenticatedUser();
         return toProfile(user);
+    }
+
+    public PublicProfileResDTO getPublicProfile(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return new PublicProfileResDTO(user.id(), user.name(), user.role(), user.avatarUrl());
     }
 
     public PageResponseDTOs<ProfileResDTOs> searchUsers(String query, int page, int size) {
