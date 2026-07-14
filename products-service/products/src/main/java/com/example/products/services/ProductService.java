@@ -26,6 +26,7 @@ import com.example.products.dto.UpdateProcutDto;
 import com.example.products.kafka.ProductEvents;
 import com.example.products.kafka.MediaEvents;
 import com.example.products.models.Product;
+import com.example.products.models.StockReservation;
 import com.example.products.repositories.ProductRatingRepository;
 import com.example.products.repositories.ProductRepository;
 import com.example.products.search.ProductSearchService;
@@ -202,6 +203,72 @@ public class ProductService {
             return true;
         }
         return false;
+    }
+
+    public Product reserveStock(String reservationId, String productId, long quantity) {
+        UUID id = parseProductId(productId);
+        if (reservationId == null || reservationId.isBlank() || quantity <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid reservation");
+        }
+        Query query = Query.query(Criteria.where("_id").is(id)
+                .and("quantity").gte(quantity)
+                .and("stockReservations.reservationId").ne(reservationId));
+        Update update = new Update().inc("quantity", -quantity)
+                .push("stockReservations", new StockReservation(reservationId, quantity));
+        Product reserved = mongoTemplate.findAndModify(query, update,
+                FindAndModifyOptions.options().returnNew(true), Product.class);
+        if (reserved == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Insufficient stock or reservation already exists");
+        }
+        productEvents.sendUpdateEvent(reserved);
+        return reserved;
+    }
+
+    public boolean confirmReservation(String reservationId, String productId, long quantity) {
+        if (reservationId == null || reservationId.isBlank() || quantity <= 0) {
+            return false;
+        }
+        UUID id = parseProductId(productId);
+        Query query = Query.query(Criteria.where("_id").is(id)
+                .and("stockReservations").elemMatch(Criteria.where("reservationId").is(reservationId)
+                        .and("quantity").is(quantity)));
+        Product confirmed = mongoTemplate.findAndModify(query,
+                new Update().pull("stockReservations", Query.query(
+                        Criteria.where("reservationId").is(reservationId)).getQueryObject()),
+                FindAndModifyOptions.options().returnNew(true), Product.class);
+        return confirmed != null;
+    }
+
+    public boolean releaseReservation(String reservationId, String productId, long quantity) {
+        if (reservationId == null || reservationId.isBlank() || quantity <= 0) {
+            return false;
+        }
+        UUID id = parseProductId(productId);
+        Query query = Query.query(Criteria.where("_id").is(id)
+                .and("stockReservations").elemMatch(Criteria.where("reservationId").is(reservationId)
+                        .and("quantity").is(quantity)));
+        Update update = new Update().inc("quantity", quantity)
+                .pull("stockReservations", Query.query(
+                        Criteria.where("reservationId").is(reservationId)).getQueryObject());
+        Product released = mongoTemplate.findAndModify(query, update,
+                FindAndModifyOptions.options().returnNew(true), Product.class);
+        if (released != null) {
+            productEvents.sendUpdateEvent(released);
+            return true;
+        }
+        return false;
+    }
+
+    private UUID parseProductId(String productId) {
+        if (productId == null || productId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid product id");
+        }
+        try {
+            return UUID.fromString(productId);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid product id", e);
+        }
     }
 
     private List<UUID> normalizeImages(UUID primaryImage, List<UUID> images) {

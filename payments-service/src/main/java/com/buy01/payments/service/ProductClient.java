@@ -54,6 +54,37 @@ public class ProductClient {
         }
     }
 
+    public ProductSnapshot reserve(String reservationId, String productId, long quantity) {
+        try {
+            ProductEnvelope response = restClient.post()
+                    .uri("/api/internal/inventory/reservations")
+                    .body(new ReservationRequest(reservationId, productId, quantity))
+                    .retrieve().body(ProductEnvelope.class);
+            if (response == null || response.data() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Invalid reservation response");
+            }
+            return response.data();
+        } catch (HttpClientErrorException.Conflict e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Insufficient product quantity", e);
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Products service is unavailable", e);
+        }
+    }
+
+    public void releaseReservation(String reservationId, String productId, long quantity) {
+        try {
+            restClient.post().uri("/api/internal/inventory/reservations/release")
+                    .body(new ReservationRequest(reservationId, productId, quantity))
+                    .retrieve().toBodilessEntity();
+        } catch (HttpClientErrorException.NotFound ignored) {
+            // Already released or confirmed; reservation endpoints are idempotent.
+        }
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record ProductEnvelope(ProductSnapshot data) { }
+
+    private record ReservationRequest(String reservationId, String productId, long quantity) { }
 }

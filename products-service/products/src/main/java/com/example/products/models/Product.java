@@ -43,6 +43,9 @@ public class Product extends BaseEntity {
     private long quantity;
 
     @JsonIgnore
+    private List<StockReservation> stockReservations = new ArrayList<>();
+
+    @JsonIgnore
     private List<String> processedSaleEventIds = new ArrayList<>();
 
     private UUID image;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.buy01.payments.service.SaleEventPublisher;
+import com.buy01.payments.service.OrderService;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
@@ -17,12 +17,12 @@ import com.stripe.net.Webhook;
 @RequestMapping("/api/payments/webhooks")
 public class StripeWebhookController {
     private final String webhookSecret;
-    private final SaleEventPublisher publisher;
+    private final OrderService orderService;
 
     public StripeWebhookController(@Value("${stripe.webhook-secret:}") String webhookSecret,
-            SaleEventPublisher publisher) {
+            OrderService orderService) {
         this.webhookSecret = webhookSecret;
-        this.publisher = publisher;
+        this.orderService = orderService;
     }
 
     @PostMapping("/stripe")
@@ -40,22 +40,12 @@ public class StripeWebhookController {
         if ("checkout.session.completed".equals(event.getType())) {
             event.getDataObjectDeserializer().getObject().filter(Session.class::isInstance)
                     .map(Session.class::cast)
-                    .ifPresent(this::publish);
+                    .ifPresent(session -> orderService.completeStripeSession(session.getId()));
+        } else if ("checkout.session.expired".equals(event.getType())) {
+            event.getDataObjectDeserializer().getObject().filter(Session.class::isInstance)
+                    .map(Session.class::cast)
+                    .ifPresent(session -> orderService.expireStripeSession(session.getId()));
         }
         return ResponseEntity.ok().build();
-    }
-
-    private void publish(Session session) {
-        String productId = session.getMetadata().get("product_id");
-        String quantityValue = session.getMetadata().get("quantity");
-        if (productId == null || quantityValue == null) {
-            return;
-        }
-        try {
-            publisher.publish(session.getId(), productId, Long.parseLong(quantityValue),
-                    session.getMetadata().get("buyer_id"));
-        } catch (NumberFormatException ignored) {
-            // Ignore malformed metadata; only sessions created by this service are valid sales.
-        }
     }
 }

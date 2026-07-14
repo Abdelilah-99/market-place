@@ -2,6 +2,7 @@ package com.buy01.payments.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,19 +20,24 @@ import com.stripe.param.checkout.SessionCreateParams;
 public class StripeCheckoutService {
     private final CheckoutSessionCreator sessionCreator;
     private final ProductLookup productLookup;
+    private final ProductClient productClient;
+    private final OrderService orderService;
     private final String appPublicUrl;
 
     @Autowired
     public StripeCheckoutService(
             @Value("${stripe.secret-key:}") String stripeSecretKey,
             @Value("${app.public-url:http://localhost:4200}") String appPublicUrl,
-            ProductClient productClient) {
+            ProductClient productClient,
+            OrderService orderService) {
         String normalizedKey = stripeSecretKey == null ? "" : stripeSecretKey.trim();
         this.sessionCreator = normalizedKey.isBlank()
                 ? null
                 : new StripeClient(normalizedKey).checkout().sessions()::create;
         this.appPublicUrl = stripTrailingSlash(appPublicUrl);
         this.productLookup = productClient::getAvailableProduct;
+        this.productClient = productClient;
+        this.orderService = orderService;
     }
 
     StripeCheckoutService(CheckoutSessionCreator sessionCreator, String appPublicUrl) {
@@ -45,12 +51,16 @@ public class StripeCheckoutService {
         this.appPublicUrl = stripTrailingSlash(appPublicUrl);
         this.productLookup = (productId, quantity) -> new ProductSnapshot(productId, "Product",
                 BigDecimal.ONE, quantity, null);
+        this.productClient = null;
+        this.orderService = null;
     }
 
     StripeCheckoutService(CheckoutSessionCreator sessionCreator, String appPublicUrl, ProductLookup productLookup) {
         this.sessionCreator = sessionCreator;
         this.appPublicUrl = stripTrailingSlash(appPublicUrl);
         this.productLookup = productLookup;
+        this.productClient = null;
+        this.orderService = null;
     }
 
     public CheckoutSessionResponse createCheckoutSession(
@@ -59,7 +69,18 @@ public class StripeCheckoutService {
         if (sessionCreator == null) {
             throw new IllegalStateException("Stripe secret key is not configured");
         }
-        ProductSnapshot product = productLookup.get(request.productId(), request.quantity());
+        String orderId = orderService == null ? null : orderService.newOrderId();
+        ProductSnapshot product = orderService == null
+                ? productLookup.get(request.productId(), request.quantity())
+                : productClient.reserve(orderId, request.productId(), request.quantity());
+        if (orderService != null) {
+            try {
+                orderService.create(orderId, product, request.quantity(), userId);
+            } catch (RuntimeException e) {
+                productClient.releaseReservation(orderId, request.productId(), request.quantity());
+                throw e;
+            }
+        }
         String currency = "usd";
 
         SessionCreateParams.LineItem.PriceData.ProductData.Builder productData =
@@ -75,6 +96,7 @@ public class StripeCheckoutService {
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(appPublicUrl + "/products/" + request.productId() + "?payment=success")
                 .setCancelUrl(appPublicUrl + "/products/" + request.productId() + "?payment=cancelled")
+                .setExpiresAt(Instant.now().plusSeconds(30 * 60).getEpochSecond())
                 .putMetadata("product_id", request.productId())
                 .putMetadata("quantity", Long.toString(request.quantity()))
                 .addLineItem(SessionCreateParams.LineItem.builder()
@@ -89,9 +111,23 @@ public class StripeCheckoutService {
         if (userId != null && !userId.isBlank()) {
             params.putMetadata("buyer_id", userId);
         }
+        if (orderId != null) {
+            params.putMetadata("order_id", orderId);
+        }
 
-        Session session = sessionCreator.create(params.build());
-        return new CheckoutSessionResponse(session.getId(), session.getUrl());
+        try {
+            Session session = sessionCreator.create(params.build());
+            if (orderService != null) {
+                orderService.attachStripeSession(orderId, session.getId());
+            }
+            return new CheckoutSessionResponse(session.getId(), session.getUrl());
+        } catch (StripeException | RuntimeException e) {
+            if (orderService != null) {
+                productClient.releaseReservation(orderId, request.productId(), request.quantity());
+                orderService.cancel(orderId);
+            }
+            throw e;
+        }
     }
 
     @FunctionalInterface

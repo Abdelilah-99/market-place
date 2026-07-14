@@ -31,6 +31,7 @@ public class SecurityConfig {
                 // and this service does not use browser cookie sessions.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/internal/**").permitAll()
                         // Public product listing (GET /api/products)
                         .requestMatchers(HttpMethod.GET, "/api/products/")
                         .hasAnyRole("GUEST", "BUYER", "SELLER", "ADMIN")

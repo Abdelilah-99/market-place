@@ -16,11 +16,11 @@ public class SaleEventPublisher {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void publish(String sessionId, String productId, long quantity, String buyerId) {
+    public void publish(String reservationId, String sessionId, String productId, long quantity, String buyerId) {
         // Stripe retries webhooks. The stable session id is the idempotency key consumed
         // by the products service, so a retry cannot decrement stock twice.
-        ItemSoldEvent event = new ItemSoldEvent(sessionId, sessionId,
+        ItemSoldEvent event = new ItemSoldEvent(sessionId, reservationId, sessionId,
                 productId, quantity, buyerId, Instant.now());
-        kafkaTemplate.send(TOPIC, productId, event);
+        kafkaTemplate.send(TOPIC, productId, event).join();
     }
 }

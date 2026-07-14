@@ -19,8 +19,8 @@ public class ItemSoldEventListener {
     @KafkaListener(topics = "item-sold-events", groupId = "products-inventory",
             containerFactory = "itemSoldKafkaListenerContainerFactory")
     public void onItemSold(ItemSoldEvent event) {
-        if (!productService.decrementQuantity(event.eventId(), event.productId(), event.quantity())) {
-            log.warn("Sale event {} was ignored: duplicate, invalid product, or insufficient stock", event.eventId());
+        if (!productService.confirmReservation(event.reservationId(), event.productId(), event.quantity())) {
+            log.warn("Sale event {} could not confirm reservation {}", event.eventId(), event.reservationId());
         }
     }
 }

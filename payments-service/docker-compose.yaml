@@ -1,10 +1,21 @@
 services:
+  payments-service-mongodb:
+    image: mongo:7
+    container_name: payments-service-mongodb
+    restart: on-failure
+    volumes:
+      - payments_mongo_data:/data/db
+    networks:
+      - shared-net
+
   payments-service:
     build:
       context: ..
       dockerfile: payments-service/Dockerfile
     container_name: payments-service
     restart: on-failure
+    depends_on:
+      - payments-service-mongodb
     env_file:
       - .env.payments
     environment:
@@ -13,6 +24,7 @@ services:
       JAVA_TOOL_OPTIONS: ""
       PRODUCTS_BASE_URL: https://products-service:8000
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_MONGODB_URI: mongodb://payments-service-mongodb:27017/payments
     volumes:
       - payments-service-certs:/app/resources/certs:ro
     networks:
@@ -23,5 +35,6 @@ networks:
     external: true
 
 volumes:
+  payments_mongo_data:
   payments-service-certs:
     external: true
