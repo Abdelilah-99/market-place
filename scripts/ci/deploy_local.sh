@@ -9,15 +9,26 @@ source "${ROOT_DIR}/scripts/ci/docker_cleanup.sh"
 
 compose_up() {
   local dir="$1"
+  docker_ensure_space
+
   if [[ "$dir" == "kafka" ]]; then
     echo "[CD] Deploying ${dir}"
-    (cd "${dir}" && docker compose down && docker compose up -d --build --force-recreate)
+    if ! (cd "${dir}" && docker compose down && docker compose up -d --build --force-recreate); then
+      docker_cleanup_aggressive
+      return 1
+    fi
   elif [[ "$dir" == "opensearch" && -f "${dir}/.env.opensearch" ]]; then
     echo "[CD] Deploying ${dir}"
-    (cd "${dir}" && docker compose --env-file .env.opensearch up -d --build --force-recreate)
+    if ! (cd "${dir}" && docker compose --env-file .env.opensearch up -d --build --force-recreate); then
+      docker_cleanup_aggressive
+      return 1
+    fi
   else
     echo "[CD] Deploying ${dir}"
-    (cd "${dir}" && docker compose up -d --build --force-recreate)
+    if ! (cd "${dir}" && docker compose up -d --build --force-recreate); then
+      docker_cleanup_aggressive
+      return 1
+    fi
   fi
 
   docker_build_cleanup
@@ -59,6 +70,7 @@ else
 fi
 
 docker_cleanup
+docker_ensure_space
 
 compose_up "eureka-server"
 compose_up "redis"

@@ -142,6 +142,8 @@ else
 fi
 
 docker_cleanup
+docker_cleanup_aggressive
+docker_ensure_space
 
 compose_up() {
     local service="$1"
@@ -159,15 +161,23 @@ compose_up() {
 
     echo "[CD] Deploying ${service}"
 
+    docker_ensure_space
+
     if [[ "${service}" == "opensearch" && -f "${TEMP_DIR}/${service}/.env.opensearch" ]]; then
-        docker compose \
+        if ! docker compose \
             --env-file "${TEMP_DIR}/${service}/.env.opensearch" \
             -f "${compose_file}" \
-            up -d --build
+            up -d --build; then
+            docker_cleanup_aggressive
+            return 1
+        fi
     else
-        docker compose \
+        if ! docker compose \
             -f "${compose_file}" \
-            up -d --build
+            up -d --build; then
+            docker_cleanup_aggressive
+            return 1
+        fi
     fi
 
     docker_build_cleanup
