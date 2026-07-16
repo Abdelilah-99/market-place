@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.buy01.payments.dto.ProductSnapshot;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.micrometer.observation.annotation.Observed;
 
 @Service
 public class ProductClient {
@@ -21,6 +22,7 @@ public class ProductClient {
         this.restClient = builder.baseUrl(baseUrl).build();
     }
 
+    @Observed(name = "marketplace.payment.product.lookup", contextualName = "lookup-product")
     public ProductSnapshot getAvailableProduct(String productId, long requestedQuantity) {
         try {
             UUID.fromString(productId);
@@ -54,6 +56,7 @@ public class ProductClient {
         }
     }
 
+    @Observed(name = "marketplace.payment.stock.reserve", contextualName = "reserve-product-stock")
     public ProductSnapshot reserve(String reservationId, String productId, long quantity) {
         try {
             ProductEnvelope response = restClient.post()
@@ -73,6 +76,7 @@ public class ProductClient {
         }
     }
 
+    @Observed(name = "marketplace.payment.stock.release", contextualName = "release-product-stock")
     public void releaseReservation(String reservationId, String productId, long quantity) {
         try {
             restClient.post().uri("/api/internal/inventory/reservations/release")

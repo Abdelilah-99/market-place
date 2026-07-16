@@ -6,6 +6,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.example.products.services.ProductService;
+import io.micrometer.observation.annotation.Observed;
 
 @Component
 public class ItemSoldEventListener {
@@ -16,6 +17,7 @@ public class ItemSoldEventListener {
         this.productService = productService;
     }
 
+    @Observed(name = "marketplace.inventory.sale.consume", contextualName = "consume-item-sold-event")
     @KafkaListener(topics = "item-sold-events", groupId = "products-inventory",
             containerFactory = "itemSoldKafkaListenerContainerFactory")
     public void onItemSold(ItemSoldEvent event) {

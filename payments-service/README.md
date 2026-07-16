@@ -283,6 +283,62 @@ TRUST_STORE_PWD=...
 
 The payments Compose file starts `payments-service-mongodb` and persists its data in the `payments_mongo_data` volume.
 
+## Request-Flow Monitoring
+
+Micrometer observations cover the critical distributed flow without using product, order, reservation, session, or buyer IDs as metric labels:
+
+```text
+marketplace.payment.checkout
+marketplace.payment.stock.reserve
+marketplace.payment.order.create
+marketplace.payment.webhook.completed
+marketplace.payment.sale.publish
+marketplace.inventory.sale.consume
+marketplace.inventory.stock.confirm
+```
+
+Failure and expiration paths are observed through:
+
+```text
+marketplace.payment.webhook.expired
+marketplace.payment.stock.release
+marketplace.inventory.stock.release
+```
+
+Spring Boot also records inbound `http.server.requests`. The mTLS `RestClient` is connected to the application `ObservationRegistry`, so calls from payments-service to products-service produce `http.client.requests`. Kafka producer and inventory consumer observations are enabled as well.
+
+Prometheus metrics are available from each service at:
+
+```http
+GET /actuator/prometheus
+```
+
+Useful PromQL queries include:
+
+```promql
+# Checkout throughput
+sum(rate(marketplace_payment_checkout_seconds_count[5m]))
+
+# Checkout error rate
+sum(rate(marketplace_payment_checkout_seconds_count{error!="none"}[5m]))
+/
+sum(rate(marketplace_payment_checkout_seconds_count[5m]))
+
+# 95th percentile checkout latency
+histogram_quantile(0.95,
+  sum by (le) (rate(marketplace_payment_checkout_seconds_bucket[5m])))
+
+# Inventory reservation conflicts/errors
+sum by (error) (rate(marketplace_inventory_stock_reserve_seconds_count[5m]))
+
+# Outbound product-service HTTP latency
+sum(rate(http_client_requests_seconds_sum{application="payments-service"}[5m]))
+/
+sum(rate(http_client_requests_seconds_count{application="payments-service"}[5m]))
+```
+
+The custom names become Prometheus timer series ending in `_seconds_count`, `_seconds_sum`, and—where histograms are enabled—`_seconds_bucket`. The common `application` and `service` tags distinguish payments-service from products-service.
+
 ## Main Implementation Files
 
 - `StripeCheckoutService`: orchestrates reservation, order creation, Stripe Checkout, and compensation.
@@ -293,4 +349,3 @@ The payments Compose file starts `payments-service-mongodb` and persists its dat
 - `InternalInventoryController`: exposes products-service reservation operations.
 - `ProductService`: performs atomic MongoDB reserve, confirm, and release updates.
 - `ItemSoldEventListener`: confirms reservations after successful payment.
-

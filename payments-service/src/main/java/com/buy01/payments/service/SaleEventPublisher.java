@@ -6,6 +6,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.buy01.payments.dto.ItemSoldEvent;
+import io.micrometer.observation.annotation.Observed;
 
 @Service
 public class SaleEventPublisher {
@@ -16,6 +17,7 @@ public class SaleEventPublisher {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    @Observed(name = "marketplace.payment.sale.publish", contextualName = "publish-item-sold-event")
     public void publish(String reservationId, String sessionId, String productId, long quantity, String buyerId) {
         // Stripe retries webhooks. The stable session id is the idempotency key consumed
         // by the products service, so a retry cannot decrement stock twice.

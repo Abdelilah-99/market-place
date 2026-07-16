@@ -31,6 +31,7 @@ import com.example.products.repositories.ProductRatingRepository;
 import com.example.products.repositories.ProductRepository;
 import com.example.products.search.ProductSearchService;
 import com.example.products.search.dto.ProductSearchResponse;
+import io.micrometer.observation.annotation.Observed;
 
 @Service
 public class ProductService {
@@ -205,6 +206,7 @@ public class ProductService {
         return false;
     }
 
+    @Observed(name = "marketplace.inventory.stock.reserve", contextualName = "reserve-stock")
     public Product reserveStock(String reservationId, String productId, long quantity) {
         UUID id = parseProductId(productId);
         if (reservationId == null || reservationId.isBlank() || quantity <= 0) {
@@ -225,6 +227,7 @@ public class ProductService {
         return reserved;
     }
 
+    @Observed(name = "marketplace.inventory.stock.confirm", contextualName = "confirm-stock-reservation")
     public boolean confirmReservation(String reservationId, String productId, long quantity) {
         if (reservationId == null || reservationId.isBlank() || quantity <= 0) {
             return false;
@@ -240,6 +243,7 @@ public class ProductService {
         return confirmed != null;
     }
 
+    @Observed(name = "marketplace.inventory.stock.release", contextualName = "release-stock-reservation")
     public boolean releaseReservation(String reservationId, String productId, long quantity) {
         if (reservationId == null || reservationId.isBlank() || quantity <= 0) {
             return false;

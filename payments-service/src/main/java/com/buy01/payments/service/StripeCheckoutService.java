@@ -15,6 +15,7 @@ import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import io.micrometer.observation.annotation.Observed;
 
 @Service
 public class StripeCheckoutService {
@@ -63,6 +64,7 @@ public class StripeCheckoutService {
         this.orderService = null;
     }
 
+    @Observed(name = "marketplace.payment.checkout", contextualName = "create-checkout-session")
     public CheckoutSessionResponse createCheckoutSession(
             CreateCheckoutSessionRequest request,
             String userId) throws StripeException {

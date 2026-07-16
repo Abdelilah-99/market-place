@@ -15,6 +15,7 @@ import com.buy01.payments.dto.ProductSnapshot;
 import com.buy01.payments.model.OrderStatus;
 import com.buy01.payments.model.PaymentOrder;
 import com.buy01.payments.repository.PaymentOrderRepository;
+import io.micrometer.observation.annotation.Observed;
 
 @Service
 public class OrderService {
@@ -35,6 +36,7 @@ public class OrderService {
         return UUID.randomUUID().toString();
     }
 
+    @Observed(name = "marketplace.payment.order.create", contextualName = "create-payment-order")
     public PaymentOrder create(String orderId, ProductSnapshot product, long quantity, String buyerId) {
         return repository.save(new PaymentOrder(orderId, product.id(),
                 product.name(), quantity, product.price(), "usd", buyerId));
@@ -51,6 +53,7 @@ public class OrderService {
         transition(orderId, OrderStatus.PENDING, OrderStatus.CANCELLED);
     }
 
+    @Observed(name = "marketplace.payment.webhook.completed", contextualName = "complete-stripe-session")
     public void completeStripeSession(String sessionId) {
         PaymentOrder order = repository.findByStripeSessionId(sessionId).orElse(null);
         if (order != null && order.getStatus() == OrderStatus.PENDING) {
@@ -59,6 +62,7 @@ public class OrderService {
         }
     }
 
+    @Observed(name = "marketplace.payment.webhook.expired", contextualName = "expire-stripe-session")
     public void expireStripeSession(String sessionId) {
         PaymentOrder order = repository.findByStripeSessionId(sessionId).orElse(null);
         if (order != null && order.getStatus() == OrderStatus.PENDING) {
