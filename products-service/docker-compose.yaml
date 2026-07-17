@@ -8,6 +8,11 @@ services:
       - mongo_data:/data/db
     networks:
       - shared-net
+    logging: &bounded-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   products-service:
     build:
@@ -20,14 +25,13 @@ services:
     depends_on:
       - products-service-mongodb
     volumes:
-      - backend_m2:/root/.m2
       - products-service-certs:/app/resources/certs:ro
     networks:
       - shared-net
+    logging: *bounded-logging
 
 volumes:
   mongo_data:
-  backend_m2:
   products-service-certs:
     external: true
 

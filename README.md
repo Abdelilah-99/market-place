@@ -238,6 +238,36 @@ If OpenSearch logs show `flood stage disk watermark exceeded`, the Docker host i
 bash scripts/ci/opensearch_maintenance.sh
 ```
 
+## Operating on a 30 GB Host
+
+The deployment is designed to preserve space on the Oracle host:
+
+- only services changed since the last successful commit are rebuilt;
+- Redis, Kafka, and OpenSearch are started without forced image rebuilds;
+- at least 8 GiB must be free before building an application image;
+- low-space cleanup uses `docker system prune -a` without `--volumes`;
+- database, media, certificate, Caddy, OpenSearch, and Jenkins volumes are preserved;
+- obsolete runtime Maven/Gradle cache volumes are removed when no container uses them;
+- container JSON logs rotate at 10 MB with three files retained;
+- Jenkins retains ten builds and five archived artifact sets;
+- compiled outputs and frontend `node_modules` are removed after reports are archived.
+
+The free-space threshold can be changed through `CI_DOCKER_MIN_FREE_GB`, although lowering it below the temporary size needed by a multi-stage Java build can cause image export failures.
+
+For a detailed, read-only disk report, run:
+
+```bash
+source scripts/ci/docker_cleanup.sh
+docker_disk_report
+```
+
+For an immediate cleanup that preserves all volumes:
+
+```bash
+source scripts/ci/docker_cleanup.sh
+docker_cleanup_aggressive
+```
+
 ## Security Model
 
 The platform uses layered security:

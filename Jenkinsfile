@@ -4,7 +4,8 @@ pipeline {
   options {
     timestamps()
     disableConcurrentBuilds()
-    buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '30'))
+    // A 30 GB host cannot retain 30 complete reports/log sets indefinitely.
+    buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '5'))
   }
 
   triggers {
@@ -99,6 +100,7 @@ pipeline {
       sh '''
         rm -rf ./users-service/.env.users ./gateway/.env.gateway ./products-service/.env.product ./media-service/.env.media ./payments-service/.env.payments ./opensearch/.env.opensearch ./certs **/certs
       '''
+      sh 'bash scripts/ci/workspace_cleanup.sh'
     }
   }
 }

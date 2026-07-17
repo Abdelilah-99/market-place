@@ -8,6 +8,11 @@ services:
       - mongo_data:/data/db
     networks:
       - shared-net
+    logging: &bounded-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   users-service:
     build: 
@@ -23,12 +28,10 @@ services:
     depends_on:
         - user-mongodb
     volumes:
-      - gradle-cache:/root/.gradle
-      - /home/ubuntu/.m2:/root/.m2
       - users-service-certs:/app/resources/certs:ro
     working_dir: /app
+    logging: *bounded-logging
 volumes:
-  gradle-cache:
   mongo_data:
   users-service-certs:
     external: true

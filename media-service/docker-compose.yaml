@@ -10,6 +10,11 @@ services:
       - mongo_data:/data/db
     networks:
       - shared-net
+    logging: &bounded-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   media-service:
     build:
@@ -21,20 +26,16 @@ services:
     depends_on:
       - media-service-mongodb
     volumes:
-      # - media_m2:/root/.m2
       - media-service-certs:/app/resources/certs:ro
       - media_storage:/storage
-      - /home/ubuntu/.m2:/root/.m2
-      # - ./certs/media-service.p12:/app/resources/certs/media-service.p12:ro
-      # - ./certs/truststore.p12:/app/resources/certs/truststore.p12:ro
     networks:
       - shared-net
+    logging: *bounded-logging
 
 volumes:
   mongo_data:
     name: media-service_mongo_data
     external: true
-  media_m2:
   media_storage:
     name: media-service_media_storage
     external: true

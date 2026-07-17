@@ -7,6 +7,11 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - shared-net
+    logging: &bounded-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1
@@ -25,6 +30,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - shared-net
+    logging: *bounded-logging
 
 networks:
   shared-net:

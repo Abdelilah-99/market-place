@@ -7,6 +7,11 @@ services:
       - payments_mongo_data:/data/db
     networks:
       - shared-net
+    logging: &bounded-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   payments-service:
     build:
@@ -29,6 +34,7 @@ services:
       - payments-service-certs:/app/resources/certs:ro
     networks:
       - shared-net
+    logging: *bounded-logging
 
 networks:
   shared-net:

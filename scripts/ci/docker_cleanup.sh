@@ -38,15 +38,22 @@ docker_cleanup_aggressive() {
   fi
 
   echo "[CD] Running low-disk Docker cleanup (volumes are preserved)."
-  docker container prune -f >/dev/null || true
-  docker network prune -f >/dev/null || true
-  docker image prune -a -f >/dev/null || true
-  docker builder prune -a -f >/dev/null || true
+  # system prune covers stopped containers, unused networks, every unused
+  # image, and build cache. Docker volumes are not removed unless --volumes is
+  # explicitly supplied, which this command intentionally never does.
+  docker system prune -a -f >/dev/null || true
   docker system df || true
 }
 
+docker_disk_report() {
+  echo "[CD] Host filesystem usage:"
+  df -h 2>/dev/null || true
+  echo "[CD] Detailed Docker usage:"
+  docker system df -v 2>/dev/null || docker system df || true
+}
+
 docker_ensure_space() {
-  local minimum_gb="${CI_DOCKER_MIN_FREE_GB:-3}"
+  local minimum_gb="${CI_DOCKER_MIN_FREE_GB:-8}"
   local docker_root available_kb required_kb
   docker_root="$(docker info --format '{{.DockerRootDir}}' 2>/dev/null || true)"
   [[ -n "${docker_root}" ]] || docker_root="/var/lib/docker"
@@ -61,14 +68,38 @@ docker_ensure_space() {
   required_kb=$((minimum_gb * 1024 * 1024))
   echo "[CD] Docker filesystem has $((available_kb / 1024 / 1024)) GiB free; ${minimum_gb} GiB required."
   if (( available_kb < required_kb )); then
+    docker_disk_report
     docker_cleanup_aggressive
     available_kb="$(df -Pk "${docker_root}" | awk 'NR == 2 {print $4}')"
     if (( available_kb < required_kb )); then
       echo "[ERROR] Docker filesystem still has only $((available_kb / 1024 / 1024)) GiB free after cleanup."
       echo "[ERROR] Free host disk space before deploying; database/media volumes were not pruned."
+      docker_disk_report
       return 1
     fi
   fi
+}
+
+# These volumes were previously mounted into runtime JAR containers even
+# though Maven/Gradle are not used at runtime. Once the mounts are removed from
+# Compose, deleting these cache-only volumes is safe and can recover gigabytes.
+# Docker refuses to remove a volume that is still attached to an old container.
+docker_cleanup_legacy_build_cache_volumes() {
+  local volumes=(
+    products-service_backend_m2
+    gateway_backend_m2
+    gateway_maven_cash
+    users-service_gradle-cache
+    media-service_media_m2
+  )
+  local volume
+  for volume in "${volumes[@]}"; do
+    if docker volume inspect "${volume}" >/dev/null 2>&1; then
+      docker volume rm "${volume}" >/dev/null 2>&1 \
+        && echo "[CD] Removed legacy build-cache volume: ${volume}" \
+        || true
+    fi
+  done
 }
 
 # Release transient layers immediately after each Compose build. The normal
