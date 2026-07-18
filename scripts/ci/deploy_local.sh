@@ -143,6 +143,7 @@ fi
 
 # Infrastructure is started without forced recreation. This is cheap when it
 # is already running and avoids repeatedly pulling/rebuilding unchanged images.
+compose_up "." false
 compose_up "redis" false
 compose_up "opensearch" false
 bash scripts/ci/opensearch_maintenance.sh

@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up Marketo domain data daily
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+RandomizedDelaySec=20m
+Persistent=true
+Unit=marketo-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.example.media.models.ProductImage;
 import com.example.media.models.UserAvatar;
@@ -20,6 +21,9 @@ import com.example.shared.common.types.ImageStatus;
 @Service
 public class ImageCleanupJob {
     private static final int CLEANUP_BATCH_SIZE = 100;
+
+    @Value("${media.cleanup.temporary-retention-minutes:60}")
+    private long temporaryRetentionMinutes = 60;
 
     private final ProductImageRepository imageRepository;
     private final ProductimageContentStore imageContentStore;
@@ -39,10 +43,11 @@ public class ImageCleanupJob {
         this.avatarContentStore = avatarContentStore;
     }
 
-    @Scheduled(fixedRate = 1 * 60 * 1000) // every 1 minutes
+    @Scheduled(fixedDelayString = "${media.cleanup.interval-ms:900000}")
     @Transactional
     public void deleteExpiredTemporaryImages() {
-        LocalDateTime cutoff = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(1);
+        LocalDateTime cutoff = LocalDateTime.now(ZoneOffset.UTC)
+                .minusMinutes(Math.max(temporaryRetentionMinutes, 5));
         PageRequest cleanupBatch = PageRequest.of(0, CLEANUP_BATCH_SIZE);
 
         List<ProductImage> expiredImages = imageRepository.findByStatusAndCreatedAtBefore(ImageStatus.TEMPORARY,

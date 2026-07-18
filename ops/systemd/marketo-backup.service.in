@@ -1,0 +1,11 @@
+[Unit]
+Description=Marketo domain-data backup to external storage
+Documentation=file://@REPOSITORY@/README.md
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=@REPOSITORY@
+EnvironmentFile=/etc/marketo-backup.env
+ExecStart=/bin/bash scripts/backup-domain-data.sh

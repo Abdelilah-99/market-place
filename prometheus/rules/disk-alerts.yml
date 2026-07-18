@@ -1,0 +1,34 @@
+groups:
+  - name: oracle-host-disk
+    rules:
+      - alert: HostDiskSpaceWarning
+        expr: |
+          (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"}
+            /
+            node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"}
+          ) < 0.20
+          or
+          node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"} < 8 * 1024^3
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Oracle host disk space is running low"
+          description: "Root filesystem has less than 20% or 8 GiB available."
+
+      - alert: HostDiskSpaceCritical
+        expr: |
+          (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"}
+            /
+            node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"}
+          ) < 0.10
+          or
+          node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"} < 4 * 1024^3
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Oracle host disk space is critically low"
+          description: "Root filesystem has less than 10% or 4 GiB available. Deployments should stop."

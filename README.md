@@ -268,6 +268,33 @@ source scripts/ci/docker_cleanup.sh
 docker_cleanup_aggressive
 ```
 
+Install the safe daily cleanup as a persistent systemd timer:
+
+```bash
+bash scripts/install-cleanup-timer.sh
+systemctl status marketo-cleanup.timer
+```
+
+The timer runs around 03:00 daily, survives reboots, and never prunes Docker volumes.
+
+Prometheus raises `HostDiskSpaceWarning` below 20% or 8 GiB free and `HostDiskSpaceCritical` below 10% or 4 GiB free. The corrected node-exporter mount measures the Oracle host filesystem rather than its container overlay. Prometheus history is bounded to 15 days and 2 GB, Kafka messages to 72 hours and 1 GB per partition, and all container JSON logs to three 10 MB files.
+
+Application retention is also bounded:
+
+- unconfirmed media uploads are removed after 60 minutes by a job running every 15 minutes;
+- cancelled payment orders are retained for 30 days;
+- paid payment orders are retained for 365 days;
+- active/pending orders and linked media are never removed by retention jobs.
+
+Backups should not be written to the same 30 GB root filesystem. After mounting Oracle Block Volume or other external storage, install the daily backup timer:
+
+```bash
+bash scripts/install-backup-timer.sh /mnt/marketo-backups
+systemctl status marketo-backup.timer
+```
+
+The backup includes all four MongoDB domains and uploaded media, retains seven days by default, and refuses a root-filesystem destination. Override retention in `/etc/marketo-backup.env` when the external volume has sufficient capacity.
+
 ## Security Model
 
 The platform uses layered security:

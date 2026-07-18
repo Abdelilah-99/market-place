@@ -283,6 +283,8 @@ TRUST_STORE_PWD=...
 
 The payments Compose file starts `payments-service-mongodb` and persists its data in the `payments_mongo_data` volume.
 
+Terminal payment orders have bounded retention. `CANCELLED` orders are deleted after 30 days and `PAID` orders after 365 days by default. `PENDING` orders are never deleted by this job. Configure the policy with `CANCELLED_ORDER_RETENTION_DAYS`, `PAID_ORDER_RETENTION_DAYS`, and `ORDER_RETENTION_CRON`.
+
 ## Request-Flow Monitoring
 
 Micrometer observations cover the critical distributed flow without using product, order, reservation, session, or buyer IDs as metric labels:

@@ -1,3 +1,6 @@
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
 scrape_configs:
   - job_name: "prometheus"
     static_configs:
@@ -24,6 +27,16 @@ scrape_configs:
     metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: ["products-service:8000"]
+
+  - job_name: "payments-service"
+    scheme: https
+    tls_config:
+      ca_file: /prometheus/certs/ca.crt
+      cert_file: /prometheus/certs/client.crt
+      key_file: /prometheus/certs/client.key
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["payments-service:8010"]
 
   - job_name: "gateway"
     scheme: https

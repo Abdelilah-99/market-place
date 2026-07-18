@@ -1,0 +1,12 @@
+[Unit]
+Description=Marketo safe Docker and workspace cleanup
+Documentation=file://@REPOSITORY@/README.md
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=@REPOSITORY@
+Environment=CI_DOCKER_CLEANUP=true
+Environment=CI_DOCKER_PRUNE_UNTIL=24h
+ExecStart=/bin/bash -lc 'source scripts/ci/docker_cleanup.sh; docker_cleanup; docker_cleanup_legacy_build_cache_volumes'
