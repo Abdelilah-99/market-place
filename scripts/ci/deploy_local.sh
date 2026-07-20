@@ -11,6 +11,14 @@ compose_up() {
   local dir="$1"
   local rebuild="${2:-true}"
   local compose_args=(up -d)
+  local project_args=()
+  # The Jenkins workspace is named "marketo", while this stack may also be
+  # started from a checkout named "market-place". Without a stable project
+  # name, Compose treats the same fixed-name monitoring containers as foreign
+  # and fails with "container name is already in use".
+  if [[ "${dir}" == "." ]]; then
+    project_args=(--project-name market-place)
+  fi
   if [[ "${rebuild}" == "true" ]]; then
     compose_args+=(--build --force-recreate)
   fi
@@ -20,12 +28,12 @@ compose_up() {
 
   echo "[CD] Deploying ${dir} (rebuild=${rebuild})"
   if [[ "$dir" == "opensearch" && -f "${dir}/.env.opensearch" ]]; then
-    if ! (cd "${dir}" && docker compose --env-file .env.opensearch "${compose_args[@]}"); then
+    if ! (cd "${dir}" && docker compose "${project_args[@]}" --env-file .env.opensearch "${compose_args[@]}"); then
       docker_cleanup_aggressive
       return 1
     fi
   else
-    if ! (cd "${dir}" && docker compose "${compose_args[@]}"); then
+    if ! (cd "${dir}" && docker compose "${project_args[@]}" "${compose_args[@]}"); then
       docker_cleanup_aggressive
       return 1
     fi
