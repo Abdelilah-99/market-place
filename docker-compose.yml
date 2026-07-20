@@ -1,6 +1,8 @@
 services:
   prometheus:
-    image: prom/prometheus
+    build:
+      context: ./prometheus
+      dockerfile: Dockerfile
     container_name: prometheus
     restart: unless-stopped
     ports:
@@ -13,8 +15,6 @@ services:
     networks:
       - shared-net
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
       - prometheus-certs:/prometheus/certs:ro
     logging: &bounded-logging
