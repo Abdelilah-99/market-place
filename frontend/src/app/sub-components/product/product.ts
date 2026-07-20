@@ -61,7 +61,16 @@ export class ProductItem {
     return condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
   }
 
+  isUnavailable(): boolean {
+    return this.product.quantity !== undefined && this.product.quantity <= 0;
+  }
+
   buyProduct(): void {
+    if (this.isUnavailable()) {
+      this.toaster.warning('This product is unavailable for the moment.');
+      return;
+    }
+
     const buyer = this.stateService.currentUserSubject.value;
     if (!buyer) {
       this.toaster.info('Please log in to buy this product.');

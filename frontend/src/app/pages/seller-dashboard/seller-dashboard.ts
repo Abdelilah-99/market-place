@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductItem } from '../../sub-components/product/product';
 import { CreateProductPopPup } from '../../sub-components/create-product-pop-pup/create-product-pop-pup';
@@ -20,6 +20,10 @@ export class SellerDashboard {
   public page = signal(0);
   public hasNext = signal(false);
   public loading = signal(false);
+  public unavailableProducts = computed(() =>
+    this.products().filter(product => product.quantity !== undefined && product.quantity <= 0)
+  );
+  public unavailableCount = computed(() => this.unavailableProducts().length);
   public sellerAnalytics = signal<SellerProfileAnalytics>({
     totalGained: 0,
     totalOrders: 0,

@@ -25,7 +25,21 @@
             <span>Items sold</span>
             <strong>{{ sellerAnalytics().totalItemsSold }}</strong>
         </div>
+        <div class="stat-card" [class.unavailable-stat]="unavailableCount() > 0">
+            <span>Unavailable products</span>
+            <strong>{{ unavailableCount() }}</strong>
+        </div>
     </section>
+
+    @if (unavailableCount() > 0) {
+    <section class="inventory-alert" role="status" aria-live="polite">
+        <span class="inventory-alert-icon"><i class="fa fa-triangle-exclamation"></i></span>
+        <div>
+            <h2>You have {{ unavailableCount() }} unavailable product{{ unavailableCount() === 1 ? '' : 's' }}</h2>
+            <p>These listings have no available quantity and customers cannot buy them for the moment.</p>
+        </div>
+    </section>
+    }
 
     <section class="seller-analytics" aria-label="Seller profile analytics">
         <div class="analytics-summary">

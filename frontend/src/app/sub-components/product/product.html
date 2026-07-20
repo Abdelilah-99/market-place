@@ -4,6 +4,9 @@
       <img [src]="imagePreview() || productImage()" [alt]="product.name" />
     </a>
     <span class="condition-pill">{{ conditionLabel(product.condition) }}</span>
+    @if (isUnavailable()) {
+    <span class="availability-pill">Unavailable for the moment</span>
+    }
     @if (isEditing) {
     <button class="media-edit-button" (click)="fileInput.click()" aria-label="Change product image">
       <i class="fa fa-camera"></i>
@@ -26,7 +29,9 @@
     </div>
     <div class="price-row">
       <strong>${{ product.price }}</strong>
-      <span>Ready to ship</span>
+      <span [class.unavailable-copy]="isUnavailable()">
+        {{ isUnavailable() ? 'Out of stock' : 'Ready to ship' }}
+      </span>
     </div>
     } @else {
     <div class="edit-fields">
@@ -61,9 +66,9 @@
 
   <div class="product-actions">
     @if (!isMyProduct) {
-    <button class="btn-primary buy-button" (click)="buyProduct()">
+    <button class="btn-primary buy-button" (click)="buyProduct()" [disabled]="isUnavailable()">
       <i class="fa fa-bag-shopping"></i>
-      Buy now
+      {{ isUnavailable() ? 'Unavailable' : 'Buy now' }}
     </button>
     }
 

@@ -126,6 +126,17 @@ describe('ProductItem Component', () => {
     expect(mockPaymentsService.createCheckoutSession).toHaveBeenCalledWith(mockProduct);
   });
 
+  it('should identify and block checkout for an unavailable product', () => {
+    component.product = { ...mockProduct, quantity: 0 };
+
+    expect(component.isUnavailable()).toBe(true);
+
+    component.buyProduct();
+
+    expect(mockPaymentsService.createCheckoutSession).not.toHaveBeenCalled();
+    expect(mockToaster.warning).toHaveBeenCalledWith('This product is unavailable for the moment.');
+  });
+
   it('should send anonymous buyers to login', () => {
     mockStateService.currentUserSubject.value = null;
 
