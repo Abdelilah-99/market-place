@@ -16,8 +16,8 @@ services:
 
   users-service:
     build: 
-      context: ./service
-      dockerfile: dockerfile
+      context: ..
+      dockerfile: users-service/service/dockerfile
     restart: on-failure
     container_name: users-service
     env_file:

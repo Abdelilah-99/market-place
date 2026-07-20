@@ -1,16 +1,29 @@
-FROM gradle:9.3.1-jdk21
+# --- Stage 0: publish the shared library to a local Maven repository ---
+FROM maven:3.9-eclipse-temurin-21 AS shared-build
+WORKDIR /app/shared
+
+COPY shared/pom.xml ./pom.xml
+COPY shared/src ./src
+
+RUN mvn clean install -DskipTests
+
+# --- Stage 1: build the users-service executable JAR ---
+FROM gradle:9.3.1-jdk21 AS build
+WORKDIR /app/users-service
+
+# Docker build steps in the Gradle image run as root, so mavenLocal() resolves
+# artifacts from /root/.m2.
+COPY --from=shared-build /root/.m2 /root/.m2
+COPY --chown=gradle:gradle users-service/service/build.gradle users-service/service/settings.gradle ./
+COPY --chown=gradle:gradle users-service/service/src ./src
+
+RUN gradle --no-daemon clean bootJar -x test
+
+# --- Stage 2: run without Gradle or build caches ---
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-COPY build.gradle settings.gradle ./
-# RUN set -eux; \
-# 	for i in 1 2 3; do \
-# 		gradle --no-daemon dependencies && break; \
-# 		if [ "$i" -eq 3 ]; then exit 1; fi; \
-# 		echo "[users-service] Gradle dependency resolution failed, retrying..."; \
-# 		sleep 10; \
-# 	done
-
-COPY src ./src
+COPY --from=build /app/users-service/build/libs/*.jar app.jar
 
 EXPOSE 8080
-CMD ["gradle", "--no-daemon", "bootRun"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
